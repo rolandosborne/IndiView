@@ -1,24 +1,33 @@
- import React from 'react';
- import {
-   SafeAreaView,
-   ScrollView,
-   StatusBar,
-   StyleSheet,
-   Text,
-   useColorScheme,
-   View,
- } from 'react-native';
+import React from 'react';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
- const App = () => {
-   const isDarkMode = useColorScheme() === 'dark';
+function HomeScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>HomeScreen</Text>
+    </View>
+  );
+}
 
-   return (
-     <SafeAreaView>
-     </SafeAreaView>
-   );
- };
+const Stack = createStackNavigator();
 
- const styles = StyleSheet.create({
- });
+const App = () => {
 
- export default App;
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Home">
+          <Stack.Screen name="Home" component={HomeScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+
+};
+
+export default App;
+
