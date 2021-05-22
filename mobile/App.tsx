@@ -1,7 +1,7 @@
+import 'react-native-gesture-handler';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
