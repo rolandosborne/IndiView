@@ -15,7 +15,7 @@ function RootScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>RootScreen</Text>
-      <Button title="-> LOGIN" onPress={() => navigation.navigate('Login')} />
+      <Button title="-> LOGIN" onPress={() => navigation.replace('Login')} />
     </View>
   );
 }
@@ -24,7 +24,7 @@ function LoginScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>LoginScreen</Text>
-      <Button title="-> MAIN" onPress={() => navigation.navigate('Main')} />
+      <Button title="-> MAIN" onPress={() => navigation.replace('Main')} />
     </View>
   );
 }
