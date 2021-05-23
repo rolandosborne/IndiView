@@ -114,7 +114,6 @@
 				37DFA3AAB88C579366B0E658 /* Pods-IndiHost-IndiHostTests.debug.xcconfig */,
 				06B90542A605D1D22D4954D7 /* Pods-IndiHost-IndiHostTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};

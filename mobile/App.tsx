@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/dist/FontAwesome';
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -65,10 +66,19 @@ function PersonalScreen() {
 
 function HomeScreen({ navigation }) {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Feed" component={FeedScreen} />
-      <Tab.Screen name="Contact" component={ContactScreen} />
-      <Tab.Screen name="Personal" component={PersonalScreen} />
+    <Tab.Navigator tabBarOptions={{showLabel: false}} >
+      <Tab.Screen name="Feed" component={FeedScreen} 
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="picture-o" size={size} color={color} solid />
+          )}} />
+      <Tab.Screen name="Contact" component={ContactScreen} 
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="users" size={size} color={color} solid />
+          )}} />
+      <Tab.Screen name="Personal" component={PersonalScreen} 
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="user" size={size} color={color} solid />
+          )}} />
     </Tab.Navigator>
   );
 }
