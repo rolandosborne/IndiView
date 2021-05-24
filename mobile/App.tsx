@@ -9,7 +9,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 
 const Tab = createBottomTabNavigator();
-const RightDrawer = createDrawerNavigator();
+const FeedDrawer = createDrawerNavigator();
+const ContactDrawer = createDrawerNavigator();
+const PersonalDrawer = createDrawerNavigator();
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
@@ -35,23 +37,26 @@ function MainScreen() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Search" component={SearchScreen} />
-      <Drawer.Screen name="Label" component={LabelScreen} />
+      <Drawer.Screen name="Search" component={SearchScreen} options={{headerShown: true}} />
+      <Drawer.Screen name="Label" component={LabelScreen} options={{headerShown: true}}/>
     </Drawer.Navigator>
   );
 }
 
-function CustomDrawerContent(props) {
+function FeedDrawerContent(props) {
   return (
-      <FlatList style={{ paddingTop: 10 }} data={[ 'test1', 'test2', 'test3' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+    <SafeAreaView>
+      <Text>Story Labels</Text>
+      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+    </SafeAreaView>
   );
 }
 
 function FeedNavScreen() {
   return (
-    <RightDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <CustomDrawerContent {...props}  />}>
-      <RightDrawer.Screen name="FeedScreen" component={FeedScreen} />
-    </RightDrawer.Navigator>
+    <FeedDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <FeedDrawerContent {...props}  />}>
+      <FeedDrawer.Screen name="FeedScreen" component={FeedScreen} />
+    </FeedDrawer.Navigator>
   )
 }
 
@@ -63,12 +68,46 @@ function FeedScreen() {
   );
 }
 
+function ContactDrawerContent(props) {
+  return (
+    <SafeAreaView>
+      <Text>Contact Labels</Text>
+      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+    </SafeAreaView>
+  );
+}
+
+function ContactNavScreen() {
+  return (
+    <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props}  />}>
+      <ContactDrawer.Screen name="ContactScreen" component={ContactScreen} />
+    </ContactDrawer.Navigator>
+  )
+}
+
 function ContactScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Contact</Text>
     </View>
   );
+}
+
+function PersonalDrawerContent(props) {
+  return (
+    <SafeAreaView>
+      <Text>View as Label</Text>
+      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+    </SafeAreaView>
+  );
+}
+
+function PersonalNavScreen() {
+  return (
+    <PersonalDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <PersonalDrawerContent {...props}  />}>
+      <PersonalDrawer.Screen name="PersonalScreen" component={PersonalScreen} />
+    </PersonalDrawer.Navigator>
+  )
 }
 
 function PersonalScreen() {
@@ -86,11 +125,11 @@ function HomeScreen({ navigation }) {
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Contact" component={ContactScreen} 
+      <Tab.Screen name="Contact" component={ContactNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="users" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Personal" component={PersonalScreen} 
+      <Tab.Screen name="Personal" component={PersonalNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} solid />
           )}} />
