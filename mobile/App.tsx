@@ -1,14 +1,15 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 
 const Tab = createBottomTabNavigator();
+const RightDrawer = createDrawerNavigator();
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
@@ -40,6 +41,20 @@ function MainScreen() {
   );
 }
 
+function CustomDrawerContent(props) {
+  return (
+      <FlatList style={{ paddingTop: 10 }} data={[ 'test1', 'test2', 'test3' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+  );
+}
+
+function FeedNavScreen() {
+  return (
+    <RightDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <CustomDrawerContent {...props}  />}>
+      <RightDrawer.Screen name="FeedScreen" component={FeedScreen} />
+    </RightDrawer.Navigator>
+  )
+}
+
 function FeedScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -67,7 +82,7 @@ function PersonalScreen() {
 function HomeScreen({ navigation }) {
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
-      <Tab.Screen name="Feed" component={FeedScreen} 
+      <Tab.Screen name="Feed" component={FeedNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
           )}} />
