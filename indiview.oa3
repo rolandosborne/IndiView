@@ -1,0 +1,49 @@
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+info:
+  description:
+    Distributed Contact App API
+  version: "0.0.1"
+  title: IndiView
+  contact:
+    email: roland.osborne@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+
+  - name: accounts
+    description: view account status
+
+  - name: profile
+    description: interface to account attributes
+
+  - name: search
+    description: search list of accounts
+
+  - name: config
+    description: interface for browser app
+
+paths:
+
+  /config/access:
+    put:
+      tags:
+        - config
+      description: Check if token is valid
+      operationId: check-token
+      parameters:
+        - name: token
+          in: query
+          description: access token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+
