@@ -12,11 +12,8 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
 
-  - name: accounts
+  - name: account
     description: view account status
-
-  - name: profile
-    description: interface to account attributes
 
   - name: search
     description: search list of accounts
@@ -26,12 +23,349 @@ tags:
 
 paths:
 
-  /config/access:
+  /account/attach:
     put:
       tags:
-        - config
-      description: Check if token is valid
-      operationId: check-token
+        - account
+      description: Attach app to specified identity
+      operationId: attach
+      parameters:
+        - name: amigoId
+          in: query
+          description: id of identity
+          required: true
+          schema:
+            type: string
+        - name: registry
+          in: query
+          description: registry used by identity
+          required: true
+          schema:
+            type: string
+        - name: code
+          in: query
+          description: attachment code for access
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+          
+  /account/identity:
+    get:
+      tags:
+        - account
+      description: Retrieve revision of cached identity
+      operationId: get-identity
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+    put:
+      tags:
+        - account
+      description: Update cached identity
+      operationId: set-identity
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+        - name: registry
+          in: query
+          description: registry holding public profile
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+          
+  /account/status:
+    get:
+      tags:
+        - account
+      description: Retrieve status of account
+      operationId: status
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+          
+  /account/report:
+    put:
+      tags:
+        - account
+      description: Report user for review
+      operationId: report
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+        - name: amigoId
+          in: query
+          description: id of reported account
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+          
+  /account/settings:
+    get:
+      tags:
+        - account
+      description: Retrieve account settings
+      operationId: get-settings
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+    put:
+      tags:
+        - account
+      description: Update cached identity
+      operationId: set-settings
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: successful operation
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+        description: updated configuration
+        required: true
+          
+  /account/search:
+    get:
+      tags:
+        - account
+      description: Serach accounts with matching text
+      operationId: get-matching
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+        - name: match
+          in: query
+          description: text to search on
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+    put:
+      tags:
+        - account
+      description: Search accounts with matching location
+      operationId: get-nearby
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+        - name: longitudeDelta
+          in: query
+          description: range of matching values
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: latitudeDelta
+          in: query
+          description: range of matching values
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: altitudeDelta
+          in: query
+          description: range of matching values
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GpsLocation'
+        description: updated configuration
+        required: true
+        
+  /console/params:
+    get:
+      tags:
+        - console
+      description: Retrieve server params
+      operationId: get-params
+      parameters:
+        - name: token
+          in: query
+          description: console token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Params'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+    put:
+      tags:
+        - console
+      description: Update server params
+      operationId: set-params
+      parameters:
+        - name: token
+          in: query
+          description: console token
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: successful operation
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Params'
+        description: updated configuration
+        required: true
+  
+  /console/stats:
+    get:
+      tags:
+        - console
+      description: Retrieve latest stats
+      operationId: get-stats
       parameters:
         - name: token
           in: query
@@ -42,8 +376,219 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stats'
         '404':
           description: token not found
         '500':
           description: internal server error
+    post:
+      tags:
+        - console
+      description: Add new server stat
+      operationId: set-stats
+      parameters:
+        - name: token
+          in: query
+          description: access token
+          required: true
+          schema:
+            type: string
+        - name: processor
+          in: query
+          description: time
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+        - name: memory
+          in: query
+          description: current memory free
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: storage
+          in: query
+          description: current storage free
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '403':
+          description: access denied
+  
+  /console/flagged:
+    get:
+      tags:
+        - console
+      description: Retrieve flagged users
+      operationId: get-flagged
+      parameters:
+        - name: token
+          in: query
+          description: access token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+    put:
+      tags:
+        - console
+      description: Set flagged user state
+      operationId: set-flagged
+      parameters:
+        - name: token
+          in: query
+          description: access token
+          required: true
+          schema:
+            type: string
+        - name: reported
+          in: query
+          description: reported state
+          required: false
+          schema:
+            type: boolean
+        - name: blocked
+          in: query
+          description: blocked state
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '201':
+          description: successful operation
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+          
+components:
+  schemas:
 
+    GpsLocation:
+      type: object
+      required:
+        - longitude
+        - latitude
+        - altitude
+      properties:
+        longitude:
+          type: number
+          format: float
+        latitude:
+          type: number
+          format: float
+        altitude:
+          type: number
+          format: float
+          
+    Login:
+      type: object
+      required:
+        - appToken
+        - nodeToken
+        - serviceToken
+        - serviceNode
+      properties:
+        appToken:
+          type: string
+          format: secure-token
+        nodeToken:
+          type: string
+          format: secure-token
+        serviceToken:
+          type: string
+          format: secure-token
+        serviceNode:
+          type: string
+          
+    Settings:
+      type: object
+      required:
+        - searchable
+        - videoQuality
+        - audioQuality
+        - videoMute
+        - audioMute
+      properties:
+        searchable:
+          type: boolean
+        videoQuality:
+          type: string
+        audioQuality:
+          type: string
+        videoMute:
+          type: boolean
+        audioMute:
+          type: boolean
+          
+    Contact:
+      type: object
+      required:
+        - amigoId
+        - registry
+      properties:
+        amigoId:
+          type: string
+        registry:
+          type: string
+          
+    Params:
+      type: object
+      properties:
+        serviceNode:
+          type: string
+        serviceToken:
+          type: string
+          
+    Stats:
+      type: object
+      required:
+        - timestamp
+        - processor
+        - memory
+        - storage
+        - requests
+        - accounts
+      properties:
+        timestamp:
+          type: integer
+          format: int32
+        processor:
+          type: integer
+          format: int32
+        memory:
+          type: integer
+          format: int64
+        storage:
+          type: integer
+          format: int64
+        requests:
+          type: integer
+          format: int64
+        accounts:
+          type: integer
+          format: int64
+          

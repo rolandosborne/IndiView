@@ -9,62 +9,38 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * UserEntry
+ * Params
  */
 @Validated
 
 
-public class UserEntry   {
-  @JsonProperty("emigoId")
-  private String emigoId = null;
-
-  @JsonProperty("accountToken")
-  private String accountToken = null;
+public class Params   {
+  @JsonProperty("serviceNode")
+  private String serviceNode = null;
 
   @JsonProperty("serviceToken")
   private String serviceToken = null;
 
-  public UserEntry emigoId(String emigoId) {
-    this.emigoId = emigoId;
+  public Params serviceNode(String serviceNode) {
+    this.serviceNode = serviceNode;
     return this;
   }
 
   /**
-   * Get emigoId
-   * @return emigoId
+   * Get serviceNode
+   * @return serviceNode
    **/
-  @Schema(required = true, description = "")
-      @NotNull
-
-    public String getEmigoId() {
-    return emigoId;
+  @Schema(description = "")
+  
+    public String getServiceNode() {
+    return serviceNode;
   }
 
-  public void setEmigoId(String emigoId) {
-    this.emigoId = emigoId;
+  public void setServiceNode(String serviceNode) {
+    this.serviceNode = serviceNode;
   }
 
-  public UserEntry accountToken(String accountToken) {
-    this.accountToken = accountToken;
-    return this;
-  }
-
-  /**
-   * Get accountToken
-   * @return accountToken
-   **/
-  @Schema(required = true, description = "")
-      @NotNull
-
-    public String getAccountToken() {
-    return accountToken;
-  }
-
-  public void setAccountToken(String accountToken) {
-    this.accountToken = accountToken;
-  }
-
-  public UserEntry serviceToken(String serviceToken) {
+  public Params serviceToken(String serviceToken) {
     this.serviceToken = serviceToken;
     return this;
   }
@@ -73,9 +49,8 @@ public class UserEntry   {
    * Get serviceToken
    * @return serviceToken
    **/
-  @Schema(required = true, description = "")
-      @NotNull
-
+  @Schema(description = "")
+  
     public String getServiceToken() {
     return serviceToken;
   }
@@ -93,24 +68,22 @@ public class UserEntry   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    UserEntry userEntry = (UserEntry) o;
-    return Objects.equals(this.emigoId, userEntry.emigoId) &&
-        Objects.equals(this.accountToken, userEntry.accountToken) &&
-        Objects.equals(this.serviceToken, userEntry.serviceToken);
+    Params params = (Params) o;
+    return Objects.equals(this.serviceNode, params.serviceNode) &&
+        Objects.equals(this.serviceToken, params.serviceToken);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(emigoId, accountToken, serviceToken);
+    return Objects.hash(serviceNode, serviceToken);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class UserEntry {\n");
+    sb.append("class Params {\n");
     
-    sb.append("    emigoId: ").append(toIndentedString(emigoId)).append("\n");
-    sb.append("    accountToken: ").append(toIndentedString(accountToken)).append("\n");
+    sb.append("    serviceNode: ").append(toIndentedString(serviceNode)).append("\n");
     sb.append("    serviceToken: ").append(toIndentedString(serviceToken)).append("\n");
     sb.append("}");
     return sb.toString();

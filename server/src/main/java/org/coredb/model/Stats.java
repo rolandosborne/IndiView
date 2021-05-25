@@ -9,12 +9,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * SystemStat
+ * Stats
  */
 @Validated
 
 
-public class SystemStat   {
+public class Stats   {
   @JsonProperty("timestamp")
   private Integer timestamp = null;
 
@@ -33,7 +33,7 @@ public class SystemStat   {
   @JsonProperty("accounts")
   private Long accounts = null;
 
-  public SystemStat timestamp(Integer timestamp) {
+  public Stats timestamp(Integer timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -53,7 +53,7 @@ public class SystemStat   {
     this.timestamp = timestamp;
   }
 
-  public SystemStat processor(Integer processor) {
+  public Stats processor(Integer processor) {
     this.processor = processor;
     return this;
   }
@@ -73,7 +73,7 @@ public class SystemStat   {
     this.processor = processor;
   }
 
-  public SystemStat memory(Long memory) {
+  public Stats memory(Long memory) {
     this.memory = memory;
     return this;
   }
@@ -93,7 +93,7 @@ public class SystemStat   {
     this.memory = memory;
   }
 
-  public SystemStat storage(Long storage) {
+  public Stats storage(Long storage) {
     this.storage = storage;
     return this;
   }
@@ -113,7 +113,7 @@ public class SystemStat   {
     this.storage = storage;
   }
 
-  public SystemStat requests(Long requests) {
+  public Stats requests(Long requests) {
     this.requests = requests;
     return this;
   }
@@ -133,7 +133,7 @@ public class SystemStat   {
     this.requests = requests;
   }
 
-  public SystemStat accounts(Long accounts) {
+  public Stats accounts(Long accounts) {
     this.accounts = accounts;
     return this;
   }
@@ -162,13 +162,13 @@ public class SystemStat   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SystemStat systemStat = (SystemStat) o;
-    return Objects.equals(this.timestamp, systemStat.timestamp) &&
-        Objects.equals(this.processor, systemStat.processor) &&
-        Objects.equals(this.memory, systemStat.memory) &&
-        Objects.equals(this.storage, systemStat.storage) &&
-        Objects.equals(this.requests, systemStat.requests) &&
-        Objects.equals(this.accounts, systemStat.accounts);
+    Stats stats = (Stats) o;
+    return Objects.equals(this.timestamp, stats.timestamp) &&
+        Objects.equals(this.processor, stats.processor) &&
+        Objects.equals(this.memory, stats.memory) &&
+        Objects.equals(this.storage, stats.storage) &&
+        Objects.equals(this.requests, stats.requests) &&
+        Objects.equals(this.accounts, stats.accounts);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class SystemStat   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class SystemStat {\n");
+    sb.append("class Stats {\n");
     
     sb.append("    timestamp: ").append(toIndentedString(timestamp)).append("\n");
     sb.append("    processor: ").append(toIndentedString(processor)).append("\n");

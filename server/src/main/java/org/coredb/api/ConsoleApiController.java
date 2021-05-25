@@ -1,7 +1,8 @@
 package org.coredb.api;
 
-import org.coredb.model.AppConfig;
-import org.coredb.model.SystemStat;
+import org.coredb.model.Contact;
+import org.coredb.model.Params;
+import org.coredb.model.Stats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,40 +49,60 @@ public class ConsoleApiController implements ConsoleApi {
         this.request = request;
     }
 
-    public ResponseEntity<Void> checkToken(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+    public ResponseEntity<List<Contact>> getFlagged(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Contact>>(objectMapper.readValue("[ {\n  \"registry\" : \"registry\",\n  \"amigoId\" : \"amigoId\"\n}, {\n  \"registry\" : \"registry\",\n  \"amigoId\" : \"amigoId\"\n} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Contact>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<List<Contact>>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<Params> getParams(@NotNull @Parameter(in = ParameterIn.QUERY, description = "console token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<Params>(objectMapper.readValue("{\n  \"serviceNode\" : \"serviceNode\",\n  \"serviceToken\" : \"serviceToken\"\n}", Params.class), HttpStatus.NOT_IMPLEMENTED);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<Params>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<Params>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<List<Stats>> getStats(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<List<Stats>>(objectMapper.readValue("[ {\n  \"memory\" : 1,\n  \"storage\" : 5,\n  \"requests\" : 5,\n  \"accounts\" : 2,\n  \"processor\" : 6,\n  \"timestamp\" : 0\n}, {\n  \"memory\" : 1,\n  \"storage\" : 5,\n  \"requests\" : 5,\n  \"accounts\" : 2,\n  \"processor\" : 6,\n  \"timestamp\" : 0\n} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<List<Stats>>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<List<Stats>>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<Void> setFlagged(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.QUERY, description = "reported state" ,schema=@Schema()) @Valid @RequestParam(value = "reported", required = false) Boolean reported,@Parameter(in = ParameterIn.QUERY, description = "blocked state" ,schema=@Schema()) @Valid @RequestParam(value = "blocked", required = false) Boolean blocked) {
         String accept = request.getHeader("Accept");
         return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<AppConfig> getConfig(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+    public ResponseEntity<Void> setParams(@NotNull @Parameter(in = ParameterIn.QUERY, description = "console token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Params body) {
         String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<AppConfig>(objectMapper.readValue("{\n  \"appToken\" : \"appToken\",\n  \"appNode\" : \"appNode\",\n  \"consoleToken\" : \"consoleToken\",\n  \"statToken\" : \"statToken\"\n}", AppConfig.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<AppConfig>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<AppConfig>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<SystemStat>> getStats(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<List<SystemStat>>(objectMapper.readValue("[ {\n  \"memory\" : 1,\n  \"storage\" : 5,\n  \"requests\" : 5,\n  \"accounts\" : 2,\n  \"processor\" : 6,\n  \"timestamp\" : 0\n}, {\n  \"memory\" : 1,\n  \"storage\" : 5,\n  \"requests\" : 5,\n  \"accounts\" : 2,\n  \"processor\" : 6,\n  \"timestamp\" : 0\n} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<List<SystemStat>>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<List<SystemStat>>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<Void> setConfig(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody AppConfig body) {
+    public ResponseEntity<Void> setStats(@NotNull @Parameter(in = ParameterIn.QUERY, description = "access token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Min(0) @Max(100) @Parameter(in = ParameterIn.QUERY, description = "time" ,required=true,schema=@Schema(allowableValues={  }, maximum="100"
+)) @Valid @RequestParam(value = "processor", required = true) Integer processor,@NotNull @Parameter(in = ParameterIn.QUERY, description = "current memory free" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "memory", required = true) Long memory,@NotNull @Parameter(in = ParameterIn.QUERY, description = "current storage free" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "storage", required = true) Long storage) {
         String accept = request.getHeader("Accept");
         return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
     }

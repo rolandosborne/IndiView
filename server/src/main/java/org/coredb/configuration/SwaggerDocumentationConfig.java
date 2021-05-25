@@ -29,13 +29,13 @@ public class SwaggerDocumentationConfig {
 
     ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-            .title("Digital Archive Emigo App Server API")
-            .description("An interface to a emigo app of distributed nodes for personal storage. emigo-id - hex encoded sha256 of an emigo 4096 public key emigo-key - hex encoded public key")
+            .title("IndiView")
+            .description("Distributed Contact App API")
             .license("Apache 2.0")
             .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")
             .termsOfServiceUrl("")
-            .version("1.0.4")
-            .contact(new Contact("","", "rosborne@coredb.org"))
+            .version("0.0.1")
+            .contact(new Contact("","", "roland.osborne@gmail.com"))
             .build();
     }
 
@@ -43,15 +43,15 @@ public class SwaggerDocumentationConfig {
     public OpenAPI openApi() {
         return new OpenAPI()
             .info(new Info()
-                .title("Digital Archive Emigo App Server API")
-                .description("An interface to a emigo app of distributed nodes for personal storage. emigo-id - hex encoded sha256 of an emigo 4096 public key emigo-key - hex encoded public key")
+                .title("IndiView")
+                .description("Distributed Contact App API")
                 .termsOfService("")
-                .version("1.0.4")
+                .version("0.0.1")
                 .license(new License()
                     .name("Apache 2.0")
                     .url("http://www.apache.org/licenses/LICENSE-2.0.html"))
                 .contact(new io.swagger.v3.oas.models.info.Contact()
-                    .email("rosborne@coredb.org")));
+                    .email("roland.osborne@gmail.com")));
     }
 
 }
