@@ -21,6 +21,9 @@ public class Contact   {
   @JsonProperty("registry")
   private String registry = null;
 
+  @JsonProperty("name")
+  private String name = null;
+
   public Contact amigoId(String amigoId) {
     this.amigoId = amigoId;
     return this;
@@ -61,6 +64,26 @@ public class Contact   {
     this.registry = registry;
   }
 
+  public Contact name(String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Get name
+   * @return name
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -72,12 +95,13 @@ public class Contact   {
     }
     Contact contact = (Contact) o;
     return Objects.equals(this.amigoId, contact.amigoId) &&
-        Objects.equals(this.registry, contact.registry);
+        Objects.equals(this.registry, contact.registry) &&
+        Objects.equals(this.name, contact.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(amigoId, registry);
+    return Objects.hash(amigoId, registry, name);
   }
 
   @Override
@@ -87,6 +111,7 @@ public class Contact   {
     
     sb.append("    amigoId: ").append(toIndentedString(amigoId)).append("\n");
     sb.append("    registry: ").append(toIndentedString(registry)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -102,3 +127,4 @@ public class Contact   {
     return o.toString().replace("\n", "\n    ");
   }
 }
+

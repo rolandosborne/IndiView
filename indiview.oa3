@@ -549,10 +549,13 @@ components:
       required:
         - amigoId
         - registry
+        - name
       properties:
         amigoId:
           type: string
         registry:
+          type: string
+        name:
           type: string
           
     Params:
