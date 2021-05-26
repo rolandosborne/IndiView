@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Platform, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -17,7 +17,7 @@ const Stack = createStackNavigator();
 
 function RootScreen({ navigation }) {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
       <Text>RootScreen</Text>
       <Button title="-> LOGIN" onPress={() => navigation.replace('Login')} />
     </View>
@@ -25,11 +25,16 @@ function RootScreen({ navigation }) {
 }
 
 function LoginScreen({ navigation }) {
+  const [username, onChangeUsername] = React.useState("Diatum Username");
+  const [password, onChangePassword] = React.useState("Portal Password");
+  
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>LoginScreen</Text>
-      <Button title="-> MAIN" onPress={() => navigation.replace('Main')} />
-    </View>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
+      <Image source={require('./logo.png')} />
+      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} onChangeText={onChangeUsername} value={username} />
+      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} onChangeText={onChangePassword} value={password} />
+      <Button title="LOGIN" onPress={() => navigation.replace('Main')} />
+    </KeyboardAvoidingView>
   );
 }
 
