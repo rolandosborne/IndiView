@@ -1,5 +1,5 @@
 {
-  "name": "indihost",
+  "name": "indiview",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -27,7 +27,6 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
-    "@bam.tech/react-native-make": "^3.0.3",
     "@react-native-community/eslint-config": "^2.0.0",
     "@types/jest": "^26.0.23",
     "@types/react-native": "^0.64.5",
