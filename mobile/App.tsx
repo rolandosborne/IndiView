@@ -7,6 +7,8 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import { Diatum } from './sdk/Diatum';
+import { DiatumProvider, useDiatum } from "./sdk/DiatumContext";
 
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
@@ -16,6 +18,12 @@ const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
 function RootScreen({ navigation }) {
+  let diatum: Diatum = useDiatum();
+  diatum.init("default.db").then(() => {
+    diatum.get();
+  });
+
+
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
       <Text>RootScreen</Text>
@@ -161,15 +169,17 @@ function LabelScreen({ navigation }) {
 const App = () => {
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Root">
-          <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-          <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-          <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <DiatumProvider>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Root">
+            <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+            <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </DiatumProvider>
   );
 
 };
