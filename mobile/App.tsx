@@ -38,10 +38,10 @@ function LoginScreen({ navigation }) {
   
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
-      <Image source={require('./logo.png')} style={{ marginBottom: 64 }} />
+      <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
-      <Button title="LOGIN" color="#ffffff" onPress={() => navigation.replace('Main')} />
+      <Button title="LOGIN" color="#ffffff" backgroundColor="#282827" onPress={() => navigation.replace('Main')} />
     </KeyboardAvoidingView>
   );
 }
