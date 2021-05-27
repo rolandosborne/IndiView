@@ -20,9 +20,8 @@ const Stack = createStackNavigator();
 function RootScreen({ navigation }) {
   let diatum: Diatum = useDiatum();
   diatum.init("default.db").then(() => {
-    diatum.get();
+    diatum.setAppContext({ context: null }).then(() => { console.log("READY"); });
   });
-
 
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
