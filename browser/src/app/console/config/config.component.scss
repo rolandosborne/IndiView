@@ -1,0 +1,79 @@
+.config-control {
+  width: 100%;
+}
+
+.config-close {
+  width: 5%;
+  float: right;
+  font-size: 18px;
+  color: #DDDDDD;
+  position: relative;
+  top: -16px;
+  left: 8px;
+  text-align: right;
+}
+
+.config-close-x {
+  cursor: pointer;
+}
+
+.config-data {
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid #eeeeee;
+  border-radius: 4px;
+  max-height: 450px;
+  width: calc(100% - 32px)
+}
+
+.config-row {
+  width: 100%;
+}
+
+.config-input {
+  width: calc(50% - 16px);
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 12px;
+}
+
+.config-token {
+  width: calc(100% - 16px);
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 12px;
+}
+
+.config-buttons {
+  width: 100%;
+  vertical-align: bottom;
+  padding-left: 0px;
+  padding-top: 10px;
+  margin-top: 16px;
+}
+
+.config-button-group {
+  overflow: hidden;
+  white-space: nowrap;
+  padding-right: 8px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.config-button-save {
+  width: 116px;
+  margin-right: 4px;
+  margin-left: 4px;
+  background-color: #444444;
+}
+
+.config-button-cancel {
+  width: 116px;
+  margin-right: 4px;
+  margin-left: 4px;
+  background-color: #444444;
+}
+

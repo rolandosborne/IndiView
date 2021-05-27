@@ -1,0 +1,51 @@
+<div class="config-control">
+  <div class="config-close">
+    <i class="fa fa-times config-close-x" (click)="onClose()"></i>
+  </div>
+</div>
+
+<div *ngIf="configSet" class="config-data">
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>App ID Node</mat-label>
+      <input matInput [(ngModel)]="config.appNode" spellcheck=false>
+    </mat-form-field>
+  </div>
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>App ID Registry</mat-label>
+      <input matInput [(ngModel)]="config.appRegistry" spellcheck=false>
+    </mat-form-field>
+  </div>
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>App Amigo ID</mat-label>
+      <input matInput [(ngModel)]="config.appAmigoId" spellcheck=false>
+    </mat-form-field>
+  </div>
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>App ID Handle</mat-label>
+      <input matInput [(ngModel)]="config.appHandle" spellcheck=false>
+    </mat-form-field>
+  </div>
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>App ID Token</mat-label>
+      <input matInput [(ngModel)]="config.appToken" spellcheck=false>
+    </mat-form-field>
+  </div>
+  <div class="config-row">
+    <mat-form-field class="config-token">
+      <mat-label>Console Token</mat-label>
+      <input matInput [(ngModel)]="config.consoleToken" spellcheck=false>
+    </mat-form-field>
+  </div>
+</div>
+
+<div *ngIf="configSet" class="config-buttons">
+  <div class="config-button-group">
+    <button mat-raised-button color="primary" class="config-button-save" (click)="onSave()">Save</button>
+    <button mat-raised-button color="primary" class="config-button-cancel" (click)="onClose()">Cancel</button>
+  </div>
+</div>
