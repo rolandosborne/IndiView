@@ -33,15 +33,15 @@ function RootScreen({ navigation }) {
 }
 
 function LoginScreen({ navigation }) {
-  const [username, onChangeUsername] = React.useState("Diatum Username");
-  const [password, onChangePassword] = React.useState("Portal Password");
+  const [username, onChangeUsername] = React.useState("");
+  const [password, onChangePassword] = React.useState("");
   
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
       <Image source={require('./logo.png')} />
-      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} onChangeText={onChangeUsername} value={username} />
-      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} onChangeText={onChangePassword} value={password} />
-      <Button title="LOGIN" onPress={() => navigation.replace('Main')} />
+      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
+      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
+      <Button title="LOGIN" color="#ffffff" onPress={() => navigation.replace('Main')} />
     </KeyboardAvoidingView>
   );
 }
@@ -172,11 +172,13 @@ const App = () => {
     <DiatumProvider>
       <SafeAreaProvider>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="Root">
-            <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-            <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-            <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-          </Stack.Navigator>
+          <View style={{ flex: 1, backgroundColor: '#282827' }}>
+            <Stack.Navigator initialRouteName="Root">
+              <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+            </Stack.Navigator>
+          </View>
         </NavigationContainer>
       </SafeAreaProvider>
     </DiatumProvider>
