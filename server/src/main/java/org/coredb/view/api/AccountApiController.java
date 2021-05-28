@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.coredb.view.service.AccountService;
+
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,9 @@ public class AccountApiController implements AccountApi {
     private final ObjectMapper objectMapper;
 
     private final HttpServletRequest request;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private AccountService accountService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AccountApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -154,17 +159,8 @@ public class AccountApiController implements AccountApi {
     }
 
     public ResponseEntity<String> status(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<String>(objectMapper.readValue("\"\"", String.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
+      String s = accountService.getStatus(token);
+        return new ResponseEntity<String>(s, HttpStatus.OK);
     }
 
 }
