@@ -1,4 +1,4 @@
-package org.coredb.api;
+package org.coredb.view.api;
 
 public class NotFoundException extends ApiException {
     private int code;

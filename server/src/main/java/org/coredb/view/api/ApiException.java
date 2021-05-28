@@ -1,4 +1,4 @@
-package org.coredb.api;
+package org.coredb.view.api;
 
 public class ApiException extends Exception {
     private int code;

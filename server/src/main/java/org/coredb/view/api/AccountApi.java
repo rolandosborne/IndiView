@@ -3,12 +3,12 @@
  * https://github.com/swagger-api/swagger-codegen
  * Do not edit the class manually.
  */
-package org.coredb.api;
+package org.coredb.view.api;
 
-import org.coredb.model.Contact;
-import org.coredb.model.GpsLocation;
-import org.coredb.model.Login;
-import org.coredb.model.Settings;
+import org.coredb.view.model.Contact;
+import org.coredb.view.model.GpsLocation;
+import org.coredb.view.model.Login;
+import org.coredb.view.model.Settings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

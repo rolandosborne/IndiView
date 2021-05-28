@@ -1,4 +1,4 @@
-package org.coredb.model;
+package org.coredb.view.model;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
