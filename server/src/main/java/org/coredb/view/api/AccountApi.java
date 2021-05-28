@@ -8,6 +8,7 @@ package org.coredb.view.api;
 import org.coredb.view.model.Contact;
 import org.coredb.view.model.GpsLocation;
 import org.coredb.view.model.Login;
+import org.coredb.view.model.AmigoMessage;
 import org.coredb.view.model.Settings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +39,7 @@ import java.util.Map;
 @Validated
 public interface AccountApi {
 
+
     @Operation(summary = "", description = "Attach app to specified identity", tags={ "account" })
     @ApiResponses(value = { 
         @ApiResponse(responseCode = "201", description = "successful operation", content = @Content(schema = @Schema(implementation = Login.class))),
@@ -47,9 +49,9 @@ public interface AccountApi {
         @ApiResponse(responseCode = "500", description = "internal server error") })
     @RequestMapping(value = "/account/attach",
         produces = { "application/json" }, 
+        consumes = { "application/json" }, 
         method = RequestMethod.PUT)
-    ResponseEntity<Login> attach(@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of identity" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId, @NotNull @Parameter(in = ParameterIn.QUERY, description = "registry used by identity" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "registry", required = true) String registry, @NotNull @Parameter(in = ParameterIn.QUERY, description = "attachment code for access" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "code", required = true) String code);
-
+    ResponseEntity<Login> attach(@NotNull @Parameter(in = ParameterIn.QUERY, description = "attachment code for access" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "code", required = true) String code, @Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody AmigoMessage body);
 
     @Operation(summary = "", description = "Retrieve revision of cached identity", tags={ "account" })
     @ApiResponses(value = { 

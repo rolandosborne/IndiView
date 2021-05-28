@@ -24,18 +24,6 @@ paths:
       description: Attach app to specified identity
       operationId: attach
       parameters:
-        - name: amigoId
-          in: query
-          description: id of identity
-          required: true
-          schema:
-            type: string
-        - name: registry
-          in: query
-          description: registry used by identity
-          required: true
-          schema:
-            type: string
         - name: code
           in: query
           description: attachment code for access
@@ -52,7 +40,14 @@ paths:
         '404':
           description: token not found
         '500':
-          description: internal server error
+          description: internal server error      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmigoMessage'
+        description: updated configuration
+        required: true
           
   /account/identity:
     get:
@@ -302,7 +297,7 @@ paths:
               $ref: '#/components/schemas/GpsLocation'
         description: updated configuration
         required: true
-         
+        
 components:
   schemas:
 
@@ -376,4 +371,79 @@ components:
           type: string
         name:
           type: string
-         
+          
+    Amigo:
+      type: object
+      required:
+        - amigoId
+        - node
+        - revision
+        - version
+      properties:
+        amigoId:
+          type: string
+          format: emigoId
+        name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+          format: base64 encoding of binary image
+        location:
+          type: string
+        node:
+          type: string
+          example: https://node.coredb.org:9999/app
+        registry:
+          type: string
+          example: https://registry.coredb.org:8888/app
+        revision:
+          type: integer
+          format: int32
+        version:
+          type: string
+          format: protocol-version
+        handle:
+          type: string
+
+    AmigoToken:
+      type: object
+      required:
+        - amigoId
+        - amigo
+        - signature
+        - token
+      properties:
+        amigoId:
+          type: string
+          format: emigo-id
+        amigo:
+          $ref: '#/components/schemas/AmigoMessage'
+        signature:
+          type: string
+          format: signature
+        token:
+          type: string
+          format: Base64 & JSON serialized string of token
+
+    AmigoMessage:
+      type: object
+      required:
+        - key
+        - keyType
+        - signature
+        - data
+      properties:
+        key:
+          type: string
+          format: emigo-key
+        keyType:
+          type: string
+        signature:
+          type: string
+          format: signature of Base64 data converted to hex string
+        data:
+          type: string
+          format: Base64 & JSON serialized string of data object
+          

@@ -3,6 +3,7 @@ package org.coredb.view.api;
 import org.coredb.view.model.Contact;
 import org.coredb.view.model.GpsLocation;
 import org.coredb.view.model.Login;
+import org.coredb.view.model.AmigoMessage;
 import org.coredb.view.model.Settings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,7 +56,7 @@ public class AccountApiController implements AccountApi {
         this.request = request;
     }
 
-    public ResponseEntity<Login> attach(@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of identity" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId,@NotNull @Parameter(in = ParameterIn.QUERY, description = "registry used by identity" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "registry", required = true) String registry,@NotNull @Parameter(in = ParameterIn.QUERY, description = "attachment code for access" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "code", required = true) String code) {
+    public ResponseEntity<Login> attach(@NotNull @Parameter(in = ParameterIn.QUERY, description = "attachment code for access" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "code", required = true) String code,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody AmigoMessage body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
