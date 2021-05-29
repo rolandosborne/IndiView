@@ -9,6 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { Diatum } from './sdk/Diatum';
 import { DiatumProvider, useDiatum } from "./sdk/DiatumContext";
+import { NetCom } from "./src/NetCom";
 
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
@@ -36,12 +37,26 @@ function LoginScreen({ navigation }) {
   const [username, onChangeUsername] = React.useState("");
   const [password, onChangePassword] = React.useState("");
 
+  const test = (() => { 
+    diatum.getAttachCode("@diatum.net", "").then(c => {
+      console.log(c.code);
+      NetCom.attach(c).then(a => {
+        console.log(a);
+      }).catch(err => {
+        console.log(err);
+      });
+    }).catch(err => {
+      console.log(err);
+    });
+  });
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
       <Button title="Attach App" color="#ffffff" backgroundColor="#282827" onPress={() => navigation.replace('Agree')} />
+      <Button title="TEST" color="#ffffff" backgroundColor="#282827" onPress={test} />
     </KeyboardAvoidingView>
   );
 }
