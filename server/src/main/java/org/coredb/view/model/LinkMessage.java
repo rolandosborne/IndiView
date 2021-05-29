@@ -3,52 +3,31 @@ package org.coredb.view.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.coredb.view.model.AmigoMessage;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * AmigoToken
+ * LinkMessage
  */
 @Validated
-
-
-public class AmigoToken   {
-  @JsonProperty("amigoId")
-  private String amigoId = null;
-
+public class LinkMessage   {
   @JsonProperty("amigo")
   private AmigoMessage amigo = null;
 
   @JsonProperty("signature")
   private String signature = null;
 
-  @JsonProperty("token")
-  private String token = null;
+  @JsonProperty("create")
+  private String create = null;
 
-  public AmigoToken amigoId(String amigoId) {
-    this.amigoId = amigoId;
-    return this;
-  }
+  @JsonProperty("attach")
+  private String attach = null;
 
-  /**
-   * Get amigoId
-   * @return amigoId
-   **/
-  @Schema(required = true, description = "")
-      @NotNull
-
-    public String getAmigoId() {
-    return amigoId;
-  }
-
-  public void setAmigoId(String amigoId) {
-    this.amigoId = amigoId;
-  }
-
-  public AmigoToken amigo(AmigoMessage amigo) {
+  public LinkMessage amigo(AmigoMessage amigo) {
     this.amigo = amigo;
     return this;
   }
@@ -56,12 +35,12 @@ public class AmigoToken   {
   /**
    * Get amigo
    * @return amigo
-   **/
-  @Schema(required = true, description = "")
-      @NotNull
+  **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
-    @Valid
-    public AmigoMessage getAmigo() {
+  @Valid
+  public AmigoMessage getAmigo() {
     return amigo;
   }
 
@@ -69,7 +48,7 @@ public class AmigoToken   {
     this.amigo = amigo;
   }
 
-  public AmigoToken signature(String signature) {
+  public LinkMessage signature(String signature) {
     this.signature = signature;
     return this;
   }
@@ -77,11 +56,11 @@ public class AmigoToken   {
   /**
    * Get signature
    * @return signature
-   **/
-  @Schema(required = true, description = "")
-      @NotNull
+  **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
-    public String getSignature() {
+  public String getSignature() {
     return signature;
   }
 
@@ -89,24 +68,42 @@ public class AmigoToken   {
     this.signature = signature;
   }
 
-  public AmigoToken token(String token) {
-    this.token = token;
+  public LinkMessage create(String create) {
+    this.create = create;
     return this;
   }
 
   /**
-   * Get token
-   * @return token
-   **/
-  @Schema(required = true, description = "")
-      @NotNull
+   * Get create
+   * @return create
+  **/
+  @ApiModelProperty(value = "")
 
-    public String getToken() {
-    return token;
+  public String getCreate() {
+    return create;
   }
 
-  public void setToken(String token) {
-    this.token = token;
+  public void setCreate(String create) {
+    this.create = create;
+  }
+
+  public LinkMessage attach(String attach) {
+    this.attach = attach;
+    return this;
+  }
+
+  /**
+   * Get attach
+   * @return attach
+  **/
+  @ApiModelProperty(value = "")
+
+  public String getAttach() {
+    return attach;
+  }
+
+  public void setAttach(String attach) {
+    this.attach = attach;
   }
 
 
@@ -118,27 +115,27 @@ public class AmigoToken   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AmigoToken amigoToken = (AmigoToken) o;
-    return Objects.equals(this.amigoId, amigoToken.amigoId) &&
-        Objects.equals(this.amigo, amigoToken.amigo) &&
-        Objects.equals(this.signature, amigoToken.signature) &&
-        Objects.equals(this.token, amigoToken.token);
+    LinkMessage linkMessage = (LinkMessage) o;
+    return Objects.equals(this.amigo, linkMessage.amigo) &&
+        Objects.equals(this.signature, linkMessage.signature) &&
+        Objects.equals(this.create, linkMessage.create) &&
+        Objects.equals(this.attach, linkMessage.attach);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(amigoId, amigo, signature, token);
+    return Objects.hash(amigo, signature, create, attach);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class AmigoToken {\n");
+    sb.append("class LinkMessage {\n");
     
-    sb.append("    amigoId: ").append(toIndentedString(amigoId)).append("\n");
     sb.append("    amigo: ").append(toIndentedString(amigo)).append("\n");
     sb.append("    signature: ").append(toIndentedString(signature)).append("\n");
-    sb.append("    token: ").append(toIndentedString(token)).append("\n");
+    sb.append("    create: ").append(toIndentedString(create)).append("\n");
+    sb.append("    attach: ").append(toIndentedString(attach)).append("\n");
     sb.append("}");
     return sb.toString();
   }

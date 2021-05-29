@@ -322,16 +322,19 @@ components:
       type: object
       required:
         - appToken
-        - nodeToken
+        - accountToken
+        - accountNode
         - serviceToken
         - serviceNode
       properties:
         appToken:
           type: string
           format: secure-token
-        nodeToken:
+        accountToken:
           type: string
           format: secure-token
+        accountNode:
+          type: string
         serviceToken:
           type: string
           format: secure-token

@@ -13,6 +13,8 @@ public class Account implements Serializable {
   private Integer revision;
   private String handle;
   private String name;
+  private String node;
+  private String version;
   private String registry;
   private Boolean enabled;
   private Boolean searchable;
@@ -63,6 +65,22 @@ public class Account implements Serializable {
   }
   public void setHandle(String value) {
     this.handle = value;
+  }
+ 
+  @JsonIgnore
+  public String getNode() {
+    return this.node;
+  }
+  public void setNode(String value) {
+    this.node = value;
+  }
+ 
+  @JsonIgnore
+  public String getVersion() {
+    return this.version;
+  }
+  public void setVersion(String value) {
+    this.version = value;
   }
 
   @JsonIgnore

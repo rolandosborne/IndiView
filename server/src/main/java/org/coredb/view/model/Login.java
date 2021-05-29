@@ -18,8 +18,11 @@ public class Login   {
   @JsonProperty("appToken")
   private String appToken = null;
 
-  @JsonProperty("nodeToken")
-  private String nodeToken = null;
+  @JsonProperty("accountToken")
+  private String accountToken = null;
+
+  @JsonProperty("accountNode")
+  private String accountNode = null;
 
   @JsonProperty("serviceToken")
   private String serviceToken = null;
@@ -47,24 +50,44 @@ public class Login   {
     this.appToken = appToken;
   }
 
-  public Login nodeToken(String nodeToken) {
-    this.nodeToken = nodeToken;
+  public Login accountToken(String accountToken) {
+    this.accountToken = accountToken;
     return this;
   }
 
   /**
-   * Get nodeToken
-   * @return nodeToken
+   * Get accountToken
+   * @return accountToken
    **/
   @Schema(required = true, description = "")
       @NotNull
 
-    public String getNodeToken() {
-    return nodeToken;
+    public String getAccountToken() {
+    return accountToken;
   }
 
-  public void setNodeToken(String nodeToken) {
-    this.nodeToken = nodeToken;
+  public void setAccountToken(String accountToken) {
+    this.accountToken = accountToken;
+  }
+
+  public Login accountNode(String accountNode) {
+    this.accountNode = accountNode;
+    return this;
+  }
+
+  /**
+   * Get accountNode
+   * @return accountNode
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public String getAccountNode() {
+    return accountNode;
+  }
+
+  public void setAccountNode(String accountNode) {
+    this.accountNode = accountNode;
   }
 
   public Login serviceToken(String serviceToken) {
@@ -118,14 +141,15 @@ public class Login   {
     }
     Login login = (Login) o;
     return Objects.equals(this.appToken, login.appToken) &&
-        Objects.equals(this.nodeToken, login.nodeToken) &&
+        Objects.equals(this.accountToken, login.accountToken) &&
+        Objects.equals(this.accountNode, login.accountNode) &&
         Objects.equals(this.serviceToken, login.serviceToken) &&
         Objects.equals(this.serviceNode, login.serviceNode);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(appToken, nodeToken, serviceToken, serviceNode);
+    return Objects.hash(appToken, accountToken, accountNode, serviceToken, serviceNode);
   }
 
   @Override
@@ -134,7 +158,8 @@ public class Login   {
     sb.append("class Login {\n");
     
     sb.append("    appToken: ").append(toIndentedString(appToken)).append("\n");
-    sb.append("    nodeToken: ").append(toIndentedString(nodeToken)).append("\n");
+    sb.append("    accountToken: ").append(toIndentedString(accountToken)).append("\n");
+    sb.append("    accountNode: ").append(toIndentedString(accountNode)).append("\n");
     sb.append("    serviceToken: ").append(toIndentedString(serviceToken)).append("\n");
     sb.append("    serviceNode: ").append(toIndentedString(serviceNode)).append("\n");
     sb.append("}");
@@ -152,3 +177,4 @@ public class Login   {
     return o.toString().replace("\n", "\n    ");
   }
 }
+
