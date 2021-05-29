@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
+import java.lang.IllegalArgumentException;
+import javax.ws.rs.NotAcceptableException;
 
 import org.coredb.view.service.AccountService;
 
@@ -57,17 +60,24 @@ public class AccountApiController implements AccountApi {
     }
 
     public ResponseEntity<Login> attach(@NotNull @Parameter(in = ParameterIn.QUERY, description = "attachment code for access" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "code", required = true) String code,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody AmigoMessage body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Login>(objectMapper.readValue("{\n  \"nodeToken\" : \"nodeToken\",\n  \"appToken\" : \"appToken\",\n  \"serviceNode\" : \"serviceNode\",\n  \"serviceToken\" : \"serviceToken\"\n}", Login.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Login>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Login>(HttpStatus.NOT_IMPLEMENTED);
+      try {
+        Login login = accountService.attach(body, code);
+        return new ResponseEntity<Login>(login, HttpStatus.CREATED);
+      }
+      catch(IllegalArgumentException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Login>(HttpStatus.UNAUTHORIZED); //401
+      }
+      catch(NotAcceptableException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Login>(HttpStatus.NOT_ACCEPTABLE); //406
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("details", e.getMessage());
+        return new ResponseEntity<Login>(headers, HttpStatus.SERVICE_UNAVAILABLE);
+      }
     }
 
     public ResponseEntity<Integer> getIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
