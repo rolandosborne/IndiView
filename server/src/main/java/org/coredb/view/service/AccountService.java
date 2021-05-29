@@ -163,7 +163,14 @@ public class AccountService {
     account.setNode(amigo.getNode());
     account.setVersion(amigo.getVersion());
     account.setHandle(amigo.getHandle());
+    account.setName(amigo.getName());
     account.setEnabled(true);
+    account.setSearchable(true);
+    account.setAudioMute(false);
+    account.setVideoMute(false);
+    account.setAudioQuality("sd");
+    account.setVideoQuality("sd");
+    account.setGps(false);
     account = accountRepository.save(account);
 
     // create response
