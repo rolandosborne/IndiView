@@ -32,17 +32,28 @@ function RootScreen({ navigation }) {
 }
 
 function LoginScreen({ navigation }) {
+  let diatum: Diatum = useDiatum();
   const [username, onChangeUsername] = React.useState("");
   const [password, onChangePassword] = React.useState("");
-  
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
-      <Button title="LOGIN" color="#ffffff" backgroundColor="#282827" onPress={() => navigation.replace('Main')} />
+      <Button title="Attach App" color="#ffffff" backgroundColor="#282827" onPress={() => navigation.replace('Agree')} />
     </KeyboardAvoidingView>
   );
+}
+
+function AgreeScreen({ navigation }) {
+  
+  return (
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
+      <Text>AgreeScreen</Text>
+      <Button title="-> HOME" onPress={() => navigation.replace('Main')} />
+    </View>
+  )
 }
 
 function MainScreen() {
@@ -175,6 +186,7 @@ const App = () => {
             <Stack.Navigator initialRouteName="Root">
               <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
               <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
               <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
             </Stack.Navigator>
           </View>

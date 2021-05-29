@@ -1,4 +1,9 @@
-import { AppContext, DiatumSession } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo } from './DiatumTypes';
+
+import base64 from 'react-native-base64'
+
+const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
+const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
 
 export interface Diatum {
 
@@ -16,6 +21,9 @@ export interface Diatum {
 
   // clear active identity
   clearSession(): Promise<void>;
+
+  // get registry message
+  getAttachCode(username: string, portal?: string): Promise<AttachCode>;
 }
 
 class _Diatum {
@@ -73,6 +81,37 @@ async function clearSession(): Promise<void> {
   let diatum = await getInstance();
   return diatum.clearSession();
 }
+
+function getAmigoObject(message: AmigoMessage): Amigo {
+  // TODO validate message signature
+  let amigo: Amigo = JSON.parse(base64.decode(message.data));
+  // TODO confirm key hash
+  return amigo;
+}
+
+async function getAttachCode(username: string, password: string, portal?: string): Promise<AttachCode> {
+
+  // use default portal if unspecified
+  if(portal === undefined) {
+    portal = DEFAULT_PORTAL;
+  }
+
+  // get registry params
+  let u: string[] = username.split("@");
+  let reg: string = u.length > 1 ? "https://registry." + u[1] + "/app" : DEFAULT_REGISTRY;
+
+  // retrieve identity
+  let messageResponse = await fetch(reg + "/amigo/messages/?handle=" + u[0]);
+  let message: AmigoMessage = await messageResponse.json();
+  let amigo: Amigo = getAmigoObject(message);
+
+  // retrieve code
+  let codeResponse = await fetch(portal + "/account/passcode?amigoId=" + amigo.amigoId + "&password=" + encodeURIComponent(password), { method: 'PUT' });
+  let code: string = await codeResponse.json(); 
+
+  return { message: message, code: code };  
+}
  
-export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession };
+export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
+  getAttachCode };
 
