@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Platform, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Platform, Linking, TouchableOpacity, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -42,6 +42,7 @@ function LoginScreen({ navigation }) {
       console.log(c.code);
       NetCom.attach(c).then(a => {
         console.log(a);
+        navigation.replace("Agree");
       }).catch(err => {
         console.log(err);
       });
@@ -55,19 +56,41 @@ function LoginScreen({ navigation }) {
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
-      <Button title="Attach App" color="#ffffff" backgroundColor="#282827" onPress={() => navigation.replace('Agree')} />
-      <Button title="TEST" color="#ffffff" backgroundColor="#282827" onPress={test} />
+      
+      <TouchableOpacity onPress={test}><Text style={{ color: "#44aaff", fontSize: 24 }} >Attach App</Text></TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
 
 function AgreeScreen({ navigation }) {
-  
+
+  const agree = (() => { navigation.replace("Main") });
+  const cancel = (() => { navigation.replace("Login") });
+  const terms = (() => { Linking.openURL('https://diatum.org/terms-of-service') });
+  const policy = (() => { Linking.openURL('https://diatum.org/policies-introduction') });
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
-      <Text>AgreeScreen</Text>
-      <Button title="-> HOME" onPress={() => navigation.replace('Main')} />
-    </View>
+      <View style={[ { flex: 1, backgroundColor: "#282827", padding: 16 }, { flexDirection: "column" }]}>
+        <View style={{ flex: 1 }} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: "#ffffff", fontSize: 22 }}>Do you agree to the terms of service an data policy specified by Diatum?</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={[ { flex: 1 }, { flexDirection: "row" }]}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <TouchableOpacity onPress={cancel}><Text style={{ color: "#ffffff", fontSize: 22 }}>Cancel</Text></TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <TouchableOpacity onPress={agree}><Text style={{ color: "#ffffff", fontSize: 22 }}>Agree</Text></TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity onPress={terms}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Terms of Service</Text></TouchableOpacity>
+          <TouchableOpacity onPress={policy}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Data Policy</Text></TouchableOpacity>
+        </View>
+        <View style={{ flex: 1 }} />
+      </View>
   )
 }
 
