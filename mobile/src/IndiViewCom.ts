@@ -10,11 +10,10 @@ export interface Login {
   serviceNode: string;
 }
 
-export class NetCom {
+export class IndiViewCom {
     
     static async attach(attachCode: AttachCode): Promise<Login> {
 
-console.log("FETCH: ", INDIVIEW_SERVER);
       let loginResponse = await fetch(INDIVIEW_SERVER + "account/attach?code=" + attachCode.code, 
           { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(attachCode.message) });
       return await loginResponse.json();

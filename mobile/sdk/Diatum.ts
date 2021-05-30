@@ -1,5 +1,5 @@
 import { AppContext, DiatumSession, AmigoMessage, Amigo } from './DiatumTypes';
-
+import { Storage } from './Storage';
 import base64 from 'react-native-base64'
 
 const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
@@ -28,16 +28,28 @@ export interface Diatum {
 
 class _Diatum {
 
-  constructor(path: string) {
-    console.log("CONSTRUCTED!" + path);
+  private storage: Storage;
+
+  constructor() {
+    this.storage = new Storage();
+  }
+
+  public async init(path: string): Promise<any> {
+    await this.storage.init(path);
+    try {
+      return await this.storage.getAppContext();
+    }
+    catch(err) {
+      return null;
+    }
   }
 
   public async setAppContext(ctx: AppContext): Promise<void> {
-    return;
+    await this.storage.setAppContext(ctx);
   }
 
   public async clearAppContext(): Promise<void> {
-    return;
+    await this.storage.clearAppContext();
   }
 
   public async setSession(session: DiatumSession): Promise<void> {
@@ -48,11 +60,13 @@ class _Diatum {
 
 let instance: _Diatum | undefined;
 
-async function init(path: string): Promise<void> {
+async function init(path: string): Promise<AppContext> {
   if(instance !== undefined) {
     throw "diatum already initialised";
   }
-  instance = new _Diatum(path);
+  instance = new _Diatum();
+  let ctx = await instance.init(path);
+  return { context: ctx };
 }
 
 async function getInstance(): Promise<_Diatum> {

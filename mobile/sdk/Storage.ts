@@ -1,107 +1,67 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
+import base64 from 'react-native-base64'
 
-export interface Database {
-  get(): Promise<number[]>;
-  add(value: number): Promise<void>;
-  clear(): Promise<void>;
-}
-
-let databaseInstance: SQLite.SQLiteDatabase | undefined;
-
-async setTables(database: SQLite.SQLiteDatabase): Promise<void> {
-  return database.transaction(this.createTables);
-}
-
-async createTables(transaction: SQLite.Transaction) {
-  transaction.executeSql(`
-    CREATE TABLE IF NOT EXISTS num (
-      val INTEGER PRIMARY KEY NOT NULL
-    );
-  `);
-}
-
-async function add(v: number): Promise<void> {
-  return getDatabase()
-    .then((db) => db.executeSql("INSERT INTO num (val) VALUES (?);", [v]))
-      .then(([results]) => {
-        console.log("inserted");
-      }).catch(err => {
-        Alert.alert("failed2");
-      });
-}
-
-async function get(): Promise<number[]> {
-  return getDatabase()
-    .then((db) => db.executeSql("SELECT val FROM num;"))
-      .then(([results]) => {
-        if(results === undefined) {
-          return [];
-        }
-        const nums: number[] = [];
-        const count = results.rows.length;
-
-        for(let i = 0; i < count; i++) {
-          const row = results.rows.item(i);
-          nums.push( row.val );
-        }
-        return nums;
-      }).catch(err => {
-        Alert.alert("failed1");
-      });
-}
-
-async function clear(): Promise<void> {
-  return getDatabase()
-    .then((db) => db.executeSql("DELETE FROM num;"))
-      .then(([results]) => {
-        console.log("cleared");
-      });
-}
-
-async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
-  if (databaseInstance !== undefined) {
-    return Promise.resolve(databaseInstance);
+// helper funtions
+function decodeText(s: string): any {
+  if(s == null) {
+    return null;
   }
-  return open();
+  return base64.decode(s);
+}
+function encodeText(o: string): string {
+  if(o == null) {
+    return "null";
+  }
+  return "'" + base64.encode(o) + "'";
+}
+function decodeObject(s: string): any {
+  if(s == null) {
+    return null;
+  }
+  return JSON.parse(base64.decode(s));
+}
+function encodeObject(o: any): string {
+  if(o == null) {
+    return "null";
+  }
+  return base64.encode(JSON.stringify(o));
 }
 
-async function open(): Promise<SQLite.SQLiteDatabase> {
-  SQLite.DEBUG(true);
-  SQLite.enablePromise(true);
+export class Storage {
 
-  if (databaseInstance) {
-    return databaseInstance;
+  private db: SQLite.SQLiteDatabase;
+
+  constructor() {
+    SQLite.DEBUG(true);
+    SQLite.enablePromise(true);
+  }
+ 
+  // set setup database
+  public async init(path: string): Promise<any> {
+    this.db = await SQLite.openDatabase({ name: "path", location: "default" });
+    await this.setTables();
+  }
+  private async setTables(): Promise<void> {
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS app (key text, value text, unique(key));");
+    await this.db.executeSql("INSERT OR IGNORE INTO app (key, value) values ('context', null);");
   }
 
-  const db = await SQLite.openDatabase({
-    name: "AppDatabase.db",
-    location: "default",
-  });
-
-  await setTables(db);
-
-  databaseInstance = db;
-  return db;
-}
-
-async function close(): Promise<void> {
-  
-  if (databaseInstance === undefined) {
-    return;
+  // app context methods
+  public async getAppContext(): Promise<any> {
+    res = await this.db.executeSql("SELECT * FROM app WHERE key='context';");
+    if(res === undefined || res[0] === undefined || res[0].rows === undefined) {
+      return null;
+    }
+    ctx = decodeObject(res[0].rows.item(0).value); 
+    return ctx;
   }
-  const status = await databaseInstance.close();
-  databaseInstance = undefined;
-}
-
-let appState = "active";
-AppState.addEventListener("change", handleAppStateChange);
-
-function handleAppStateChange(nextAppState: AppStateStatus) {
-  if (appState === "active" && nextAppState.match(/inactive|background/)) {
-    close();
+  public async setAppContext(ctx: any): Promise<void> {
+    let res = await this.db.executeSql("UPDATE app SET value=? WHERE key='context';", [encodeObject(ctx)]);
   }
-  appState = nextAppState;
+  public async clearAppContext(): Promise<void> {
+    let res = await this.db.executeSql("UPDATE app SET value=null WHERE key='context';");
+  }
+
 }
 
-export const storage: Database = { get, add, clear };
