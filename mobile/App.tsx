@@ -11,20 +11,21 @@ import { Diatum } from './sdk/Diatum';
 import { DiatumProvider, useDiatum } from "./sdk/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
 const ContactDrawer = createDrawerNavigator();
 const PersonalDrawer = createDrawerNavigator();
-const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
+const HomeDrawer = createDrawerNavigator();
+const MainStack = createStackNavigator();
+
+let logoutNav = null;
 
 function RootScreen({ navigation }) {
+  logoutNav = navigation;
   let diatum: Diatum = useDiatum();
   diatum.init("default.db").then(ctx => {
-console.log("*** CONTEXT ***");
-console.log(JSON.stringify(ctx));
-
-    if(ctx === undefined) {
+    if(ctx.context == null) {
       navigation.replace('Login');
     }
     else {
@@ -70,7 +71,6 @@ function AgreeScreen({ route, navigation }) {
 
   const agree = (() => { 
     IndiViewCom.attach(code).then(l => {
-console.log("SETTING!!!");
       diatum.setAppContext(l);
       navigation.replace("Main");
     });
@@ -80,41 +80,41 @@ console.log("SETTING!!!");
   const policy = (() => { Linking.openURL('https://diatum.org/policies-introduction') });
 
   return (
-      <View style={[ { flex: 1, backgroundColor: "#282827", padding: 16 }, { flexDirection: "column" }]}>
-        <View style={{ flex: 1 }} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: "#ffffff", fontSize: 22 }}>Do you agree to the terms of service an data policy specified by Diatum?</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={[ { flex: 1 }, { flexDirection: "row" }]}>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <TouchableOpacity onPress={cancel}>
-                <Text style={{ color: "#ffff88", fontSize: 22, borderColor: "#44aaff", borderWidth: 2, borderRadius: 6, padding: 8, minWidth: 128, textAlign: 'center' }}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <TouchableOpacity onPress={agree}>
-                <Text style={{ color: "#88ff88", fontSize: 22, borderColor: "#44aaff", borderWidth: 2, borderRadius: 6, padding: 8, minWidth: 128, textAlign: 'center' }}>Agree</Text>
-              </TouchableOpacity>
-            </View>
+    <View style={[ { flex: 1, backgroundColor: "#282827", padding: 16 }, { flexDirection: "column" }]}>
+      <View style={{ flex: 1 }} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: "#ffffff", fontSize: 22 }}>Do you agree to the terms of service an data policy specified by Diatum?</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <View style={[ { flex: 1 }, { flexDirection: "row" }]}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity onPress={cancel}>
+              <Text style={{ color: "#ffff88", fontSize: 22, borderColor: "#44aaff", borderWidth: 2, borderRadius: 6, padding: 8, minWidth: 128, textAlign: 'center' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity onPress={agree}>
+              <Text style={{ color: "#88ff88", fontSize: 22, borderColor: "#44aaff", borderWidth: 2, borderRadius: 6, padding: 8, minWidth: 128, textAlign: 'center' }}>Agree</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <TouchableOpacity onPress={terms}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Terms of Service</Text></TouchableOpacity>
-          <TouchableOpacity onPress={policy}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Data Policy</Text></TouchableOpacity>
-        </View>
-        <View style={{ flex: 1 }} />
       </View>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity onPress={terms}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Terms of Service</Text></TouchableOpacity>
+        <TouchableOpacity onPress={policy}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Data Policy</Text></TouchableOpacity>
+      </View>
+      <View style={{ flex: 1 }} />
+    </View>
   )
 }
 
 function MainScreen() {
   return (
-    <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Search" component={SearchScreen} options={{headerShown: true}} />
-      <Drawer.Screen name="Label" component={LabelScreen} options={{headerShown: true}}/>
-    </Drawer.Navigator>
+    <MainStack.Navigator initialRouteName="Home">
+      <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
+      <MainStack.Screen name="Search" component={SearchScreen} options={{headerShown: true}} />
+      <MainStack.Screen name="Label" component={LabelScreen} options={{headerShown: true}} />
+    </MainStack.Navigator>
   );
 }
 
@@ -191,6 +191,39 @@ function PersonalScreen() {
       <Text>Personal</Text>
     </View>
   );
+}
+
+function HomeDrawerContent(navigation) {
+
+  let diatum: Diatum = useDiatum();
+  const logout = (() => {
+    diatum.clearAppContext().then(() => {
+      logoutNav.replace("Login");
+    });
+  });
+
+  return (
+    <SafeAreaView>
+      <Text>Main Menu</Text>
+      <DrawerItem label={'Search'} labelStyle={{ fontSize: 22 }} onPress={() => {
+        navigation.navigation.closeDrawer();
+        navigation.navigate('Search');
+      }} />
+      <DrawerItem label={'Labels'} labelStyle={{ fontSize: 22 }} onPress={() => {
+        navigation.navigation.closeDrawer();
+        navigation.navigate("Label");
+      }} />
+      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 22 }} onPress={logout} />
+    </SafeAreaView>
+  );
+}
+
+function HomeNavScreen({ navigation }) {
+  return (
+    <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} />}>
+      <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} />
+    </HomeDrawer.Navigator>
+  )
 }
 
 function HomeScreen({ navigation }) {
