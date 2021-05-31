@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Platform, Linking, TouchableOpacity, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -45,13 +45,26 @@ function LoginScreen({ navigation }) {
   let diatum: Diatum = useDiatum();
   const [username, onChangeUsername] = React.useState("");
   const [password, onChangePassword] = React.useState("");
+  const [busy, onBusy] = React.useState(false);
 
-  const attach = (() => { 
-    diatum.getAttachCode(username, password).then(c => {
-      navigation.replace("Agree", { code: c });
-    }).catch(err => {
-      Alert.alert("failed to retrieve attachment code");
-    });
+  const attach = (() => {
+    if(username != "" && password != "") {
+      onBusy(true);
+      diatum.getAttachCode(username, password).then(c => {
+        onBusy(false);
+        navigation.replace("Agree", { code: c });
+      }).catch(err => {
+        onBusy(false);
+        Alert.alert("failed to retrieve attachment code");
+      });
+    }
+  });
+
+  const attachColor = (() => {
+    if(username != "" && password != "") {
+      return "#44aaff";
+    }
+    return "#888888";
   });
 
   return (
@@ -59,7 +72,8 @@ function LoginScreen({ navigation }) {
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" secureTextEntry={true} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
-      <TouchableOpacity onPress={attach}><Text style={{ color: "#44aaff", fontSize: 24, paddingTop: 32 }} >Attach App</Text></TouchableOpacity>
+      <TouchableOpacity onPress={attach}><Text style={{ color: attachColor(), fontSize: 24, padding: 32 }} >Attach App</Text></TouchableOpacity>
+      <ActivityIndicator animating={busy} size="large" color="#ffffff" />
     </KeyboardAvoidingView>
   );
 }
@@ -68,11 +82,17 @@ function AgreeScreen({ route, navigation }) {
 
   let diatum: Diatum = useDiatum();
   const { code, otherParam } = route.params;
+  const [busy, onBusy] = React.useState(false);
 
-  const agree = (() => { 
+  const agree = (() => {
+    onBusy(true);
     IndiViewCom.attach(code).then(l => {
+      onBusy(false);
       diatum.setAppContext(l);
       navigation.replace("Main");
+    }).catch(err => {
+      onBusy(false);
+      Alert.alert("failed to attach app");
     });
   });
   const cancel = (() => { navigation.replace("Login") });
@@ -98,6 +118,7 @@ function AgreeScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
         </View>
+        <ActivityIndicator animating={busy} size="large" color="#ffffff" />
       </View>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <TouchableOpacity onPress={terms}><Text style={{ color: "#44aaff", fontSize: 20, padding: 16 }}>Terms of Service</Text></TouchableOpacity>
