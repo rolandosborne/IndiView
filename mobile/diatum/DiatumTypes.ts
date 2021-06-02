@@ -4,7 +4,6 @@ export interface DiatumContext {
 
 export interface DiatumSession {
   amigoId: string;
-  amigoRegistry: string;
   amigoNode: string;
   amigoToken: string;
   appNode: string;
@@ -12,6 +11,7 @@ export interface DiatumSession {
 }
 
 export interface AttachCode {
+  amigoId: string;
   message: AmigoMessage;
   code: string;
 }

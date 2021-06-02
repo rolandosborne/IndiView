@@ -1,3 +1,4 @@
+
 openapi: 3.0.0
 # Added by API Auto Mocking Plugin
 info:
@@ -321,12 +322,16 @@ components:
     Login:
       type: object
       required:
+        - amigoId
         - appToken
         - accountToken
         - accountNode
         - serviceToken
         - serviceNode
       properties:
+        amigoId:
+          type: string
+          format: amigo-id
         appToken:
           type: string
           format: secure-token
@@ -449,4 +454,3 @@ components:
         data:
           type: string
           format: Base64 & JSON serialized string of data object
-          

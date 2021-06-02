@@ -8,6 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { Diatum } from './diatum/Diatum';
+import { DiatumSession } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
@@ -24,11 +25,14 @@ let logoutNav = null;
 function RootScreen({ navigation }) {
   logoutNav = navigation;
   let diatum: Diatum = useDiatum();
-  diatum.init("default.db").then(ctx => {
+  diatum.init("default.db").then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
     else {
+      let l = ctx.context;
+      console.log("APP TOKEN: " + l.appToken);
+      await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
       navigation.replace('Main');
     }
   });
@@ -81,17 +85,22 @@ function AgreeScreen({ route, navigation }) {
   const { code, otherParam } = route.params;
   const [busy, onBusy] = React.useState(false);
 
-  const agree = (() => {
+  const agree = (async () => {
     onBusy(true);
-    IndiViewCom.attach(code).then(l => {
+    try {
+      let l = await IndiViewCom.attach(code);
+      console.log("APP TOKEN: " + l.appToken);
+      await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+      await diatum.setAppContext(l);
       onBusy(false);
-      diatum.setAppContext(l);
       navigation.replace("Main");
-    }).catch(err => {
-      onBusy(false);
+    }
+    catch(err) {
+      console.log(err);
       Alert.alert("failed to attach app");
-    });
+    }
   });
+
   const cancel = (() => { navigation.replace("Login") });
   const terms = (() => { Linking.openURL('https://diatum.org/terms-of-service') });
   const policy = (() => { Linking.openURL('https://diatum.org/policies-introduction') });
@@ -214,10 +223,20 @@ function PersonalScreen() {
 function HomeDrawerContent(navigation) {
 
   let diatum: Diatum = useDiatum();
-  const logout = (() => {
-    diatum.clearAppContext().then(() => {
-      logoutNav.replace("Login");
-    });
+  const logout = (async () => {
+    try {
+      await diatum.clearSession();
+    }
+    catch(err) {
+      console.log("clear session failed");
+    }
+    try {
+      await diatum.clearAppContext();
+    }
+    catch(err) {
+      console.log("clear context failed");
+    }
+    logoutNav.replace("Login");
   });
 
   return (

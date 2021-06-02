@@ -1,12 +1,15 @@
 import { AppContext, DiatumSession, AmigoMessage, Amigo } from './DiatumTypes';
+import { AppState, AppStateStatus } from 'react-native';
 import { Storage } from './Storage';
 import base64 from 'react-native-base64'
 
 const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
 const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
+const SYNC_INTERVAL_MS: number = 1000
+const SYNC_SELF_MS: number = 5000;
+const SYNC_CONTACT_MS: number = 15000;
 
 export interface Diatum {
-
   // initialize SDK and retrive previous context
   init(path: string): Promise<AppContext>;
 
@@ -28,9 +31,11 @@ export interface Diatum {
 
 class _Diatum {
 
+  private session: DiatumSession;
   private storage: Storage;
 
   constructor() {
+    this.session = null;
     this.storage = new Storage();
   }
 
@@ -44,6 +49,11 @@ class _Diatum {
     }
   }
 
+  public async sync() {
+    if(this.session != null) {
+    }
+  }
+
   public async setAppContext(ctx: AppContext): Promise<void> {
     await this.storage.setAppContext(ctx);
   }
@@ -52,13 +62,26 @@ class _Diatum {
     await this.storage.clearAppContext();
   }
 
-  public async setSession(session: DiatumSession): Promise<void> {
-    return;
+  public async setSession(amigo: DiatumSession): Promise<void> {
+    this.session = amigo;
+  }
+
+  public async clearSession(): Promise<void> {
+    this.session = null;
   }
 
 }
 
 let instance: _Diatum | undefined;
+
+function appState(state: AppStateStatus) {
+  if(state.match(/inactive|background/)) {
+    instance.setState(false);
+  }
+  else {
+    instance.setState(true);
+  }
+}
 
 async function init(path: string): Promise<AppContext> {
   if(instance !== undefined) {
@@ -66,6 +89,33 @@ async function init(path: string): Promise<AppContext> {
   }
   instance = new _Diatum();
   let ctx = await instance.init(path);
+  let active: boolean = true;
+  let busy: boolean = false;
+
+  // periodically syncrhonize  
+  setInterval(async () => {
+    if(active && !busy) {
+      busy = true;
+      try {
+        await instance.sync();
+      }
+      catch(err) {
+        console.log(err);
+      }
+      busy = false;
+    }
+  }, SYNC_INTERVAL_MS);
+  
+  // update app state
+  AppState.addEventListener("change", (state) => {
+    if(state.match(/inactive|background/)) {
+      active = false;
+    }
+    else {
+      active = true;
+    }
+  });
+
   return { context: ctx };
 }
 
@@ -123,7 +173,7 @@ async function getAttachCode(username: string, password: string, portal?: string
   let codeResponse = await fetch(portal + "/account/passcode?amigoId=" + amigo.amigoId + "&password=" + encodeURIComponent(password), { method: 'PUT' });
   let code: string = await codeResponse.json(); 
 
-  return { message: message, code: code };  
+  return { amigoId: amigo.amigoId, message: message, code: code };  
 }
  
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,

@@ -2,7 +2,8 @@ import { AttachCode } from '../sdk/DiatumTypes'
 
 const INDIVIEW_SERVER: string = "https://indiview.coredb.org/app/"
 
-export interface Login { 
+export interface Login {
+  amigoId: string; 
   appToken: string;
   accountToken: string;
   accountNode: string;
