@@ -175,6 +175,7 @@ public class AccountService {
 
     // create response
     Login login = new Login();
+    login.setAmigoId(amigo.getAmigoId());
     login.setAppToken(loginToken);
     login.setAccountToken(accountToken);
     login.setServiceToken(serviceToken);

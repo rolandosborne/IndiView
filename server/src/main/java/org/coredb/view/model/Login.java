@@ -15,6 +15,9 @@ import javax.validation.constraints.*;
 
 
 public class Login   {
+  @JsonProperty("amigoId")
+  private String amigoId = null;
+
   @JsonProperty("appToken")
   private String appToken = null;
 
@@ -29,6 +32,26 @@ public class Login   {
 
   @JsonProperty("serviceNode")
   private String serviceNode = null;
+
+  public Login amigoId(String amigoId) {
+    this.amigoId = amigoId;
+    return this;
+  }
+
+  /**
+   * Get amigoId
+   * @return amigoId
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public String getAmigoId() {
+    return amigoId;
+  }
+
+  public void setAmigoId(String amigoId) {
+    this.amigoId = amigoId;
+  }
 
   public Login appToken(String appToken) {
     this.appToken = appToken;
@@ -140,7 +163,8 @@ public class Login   {
       return false;
     }
     Login login = (Login) o;
-    return Objects.equals(this.appToken, login.appToken) &&
+    return Objects.equals(this.amigoId, login.amigoId) &&
+        Objects.equals(this.appToken, login.appToken) &&
         Objects.equals(this.accountToken, login.accountToken) &&
         Objects.equals(this.accountNode, login.accountNode) &&
         Objects.equals(this.serviceToken, login.serviceToken) &&
@@ -149,7 +173,7 @@ public class Login   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(appToken, accountToken, accountNode, serviceToken, serviceNode);
+    return Objects.hash(amigoId, appToken, accountToken, accountNode, serviceToken, serviceNode);
   }
 
   @Override
@@ -157,6 +181,7 @@ public class Login   {
     StringBuilder sb = new StringBuilder();
     sb.append("class Login {\n");
     
+    sb.append("    amigoId: ").append(toIndentedString(amigoId)).append("\n");
     sb.append("    appToken: ").append(toIndentedString(appToken)).append("\n");
     sb.append("    accountToken: ").append(toIndentedString(accountToken)).append("\n");
     sb.append("    accountNode: ").append(toIndentedString(accountNode)).append("\n");
