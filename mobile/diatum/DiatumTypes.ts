@@ -37,3 +37,17 @@ export interface Amigo {
   handle?: string;
 }
 
+export interface Revisions { 
+  showRevision?: number;
+  identityRevision?: number;
+  profileRevision?: number;
+  groupRevision?: number;
+  shareRevision?: number;
+  promptRevision?: number;
+  serviceRevision?: number;
+  indexRevision?: number;
+  userRevision?: number;
+  contactRevision?: number;
+  viewRevision?: number;
+}
+

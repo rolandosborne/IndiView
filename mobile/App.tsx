@@ -7,8 +7,8 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
-import { Diatum } from './sdk/Diatum';
-import { DiatumProvider, useDiatum } from "./sdk/DiatumContext";
+import { Diatum } from './diatum/Diatum';
+import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
 const Stack = createStackNavigator();
@@ -34,10 +34,7 @@ function RootScreen({ navigation }) {
   });
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }}>
-      <Text>RootScreen</Text>
-      <Button title="-> LOGIN" onPress={() => navigation.replace('Login')} />
-    </View>
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#282827', justifyContent: 'center' }} />
   );
 }
 
@@ -224,17 +221,22 @@ function HomeDrawerContent(navigation) {
   });
 
   return (
-    <SafeAreaView>
-      <Text>Main Menu</Text>
-      <DrawerItem label={'Search'} labelStyle={{ fontSize: 22 }} onPress={() => {
+    <SafeAreaView style={{ paddingTop: 18 }}>
+      <DrawerItem label={'Search for New Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
         navigation.navigation.closeDrawer();
         navigation.navigate('Search');
       }} />
-      <DrawerItem label={'Labels'} labelStyle={{ fontSize: 22 }} onPress={() => {
+      <DrawerItem label={'Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         navigation.navigation.closeDrawer();
         navigation.navigate("Label");
       }} />
-      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 22 }} onPress={logout} />
+      <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        navigation.navigation.closeDrawer();
+      }} />
+      <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        navigation.navigation.closeDrawer();
+      }} />
+      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
     </SafeAreaView>
   );
 }
