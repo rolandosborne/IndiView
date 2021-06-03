@@ -47,6 +47,7 @@ export interface Revisions {
   serviceRevision?: number;
   indexRevision?: number;
   userRevision?: number;
+  listingRevision?: number;
   contactRevision?: number;
   viewRevision?: number;
 }

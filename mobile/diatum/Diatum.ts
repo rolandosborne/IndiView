@@ -1,4 +1,5 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions } from './DiatumTypes';
+import { DiatumApi } from './DiatumApi';
 import { AppState, AppStateStatus } from 'react-native';
 import { Storage } from './Storage';
 import base64 from 'react-native-base64'
@@ -6,8 +7,9 @@ import base64 from 'react-native-base64'
 const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
 const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
 const SYNC_INTERVAL_MS: number = 1000
-const SYNC_SELF_MS: number = 5000;
-const SYNC_CONTACT_MS: number = 15000;
+const SYNC_NODE_MS: number = 5000
+const SYNC_CONNECTED_MS: number = 15000;
+const SYNC_DISCONNECTED_MS: number = 900000;
 
 export interface Diatum {
   // initialize SDK and retrive previous context
@@ -31,6 +33,7 @@ export interface Diatum {
 
 class _Diatum {
 
+  private nodeSync: number = 0;
   private session: DiatumSession;
   private storage: Storage;
 
@@ -51,6 +54,44 @@ class _Diatum {
 
   public async sync() {
     if(this.session != null) {
+      let d: Date = new Date();
+      let cur: number = d.getTime();
+
+      // check node revisions every interval
+      if(this.nodeSync + SYNC_NODE_MS < cur) {
+       
+        // update node sync time 
+        this.nodeSync = cur;
+
+        // retrieve current revisions
+        let revisions = await DiatumApi.getMyRevisions(this.session.amigoNode, this.session.amigoToken);
+
+        // update identity if revision change
+        
+        // update group if revision change
+
+        // update index if revision change
+
+        // update share if revision change
+
+        // update show if revision change
+
+        // update profile if revision change
+      }
+
+
+      // get most stale connected contact that has not been updated in SYNC_CONNECTED_MS time
+
+        // update listing if revision change
+
+        // update profile if revision change
+
+        // update view if revision change      
+
+
+      // get most stale disconnected contact that has not been update in SYNC_DISCONNECTED_MS time
+
+        // update profile if revision change
     }
   }
 
@@ -69,7 +110,6 @@ class _Diatum {
   public async clearSession(): Promise<void> {
     this.session = null;
   }
-
 }
 
 let instance: _Diatum | undefined;
