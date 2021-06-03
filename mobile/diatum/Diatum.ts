@@ -104,6 +104,7 @@ class _Diatum {
   }
 
   public async setSession(amigo: DiatumSession): Promise<void> {
+    await this.storage.setAccount(amigo.amigoId);
     this.session = amigo;
   }
 
