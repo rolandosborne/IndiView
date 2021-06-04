@@ -1,15 +1,14 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { AppState, AppStateStatus } from 'react-native';
 import { Storage } from './Storage';
-import base64 from 'react-native-base64'
 
-const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
-const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
 const SYNC_INTERVAL_MS: number = 1000
 const SYNC_NODE_MS: number = 5000
 const SYNC_CONNECTED_MS: number = 15000;
 const SYNC_DISCONNECTED_MS: number = 900000;
+const REVISIONS_KEY: string = "diatum_revisions";
+const ACCESS_KEY: string = "service_access";
 
 export interface Diatum {
   // initialize SDK and retrive previous context
@@ -26,9 +25,16 @@ export interface Diatum {
 
   // clear active identity
   clearSession(): Promise<void>;
+}
 
-  // get registry message
-  getAttachCode(username: string, portal?: string): Promise<AttachCode>;
+async function asyncForEach(map, handler) {
+  let arr = [];
+  map.forEach((value, key) => {
+    arr.push({ id: key, obj: value });
+  });
+  for(let i = 0; i < arr.length; i++) {
+    await handler(arr[i].obj, arr[i].id);
+  }
 }
 
 class _Diatum {
@@ -36,6 +42,8 @@ class _Diatum {
   private nodeSync: number = 0;
   private session: DiatumSession;
   private storage: Storage;
+  private revisions: Revisions;
+  private access: ServiceAccess;
 
   constructor() {
     this.session = null;
@@ -56,27 +64,53 @@ class _Diatum {
     if(this.session != null) {
       let d: Date = new Date();
       let cur: number = d.getTime();
-
+      
       // check node revisions every interval
-      if(this.nodeSync + SYNC_NODE_MS < cur) {
-       
+      if(this.nodeSync + SYNC_NODE_MS < cur) {      
+ 
         // update node sync time 
         this.nodeSync = cur;
+        let synced: boolean = false;
 
         // retrieve current revisions
-        let revisions = await DiatumApi.getMyRevisions(this.session.amigoNode, this.session.amigoToken);
+        let rev = await DiatumApi.getMyRevisions(this.session.amigoNode, this.session.amigoToken);
 
         // update identity if revision change
-        
+        if(this.revisions.identityRevision != rev.identityRevision && this.access.enableIdentity) {
+          synced = true;
+        }
+
         // update group if revision change
+        if(this.revisions.groupRevision != rev.groupRevision && this.access.enableGroup) {
+          this.syncGroup();
+          synced = true;
+        }
 
         // update index if revision change
+        if(this.revisions.indexRevision != rev.indexRevision && this.access.enableIndex) {
+          synced = true;
+        }
 
         // update share if revision change
+        if(this.revisions.shareRevision != rev.shareRevision && this.access.enableShare) {
+          synced = true;
+        }
 
         // update show if revision change
+        if(this.revisions.showRevision != rev.showRevision && this.access.enableShow) {
+          synced = true;
+        }
 
         // update profile if revision change
+        if(this.revisions.profileRevision != rev.profileRevision && this.access.enableProfile) {
+          synced = true;
+        }
+
+        // store update revisions
+        if(synced) {
+          this.revisions = rev;
+          this.storage.setAccountObject(this.session.amigoId, REVISIONS_KEY, rev);
+        }
       }
 
 
@@ -105,11 +139,70 @@ class _Diatum {
 
   public async setSession(amigo: DiatumSession): Promise<void> {
     await this.storage.setAccount(amigo.amigoId);
+
+    // load current revisions
+    //this.revisions = await this.storage.getAccountObject(amigo.amigoId, REVISIONS_KEY);
+    if(this.revisions == null) {
+      this.revisions = {};
+    }
+
+    // load current access
+    this.access = await this.storage.getAccountObject(amigo.amigoId, ACCESS_KEY);
+    if(this.access == null) {
+      this.access = await DiatumApi.getServiceAccess(amigo.amigoNode, amigo.amigoToken);
+      await this.storage.setAccountObject(amigo.amigoId, ACCESS_KEY, this.access);
+    }
+
     this.session = amigo;
   }
 
   public async clearSession(): Promise<void> {
     this.session = null;
+  }
+
+
+  private async syncGroup(): Promsie<void> {
+    let refresh = false;
+
+    // get remote label entries
+    let remote: LabelView[] = await DiatumApi.getLabelViews(this.session.amigoNode, this.session.amigoToken);
+    let remoteMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].labelId, remote[i].revision);
+    }
+
+    // get local label entries
+    let local: LabelView[] = await this.storage.getLabelViews(this.session.amigoId);
+    let localMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].labelId, local[i].revision);
+    }
+
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+      if(!localMap.has(key)) {
+        let entry = await DiatumApi.getLabel(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.addLabel(this.session.amigoId, entry);
+        refresh = true;
+      }
+      else if(localMap.get(key) != value) {
+        let entry = await this.groupService.getLabel(this.node, this.token, key);
+        await this.storeService.updateLabel(this.session.amigoId, entry);
+        refresh = true;
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeLabel(this.session.amigoId, key);
+        refresh = true;
+      }
+    });
+
+    if(refresh) {
+      console.log("UPDATED");
+    }
   }
 }
 
@@ -187,36 +280,5 @@ async function clearSession(): Promise<void> {
   return diatum.clearSession();
 }
 
-function getAmigoObject(message: AmigoMessage): Amigo {
-  // TODO validate message signature
-  let amigo: Amigo = JSON.parse(base64.decode(message.data));
-  // TODO confirm key hash
-  return amigo;
-}
-
-async function getAttachCode(username: string, password: string, portal?: string): Promise<AttachCode> {
-
-  // use default portal if unspecified
-  if(portal === undefined) {
-    portal = DEFAULT_PORTAL;
-  }
-
-  // get registry params
-  let u: string[] = username.split("@");
-  let reg: string = u.length > 1 ? "https://registry." + u[1] + "/app" : DEFAULT_REGISTRY;
-
-  // retrieve identity
-  let messageResponse = await fetch(reg + "/amigo/messages/?handle=" + u[0]);
-  let message: AmigoMessage = await messageResponse.json();
-  let amigo: Amigo = getAmigoObject(message);
-
-  // retrieve code
-  let codeResponse = await fetch(portal + "/account/passcode?amigoId=" + amigo.amigoId + "&password=" + encodeURIComponent(password), { method: 'PUT' });
-  let code: string = await codeResponse.json(); 
-
-  return { amigoId: amigo.amigoId, message: message, code: code };  
-}
- 
-export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-  getAttachCode };
+export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession };
 

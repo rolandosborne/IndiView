@@ -10,13 +10,6 @@ export interface DiatumSession {
   appToken: string;
 }
 
-export interface AttachCode {
-  amigoId: string;
-  message: AmigoMessage;
-  code: string;
-}
-
-
 export interface AmigoMessage {
   key: string;
   keyType: string;
@@ -50,5 +43,30 @@ export interface Revisions {
   listingRevision?: number;
   contactRevision?: number;
   viewRevision?: number;
+}
+
+export interface ServiceAccess { 
+  enableShow?: boolean;
+  enableIdentity?: boolean;
+  enableProfile?: boolean;
+  enableGroup?: boolean;
+  enableShare?: boolean;
+  enablePrompt?: boolean;
+  enableService?: boolean;
+  enableIndex?: boolean;
+  enableUser?: boolean;
+  enableAccess?: boolean;
+  enableAccount?: boolean;
+}
+
+export interface LabelView { 
+    labelId: string;
+    revision: number;
+}
+
+export interface LabelEntry { 
+    labelId: string;
+    name?: string;
+    revision?: number;
 }
 

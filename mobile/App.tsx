@@ -8,6 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { Diatum } from './diatum/Diatum';
+import { AttachCode, getAttachCode } from './diatum/DiatumUtil';
 import { DiatumSession } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
@@ -32,8 +33,14 @@ function RootScreen({ navigation }) {
     else {
       let l = ctx.context;
       console.log("APP TOKEN: " + l.appToken);
-      await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
-      navigation.replace('Main');
+      try {
+        await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        navigation.replace('Main');
+      }
+      catch(err) {
+        console.log(err);
+        navigation.replace('Login');
+      }
     }
   });
 
@@ -51,7 +58,7 @@ function LoginScreen({ navigation }) {
   const attach = (() => {
     if(username != "" && password != "") {
       onBusy(true);
-      diatum.getAttachCode(username, password).then(c => {
+      getAttachCode(username, password).then(c => {
         onBusy(false);
         navigation.replace("Agree", { code: c });
       }).catch(err => {

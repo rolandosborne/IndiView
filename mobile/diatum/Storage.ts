@@ -1,6 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
+import { LabelEntry, LabelView } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -11,9 +12,9 @@ function decodeText(s: string): any {
 }
 function encodeText(o: string): string {
   if(o == null) {
-    return "null";
+    return null;
   }
-  return "'" + base64.encode(o) + "'";
+  return base64.encode(o);
 }
 function decodeObject(s: string): any {
   if(s == null) {
@@ -23,9 +24,15 @@ function decodeObject(s: string): any {
 }
 function encodeObject(o: any): string {
   if(o == null) {
-    return "null";
+    return null;
   }
   return base64.encode(JSON.stringify(o));
+}
+function hasResult(res): boolean {
+  if(res === undefined || res[0] === undefined || res[0].rows === undefined || res[0].rows.length == 0) {
+    return false;
+  }
+  return true;
 }
 
 export class Storage {
@@ -33,19 +40,20 @@ export class Storage {
   private db: SQLite.SQLiteDatabase;
 
   constructor() {
-    SQLite.DEBUG(true);
+    SQLite.DEBUG(false);
     SQLite.enablePromise(true);
   }
+
+
  
   // set setup database
   public async init(path: string): Promise<any> {
     this.db = await SQLite.openDatabase({ name: "path", location: "default" });
-    await this.setTables();
-  }
-  private async setTables(): Promise<void> {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS app (key text, value text, unique(key));");
     await this.db.executeSql("INSERT OR IGNORE INTO app (key, value) values ('context', null);");
   }
+
+
 
   // initialize account
   public async setAccount(id: string): Promise<void> {
@@ -63,26 +71,36 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
   }
 
-  // syncing storage
-  private async getAccountValue(id: string, configId: string): Promise<any> {
+
+
+  // app object storage
+  private async getAccountObject(id: string, configId: string): Promise<any> {
     res = await this.db.executeSql("SELECT * FROM _account_" + id + " WHERE key=?;", [configId]);
-    if(res === undefined || res[0] === undefined || res[0].rows === undefined) {
+    if(res === undefined || res[0] === undefined || res[0].rows === undefined || res[0].rows.length == 0) {
       return null;
     }
-    val = decodeObject(res[0].rows.item(0).value);
-    return val;
+    try {
+      val = decodeObject(res[0].rows.item(0).value);
+      return val;
+    }
+    catch(err) {
+      console.log(err);
+      return null;
+    }
   }
-  private async setAccountValue(id: string, configId: string, value: any): Promise<void> {
+  private async setAccountObject(id: string, configId: string, value: any): Promise<void> {
     await this.db.executeSql("INSERT OR REPLACE INTO _account_" + id + " (key, value) VALUES (?, ?);", [configId, encodeObject(value)]);
   }
-  private async clearAccountValue(id: string, configId: string): Promise<void> {
+  private async clearAccountObject(id: string, configId: string): Promise<void> {
     await this.db.executeSql("DELETE from _account_" + id + " WHERE key=?;", [configId]);
   }
+
+
 
   // app context methods
   public async getAppContext(): Promise<any> {
     res = await this.db.executeSql("SELECT * FROM app WHERE key='context';");
-    if(res === undefined || res[0] === undefined || res[0].rows === undefined) {
+    if(res === undefined || res[0] === undefined || res[0].rows === undefined || res[0].rows.length == 0) {
       return null;
     }
     ctx = decodeObject(res[0].rows.item(0).value); 
@@ -95,5 +113,47 @@ export class Storage {
     let res = await this.db.executeSql("UPDATE app SET value=null WHERE key='context';");
   }
 
+
+
+  // group module synchronization
+  public async getLabel(id: string, labelId: string): Promise<LabelEntry> {
+    let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " where label_id=?;", [labelId]);
+    if(!hasResult(res)) {
+      return [];
+    }
+    for(let i = 0; i < res[0].rows.length; i++) {
+      
+    }
+    return null;
+  }
+  public async getLabels(id: string): Promise<LabelEntry[]> {
+    let res = await this.db.executeSql("SELECT label_id, revision, name from label_" + id + ";");
+    let labels: LabelEntry[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.name)});
+      }
+    }
+    return labels;
+  }
+  public async getLabelViews(id: string): Promise<LabelView[]> {
+    let res = await this.db.executeSql("SELECT label_id, revision from label_" + id + ";");
+    let views: LabelView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addLabel(id: string, entry: LabelEntry): Promise<void> {
+    await this.db.executeSql("INSERT OR IGNORE INTO label_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
+  }
+  public async updateLabel(id: string, entry: LabelEntry): Promise<void> {
+    await this.db.executeSql("UPDATE label_" + id + " set name=?, revision=? where label_id=?;", [this.encodeText(entry.name), entry.revision, entry.labelId]);
+  }
+  public async removeLabel(id: string, labelId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM label_" + id + " where label_id=?;", [entry.labelId]);
+  }
 }
 
