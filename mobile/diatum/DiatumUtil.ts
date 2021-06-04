@@ -42,3 +42,4 @@ export async function getAttachCode(username: string, password: string, portal?:
   return { amigoId: amigo.amigoId, message: message, code: code };
 }
 
+

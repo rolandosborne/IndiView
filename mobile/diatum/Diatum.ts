@@ -10,6 +10,11 @@ const SYNC_DISCONNECTED_MS: number = 900000;
 const REVISIONS_KEY: string = "diatum_revisions";
 const ACCESS_KEY: string = "service_access";
 
+export enum DiatumEvent {
+  Labels = 0,
+  COUNT
+}
+
 export interface Diatum {
   // initialize SDK and retrive previous context
   init(path: string): Promise<AppContext>;
@@ -25,6 +30,15 @@ export interface Diatum {
 
   // clear active identity
   clearSession(): Promise<void>;
+
+  // add event listener
+  setListener(event: DiatumEvent, callback: () => void): Promise<void>;
+
+  // remove added listener
+  clearListener(callback: () => void): Promise<void>;
+
+  // get account labels
+  getLabels(): Promise<LabelEntry[]>
 }
 
 async function asyncForEach(map, handler) {
@@ -44,10 +58,15 @@ class _Diatum {
   private storage: Storage;
   private revisions: Revisions;
   private access: ServiceAccess;
+  private listeners: Map<DiatumEvent, Set<() => void>>;
 
   constructor() {
     this.session = null;
     this.storage = new Storage();
+    this.listeners = new Map<DiatumEvent, Set<() => void>>();
+    for(let i = 0; i < DiatumEvent.COUNT; i++) {
+      this.listeners.set(i, new Set<() => void>());
+    }
   }
 
   public async init(path: string): Promise<any> {
@@ -57,6 +76,25 @@ class _Diatum {
     }
     catch(err) {
       return null;
+    }
+  }
+
+  public setListener(event: DiatumEvent, callback: () => void): void {
+    this.listeners.get(event).add(callback);
+    callback();
+  }
+
+  public clearListener(event: DiatumEvent, callback: () => void): void {
+    this.listeners.get(event).delete(callback);
+  }
+
+  private async notifyListeners(event: DiatumEvent): Promsie<void> {
+    let arr = [];
+    this.listeners.get(event).forEach(v => {
+      arr.push(v);
+    });
+    for(let i = 0; i < arr.length; i++) {
+      await arr[i]();
     }
   }
 
@@ -162,7 +200,7 @@ class _Diatum {
 
 
   private async syncGroup(): Promsie<void> {
-    let refresh = false;
+    let notify = false;
 
     // get remote label entries
     let remote: LabelView[] = await DiatumApi.getLabelViews(this.session.amigoNode, this.session.amigoToken);
@@ -183,12 +221,12 @@ class _Diatum {
       if(!localMap.has(key)) {
         let entry = await DiatumApi.getLabel(this.session.amigoNode, this.session.amigoToken, key);
         await this.storage.addLabel(this.session.amigoId, entry);
-        refresh = true;
+        notify = true;
       }
       else if(localMap.get(key) != value) {
         let entry = await this.groupService.getLabel(this.node, this.token, key);
         await this.storeService.updateLabel(this.session.amigoId, entry);
-        refresh = true;
+        notify = true;
       }
     });
 
@@ -196,13 +234,17 @@ class _Diatum {
     await asyncForEach(localMap, async (value, key) => {
       if(!remoteMap.has(key)) {
         await this.storage.removeLabel(this.session.amigoId, key);
-        refresh = true;
+        notify = true;
       }
     });
 
-    if(refresh) {
-      console.log("UPDATED");
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Labels);
     }
+  }
+
+  public async getLabels(): Promise<LabelEntry> {
+    return await this.storage.getLabels(this.session.amigoId);
   }
 }
 
@@ -280,5 +322,21 @@ async function clearSession(): Promise<void> {
   return diatum.clearSession();
 }
 
-export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession };
+async function setListener(event: DiatumEvent, callback: () => void): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.setListener(event, callback);
+}
+
+async function clearListener(event: DiatumEvent, callback: () => void): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.clearListener(event, callback);
+}
+
+async function getLabels(): Promise<LabelEntry[]> {
+  let diatum = await getInstance();
+  return await diatum.getLabels();
+}
+
+export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
+    setListener, clearListener, getLabels };
 

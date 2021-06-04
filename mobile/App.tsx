@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,9 +7,9 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
-import { Diatum } from './diatum/Diatum';
+import { Diatum, DiatumEvent } from './diatum/Diatum';
 import { AttachCode, getAttachCode } from './diatum/DiatumUtil';
-import { DiatumSession } from './diatum/DiatumTypes';
+import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
@@ -153,17 +153,39 @@ function MainScreen() {
 }
 
 function FeedDrawerContent(props) {
+ 
+  const [labels, setLabels] = React.useState([]);
+  let diatum: Diatum = useDiatum();
+  const update = () => {
+    diatum.getLabels().then(l => {
+      setLabels(l);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+ 
+  useEffect(() => {
+        diatum.setListener(DiatumEvent.Labels, update);
+        return () => {
+          diatum.clearListener(DiatumEvent.Labels, update);
+        }
+    }, []);
+
   return (
     <SafeAreaView>
-      <Text>Story Labels</Text>
-      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
+      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
     </SafeAreaView>
   );
 }
 
 function FeedNavScreen() {
+  const selected = (id: string) => {
+    console.log("SELECTED: " + id);
+  };
+
   return (
-    <FeedDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <FeedDrawerContent {...props}  />}>
+    <FeedDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <FeedDrawerContent {...props} {...{onLabel: selected}} />}>
       <FeedDrawer.Screen name="FeedScreen" component={FeedScreen} />
     </FeedDrawer.Navigator>
   )

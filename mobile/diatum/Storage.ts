@@ -127,11 +127,11 @@ export class Storage {
     return null;
   }
   public async getLabels(id: string): Promise<LabelEntry[]> {
-    let res = await this.db.executeSql("SELECT label_id, revision, name from label_" + id + ";");
+    let res = await this.db.executeSql("SELECT label_id, revision, name from label_" + id + " ORDER BY name ASC;");
     let labels: LabelEntry[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
-        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.name)});
+        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.item(i).name)});
       }
     }
     return labels;
@@ -153,7 +153,7 @@ export class Storage {
     await this.db.executeSql("UPDATE label_" + id + " set name=?, revision=? where label_id=?;", [this.encodeText(entry.name), entry.revision, entry.labelId]);
   }
   public async removeLabel(id: string, labelId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM label_" + id + " where label_id=?;", [entry.labelId]);
+    await this.db.executeSql("DELETE FROM label_" + id + " where label_id=?;", [labelId]);
   }
 }
 
