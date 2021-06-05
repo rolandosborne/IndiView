@@ -192,9 +192,19 @@ function FeedNavScreen() {
 }
 
 function FeedScreen() {
+  const toggleLabel = () => {
+    console.log("TOGGLE LABEL");
+  };
+  const toggleControl = () => {
+    console.log("TOGGLE CONTROL");
+  };
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
+      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }}>
+        <TouchableOpacity style={{ position: "absolute", left: 0, height: '100%', width: '50%', backgroundColor: 'red' }} onPress={toggleControl} />
+        <TouchableOpacity style={{ position: "absolute", right: 0, height: '100%', width: '50%', backgroundColor: 'green' }} onPress={toggleLabel} />
+      </View>
     </View>
   );
 }
@@ -220,6 +230,7 @@ function ContactScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Contact</Text>
+      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }} />
     </View>
   );
 }
@@ -245,6 +256,7 @@ function PersonalScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Personal</Text>
+      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }} />
     </View>
   );
 }
@@ -300,17 +312,17 @@ function HomeNavScreen({ navigation }) {
 function HomeScreen({ navigation }) {
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
-      <Tab.Screen name="Feed" component={FeedNavScreen} 
+      <Tab.Screen name="Personal" component={PersonalNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="picture-o" size={size} color={color} solid />
+            <Icon name="user" size={size} color={color} solid />
           )}} />
       <Tab.Screen name="Contact" component={ContactNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="users" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Personal" component={PersonalNavScreen} 
+      <Tab.Screen name="Feed" component={FeedNavScreen} 
           options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="user" size={size} color={color} solid />
+            <Icon name="picture-o" size={size} color={color} solid />
           )}} />
     </Tab.Navigator>
   );
