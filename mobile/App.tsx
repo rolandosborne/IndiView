@@ -201,10 +201,8 @@ function FeedScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
-      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }}>
-        <TouchableOpacity style={{ position: "absolute", left: 0, height: '100%', width: '50%', backgroundColor: 'red' }} onPress={toggleControl} />
-        <TouchableOpacity style={{ position: "absolute", right: 0, height: '100%', width: '50%', backgroundColor: 'green' }} onPress={toggleLabel} />
-      </View>
+      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#cf3000', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#000acf', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
     </View>
   );
 }
