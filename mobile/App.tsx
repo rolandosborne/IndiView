@@ -22,6 +22,10 @@ const HomeDrawer = createDrawerNavigator();
 const MainStack = createStackNavigator();
 
 let logoutNav = null;
+let homeNav = null;
+let feedNav = null;
+let contactNav = null;
+let personalNav = null;
 
 function RootScreen({ navigation }) {
   logoutNav = navigation;
@@ -153,7 +157,7 @@ function MainScreen() {
 }
 
 function FeedDrawerContent(props) {
- 
+  feedNav = props.navigation; 
   const [labels, setLabels] = React.useState([]);
   let diatum: Diatum = useDiatum();
   const update = () => {
@@ -180,6 +184,7 @@ function FeedDrawerContent(props) {
 }
 
 function FeedNavScreen() {
+  
   const selected = (id: string) => {
     console.log("SELECTED: " + id);
   };
@@ -191,23 +196,24 @@ function FeedNavScreen() {
   )
 }
 
-function FeedScreen() {
+function FeedScreen({ route, navigation }) {
   const toggleLabel = () => {
-    console.log("TOGGLE LABEL");
+    feedNav.openDrawer();
   };
   const toggleControl = () => {
-    console.log("TOGGLE CONTROL");
+    homeNav.openDrawer();
   };
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
       <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#cf3000', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
-      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#000acf', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#000acf', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
     </View>
   );
 }
 
 function ContactDrawerContent(props) {
+  contactNav = props.navigation;
   return (
     <SafeAreaView>
       <Text>Contact Labels</Text>
@@ -234,6 +240,7 @@ function ContactScreen() {
 }
 
 function PersonalDrawerContent(props) {
+  personalNav = props.navigation;
   return (
     <SafeAreaView>
       <Text>View as Label</Text>
@@ -259,7 +266,8 @@ function PersonalScreen() {
   );
 }
 
-function HomeDrawerContent(navigation) {
+function HomeDrawerContent(props) {
+  homeNav = props.navigation;
 
   let diatum: Diatum = useDiatum();
   const logout = (async () => {
@@ -281,18 +289,18 @@ function HomeDrawerContent(navigation) {
   return (
     <SafeAreaView style={{ paddingTop: 18 }}>
       <DrawerItem label={'Search for New Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        navigation.navigation.closeDrawer();
-        navigation.navigate('Search');
+        props.navigation.closeDrawer();
+        props.navigate('Search');
       }} />
       <DrawerItem label={'Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        navigation.navigation.closeDrawer();
-        navigation.navigate("Label");
+        props.navigation.closeDrawer();
+        props.navigate("Label");
       }} />
       <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        navigation.navigation.closeDrawer();
+        props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        navigation.navigation.closeDrawer();
+        props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
     </SafeAreaView>
@@ -300,14 +308,16 @@ function HomeDrawerContent(navigation) {
 }
 
 function HomeNavScreen({ navigation }) {
+  
   return (
     <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} />}>
-      <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} />
+      <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} initialParams={{ callback: 'ro' }} />
     </HomeDrawer.Navigator>
   )
 }
 
 function HomeScreen({ navigation }) {
+
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
       <Tab.Screen name="Personal" component={PersonalNavScreen} 
