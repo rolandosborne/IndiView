@@ -206,62 +206,118 @@ function FeedScreen({ route, navigation }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
-      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#cf3000', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
-      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#000acf', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
     </View>
   );
 }
 
 function ContactDrawerContent(props) {
   contactNav = props.navigation;
+  const [labels, setLabels] = React.useState([]);
+  let diatum: Diatum = useDiatum();
+  const update = () => {
+    diatum.getLabels().then(l => {
+      setLabels(l);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+ 
+  useEffect(() => {
+        diatum.setListener(DiatumEvent.Labels, update);
+        return () => {
+          diatum.clearListener(DiatumEvent.Labels, update);
+        }
+    }, []);
+
   return (
     <SafeAreaView>
-      <Text>Contact Labels</Text>
-      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
+      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
     </SafeAreaView>
   );
 }
 
 function ContactNavScreen() {
+  const selected = (id: string) => {
+    console.log("SELECTED: " + id);
+  };
+
   return (
-    <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props}  />}>
+    <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
       <ContactDrawer.Screen name="ContactScreen" component={ContactScreen} />
     </ContactDrawer.Navigator>
   )
 }
 
 function ContactScreen() {
+  const toggleLabel = () => {
+    contactNav.openDrawer();
+  };
+  const toggleControl = () => {
+    homeNav.openDrawer();
+  };
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Contact</Text>
-      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }} />
+      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
     </View>
   );
 }
 
 function PersonalDrawerContent(props) {
   personalNav = props.navigation;
+  const [labels, setLabels] = React.useState([]);
+  let diatum: Diatum = useDiatum();
+  const update = () => {
+    diatum.getLabels().then(l => {
+      setLabels(l);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+ 
+  useEffect(() => {
+        diatum.setListener(DiatumEvent.Labels, update);
+        return () => {
+          diatum.clearListener(DiatumEvent.Labels, update);
+        }
+    }, []);
+
   return (
     <SafeAreaView>
-      <Text>View as Label</Text>
-      <FlatList data={[ 'test1', 'test2' ]} keyExtractor={item => item + 4} renderItem={({item,index}) => <DrawerItem label={item} onPress={() => alert(index)} />} />
+      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
+      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
     </SafeAreaView>
   );
 }
 
 function PersonalNavScreen() {
+  const selected = (id: string) => {
+    console.log("SELECTED: " + id);
+  };
+
   return (
-    <PersonalDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <PersonalDrawerContent {...props}  />}>
+    <PersonalDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <PersonalDrawerContent {...props} {...{onLabel: selected}} />}>
       <PersonalDrawer.Screen name="PersonalScreen" component={PersonalScreen} />
     </PersonalDrawer.Navigator>
   )
 }
 
 function PersonalScreen() {
+  const toggleLabel = () => {
+    personalNav.openDrawer();
+  };
+  const toggleControl = () => {
+    homeNav.openDrawer();
+  };
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Personal</Text>
-      <View style={{ position: "absolute", bottom: 0, right: 0, height: 2, width: '100%', backgroundColor: '#282827' }} />
+      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
+      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
     </View>
   );
 }
@@ -271,30 +327,41 @@ function HomeDrawerContent(props) {
 
   let diatum: Diatum = useDiatum();
   const logout = (async () => {
-    try {
-      await diatum.clearSession();
-    }
-    catch(err) {
-      console.log("clear session failed");
-    }
-    try {
-      await diatum.clearAppContext();
-    }
-    catch(err) {
-      console.log("clear context failed");
-    }
-    logoutNav.replace("Login");
+    const title = 'Are you sure you want to logout?';
+    const message = '';
+    const buttons = [
+        { text: 'Cancel', type: 'cancel' },
+        { text: 'Confirm', onPress: async () => {
+          try {
+            await diatum.clearSession();
+          }
+          catch(err) {
+            console.log("clear session failed");
+          }
+          try {
+            await diatum.clearAppContext();
+          }
+          catch(err) {
+            console.log("clear context failed");
+          }
+          logoutNav.replace("Login");
+        }}
+    ];
+    Alert.alert(title, message, buttons);
   });
 
   return (
     <SafeAreaView style={{ paddingTop: 18 }}>
-      <DrawerItem label={'Search for New Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate('Search');
       }} />
       <DrawerItem label={'Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Label");
+      }} />
+      <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
@@ -318,17 +385,38 @@ function HomeNavScreen({ navigation }) {
 
 function HomeScreen({ navigation }) {
 
+  const tabbed = () => {
+    if(feedNav != null) {
+      feedNav.closeDrawer();
+    }
+    if(contactNav != null) {
+      contactNav.closeDrawer();
+    }
+    if(personalNav != null) {
+      personalNav.closeDrawer();
+    }
+  };
+
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
       <Tab.Screen name="Personal" component={PersonalNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} solid />
           )}} />
       <Tab.Screen name="Contact" component={ContactNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="users" size={size} color={color} solid />
           )}} />
       <Tab.Screen name="Feed" component={FeedNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
           )}} />
