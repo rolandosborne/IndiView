@@ -127,7 +127,7 @@ export class Storage {
     return null;
   }
   public async getLabels(id: string): Promise<LabelEntry[]> {
-    let res = await this.db.executeSql("SELECT label_id, revision, name from label_" + id + " ORDER BY name ASC;");
+    let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " ORDER BY name ASC;");
     let labels: LabelEntry[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
@@ -137,7 +137,7 @@ export class Storage {
     return labels;
   }
   public async getLabelViews(id: string): Promise<LabelView[]> {
-    let res = await this.db.executeSql("SELECT label_id, revision from label_" + id + ";");
+    let res = await this.db.executeSql("SELECT label_id, revision from group_" + id + ";");
     let views: LabelView[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
@@ -147,13 +147,13 @@ export class Storage {
     return views;
   }
   public async addLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("INSERT OR IGNORE INTO label_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
+    await this.db.executeSql("INSERT OR IGNORE INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
   }
   public async updateLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("UPDATE label_" + id + " set name=?, revision=? where label_id=?;", [this.encodeText(entry.name), entry.revision, entry.labelId]);
+    await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [this.encodeText(entry.name), entry.revision, entry.labelId]);
   }
   public async removeLabel(id: string, labelId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM label_" + id + " where label_id=?;", [labelId]);
+    await this.db.executeSql("DELETE FROM group_" + id + " where label_id=?;", [labelId]);
   }
 }
 
