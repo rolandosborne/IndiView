@@ -9,9 +9,11 @@ const SYNC_CONNECTED_MS: number = 15000;
 const SYNC_DISCONNECTED_MS: number = 900000;
 const REVISIONS_KEY: string = "diatum_revisions";
 const ACCESS_KEY: string = "service_access";
+const IDENTITY_KEY: string = "identity";
 
 export enum DiatumEvent {
   Labels = 0,
+  Identity,
   COUNT
 }
 
@@ -36,6 +38,9 @@ export interface Diatum {
 
   // remove added listener
   clearListener(callback: () => void): Promise<void>;
+
+  // get public profile
+  getIdentity(): Promsie<Amigo>
 
   // get account labels
   getLabels(): Promise<LabelEntry[]>
@@ -111,10 +116,11 @@ class _Diatum {
         let synced: boolean = false;
 
         // retrieve current revisions
-        let rev = await DiatumApi.getMyRevisions(this.session.amigoNode, this.session.amigoToken);
+        let rev = await DiatumApi.getRevisions(this.session.amigoNode, this.session.amigoToken);
 
         // update identity if revision change
         if(this.revisions.identityRevision != rev.identityRevision && this.access.enableIdentity) {
+          this.syncIdentity();
           synced = true;
         }
 
@@ -179,7 +185,7 @@ class _Diatum {
     await this.storage.setAccount(amigo.amigoId);
 
     // load current revisions
-    //this.revisions = await this.storage.getAccountObject(amigo.amigoId, REVISIONS_KEY);
+    this.revisions = await this.storage.getAccountObject(amigo.amigoId, REVISIONS_KEY);
     if(this.revisions == null) {
       this.revisions = {};
     }
@@ -198,6 +204,14 @@ class _Diatum {
     this.session = null;
   }
 
+  
+  private async syncIdentity(): Promsie<void> {
+
+    // retrieve current identity
+    let amigo = await DiatumApi.getIdentity(this.session.amigoNode, this.session.amigoToken);
+    await this.storage.setAccountObject(this.session.amigoId, IDENTITY_KEY, amigo);
+    this.notifyListeners(DiatumEvent.Identity);
+  }
 
   private async syncGroup(): Promsie<void> {
     let notify = false;
@@ -241,6 +255,12 @@ class _Diatum {
     if(notify) {
       this.notifyListeners(DiatumEvent.Labels);
     }
+  }
+
+  public async getIdentity(): Promsie<Amigo> {
+    amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
+    return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
+        imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken };
   }
 
   public async getLabels(): Promise<LabelEntry> {
@@ -332,11 +352,16 @@ async function clearListener(event: DiatumEvent, callback: () => void): Promise<
   return diatum.clearListener(event, callback);
 }
 
+async function getIdentity(): Promise<Amigo> {
+  let diatum = await getInstance();
+  return await diatum.getIdentity();
+}
+
 async function getLabels(): Promise<LabelEntry[]> {
   let diatum = await getInstance();
   return await diatum.getLabels();
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getLabels };
+    setListener, clearListener, getIdentity, getLabels };
 

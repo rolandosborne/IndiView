@@ -307,12 +307,32 @@ function PersonalNavScreen() {
 }
 
 function PersonalScreen() {
+
   const toggleLabel = () => {
     personalNav.openDrawer();
   };
   const toggleControl = () => {
     homeNav.openDrawer();
   };
+
+  const [labels, setLabels] = React.useState([]);
+  let diatum: Diatum = useDiatum();
+  const update = () => {
+    diatum.getIdentity().then(i => {
+      console.log(i);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+ 
+  useEffect(() => {
+        diatum.setListener(DiatumEvent.Identity, update);
+        return () => {
+          diatum.clearListener(DiatumEvent.Identity, update);
+        }
+    }, []);
+
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Personal</Text>

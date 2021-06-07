@@ -10,6 +10,14 @@ export interface DiatumSession {
   appToken: string;
 }
 
+export interface IdentityProfile {
+  name?: string;
+  imageUrl?: string;
+  handle?: string;
+  location?: string;
+  description?: string;
+}
+
 export interface AmigoMessage {
   key: string;
   keyType: string;

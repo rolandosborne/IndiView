@@ -1,10 +1,15 @@
-import { Revisions, LabelEntry, LabelView } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView } from './DiatumTypes';
 
 export class DiatumApi {
 
-  public static async getMyRevisions(node: string, token: string): Promise<Revisions> {
+  public static async getRevisions(node: string, token: string): Promise<Revisions> {
     let revisionsResponse = await fetch(node + "/token/revisions?token=" + encodeURIComponent(token));
     return await revisionsResponse.json();
+  }
+
+  public static async getIdentity(node: string, token: string): Promise<Amigo> {
+    let amigoResponse = await fetch(node + "/identity?token=" + encodeURIComponent(token));
+    return await amigoResponse.json();
   }
 
   public static async getServiceAccess(node: string, token: string): Promise<ServiceAccess> {
@@ -32,7 +37,7 @@ export class DiatumApi {
     return await labelResponse.json();
   }
 
-  public static async removeLabel(url: string, token: string, id: string): Promise<void> {
+  public static async removeLabel(node: string, token: string, id: string): Promise<void> {
     await fetch(node + "/group/labels/" + id + "?token=" + encodeURIComponent(token), { method: 'DELETE' });
   }
 }
