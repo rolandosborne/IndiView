@@ -30,7 +30,7 @@ let personalNav = null;
 function RootScreen({ navigation }) {
   logoutNav = navigation;
   let diatum: Diatum = useDiatum();
-  diatum.init("default.db").then(async ctx => {
+  diatum.init("indiview_v05.db").then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }

@@ -78,3 +78,15 @@ export interface LabelEntry {
     revision?: number;
 }
 
+export interface AmigoView {
+    amigoId: string;
+    revision: number;
+}
+
+export interface AmigoEntry {
+    amigoId: string;
+    revision: number;
+    notes?: string;
+    labels: Array<string>;
+}
+

@@ -48,7 +48,7 @@ export class Storage {
  
   // set setup database
   public async init(path: string): Promise<any> {
-    this.db = await SQLite.openDatabase({ name: "path", location: "default" });
+    this.db = await SQLite.openDatabase({ name: path, location: "default" });
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS app (key text, value text, unique(key));");
     await this.db.executeSql("INSERT OR IGNORE INTO app (key, value) values ('context', null);");
   }
@@ -116,16 +116,6 @@ export class Storage {
 
 
   // group module synchronization
-  public async getLabel(id: string, labelId: string): Promise<LabelEntry> {
-    let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " where label_id=?;", [labelId]);
-    if(!hasResult(res)) {
-      return [];
-    }
-    for(let i = 0; i < res[0].rows.length; i++) {
-      
-    }
-    return null;
-  }
   public async getLabels(id: string): Promise<LabelEntry[]> {
     let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " ORDER BY name ASC;");
     let labels: LabelEntry[] = [];
@@ -154,6 +144,36 @@ export class Storage {
   }
   public async removeLabel(id: string, labelId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM group_" + id + " where label_id=?;", [labelId]);
+  }
+
+
+
+  // index module synchronization
+  public async getAmigoViews(id: string): Promise<AmigoView[]> {
+    let res = await this.db.executeSql("SELECT amigo_id, revision from index_" + id + ";");
+    let views: AmigoView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ amigoId: res[0].rows.item(i).amigo_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
+console.log("ADD AMIGO: " + amigoId);
+    await this.db.executeSql("INSERT OR IGNORE INTO index_" + id + " (amigo_id, revision, notes) values (?, ?, ?);", [amigoId, revision, encodeText(notes)]);
+  }
+  public async updateAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " set notes=?, revision=? where amigo_id=?;", [this.encodeText(otes), revision, amigoId]);
+  }
+  public async removeAmigo(id: string, amigoId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM index_" + id + " where amigo_id=?;", [amigoId]);
+  }
+  public async setAmigoLabel(id: string, amigoId: string, labelId: string) {
+    await this.db.executeSql("INSERT OR IGNORE INTO indexgroup_" + id + " (amigo_id, label_id) values (?, ?);", [amigoId, labelId]);
+  }
+  public async clearAmigoLabels(id: string, amigoId: string) {
+    await this.db.executeSql("DELETE FROM indexgroup_" + id + " where amigo_id=?;", [amigoId]);
   }
 }
 

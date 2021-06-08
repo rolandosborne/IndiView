@@ -14,6 +14,7 @@ const IDENTITY_KEY: string = "identity";
 export enum DiatumEvent {
   Labels = 0,
   Identity,
+  Amigos,
   COUNT
 }
 
@@ -132,6 +133,7 @@ class _Diatum {
 
         // update index if revision change
         if(this.revisions.indexRevision != rev.indexRevision && this.access.enableIndex) {
+          this.syncIndex();
           synced = true;
         }
 
@@ -185,7 +187,7 @@ class _Diatum {
     await this.storage.setAccount(amigo.amigoId);
 
     // load current revisions
-    this.revisions = await this.storage.getAccountObject(amigo.amigoId, REVISIONS_KEY);
+    //this.revisions = await this.storage.getAccountObject(amigo.amigoId, REVISIONS_KEY);
     if(this.revisions == null) {
       this.revisions = {};
     }
@@ -257,8 +259,70 @@ class _Diatum {
     }
   }
 
+  public async syncIndex(): Promise<void> {
+    let notify: boolean = false;
+
+    // get remote view
+    let remote: AmigoView[] = await DiatumApi.getAmigoViews(this.session.amigoNode, this.session.amigoToken);
+    let remoteMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].amigoId, remote[i].revision);
+    }
+
+    // get local view
+    let local: AmigoView[] = await this.storage.getAmigoViews(this.session.amigoId);
+    let localMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].amigoId, local[i].revision);
+    }
+
+    await asyncForEach(remoteMap, async (value, key) => {
+    
+      if(!localMap.has(key)) {
+        
+        // add any remote entry not local
+        let amigo: AmigoEntry = await DiatumApi.getAmigo(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.addAmigo(this.session.amigoId, amigo.amigoId, amigo.revision, amigo.notes);
+        await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
+        for(let i = 0; i < amigo.labels.length; i++) {
+          await this.storage.setAmigoLabel(this.session.amigoId, key, amigo.labels[i]);
+        }
+        notify = true;  
+      }
+      else if(localMap.get(key) != value) {
+
+        // update any entry with different revision
+        let amigo: AmigoEntry = await DiatumApi.getAmigo(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.updateAmigo(this.session.amigoId, amigo.amigoId, amigo.revision, amigo.notes);
+        await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
+        for(let i = 0; i < amigo.labels.length; i++) {
+          await this.storage.setAmigoLabel(this.amigoId, amigo.amigoId, amigo.labels[i]);
+        }
+        notify = true
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeAmigo(this.session.amigoId, key);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Amigos);
+    }
+
+
+    // TODO SYNC PENDING
+  }
+
   public async getIdentity(): Promsie<Amigo> {
     amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
+    if(amigo == null) {
+      return null;
+    }
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
         imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken };
   }

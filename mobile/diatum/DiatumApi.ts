@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView } from './DiatumTypes';
 
 export class DiatumApi {
 
@@ -39,5 +39,15 @@ export class DiatumApi {
 
   public static async removeLabel(node: string, token: string, id: string): Promise<void> {
     await fetch(node + "/group/labels/" + id + "?token=" + encodeURIComponent(token), { method: 'DELETE' });
+  }
+
+  public static async getAmigoViews(node: string, token: string): Promsie<AmigoView[]> {
+    let viewsResponse = await fetch(node + "/index/amigos/view?token=" + encodeURIComponent(token));
+    return await viewsResponse.json();
+  }
+
+  public static async getAmigo(node: string, token: string, amigoId: string): Promise<AmigoEntry> {
+    let amigoResponse = await fetch(node + "/index/amigos/" + amigoId + "?token=" + encodeURIComponent(token));
+    return await amigoResponse.json();
   }
 }
