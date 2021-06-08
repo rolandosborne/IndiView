@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView } from './DiatumTypes';
 
 export class DiatumApi {
 
@@ -49,5 +49,15 @@ export class DiatumApi {
   public static async getAmigo(node: string, token: string, amigoId: string): Promise<AmigoEntry> {
     let amigoResponse = await fetch(node + "/index/amigos/" + amigoId + "?token=" + encodeURIComponent(token));
     return await amigoResponse.json();
+  }
+
+  public static async getPendingAmigoViews(node: string, token: string): Promise<PendingAmigoView[]> {
+    let pendingResponse = await fetch(node + "/index/requests?token=" + encodeURIComponent(token));
+    return await pendingResponse.json();
+  }
+
+  public static async getPendingAmigo(node: string, token: string, shareId: string): Promise<PendingAmigo> {
+    let pendingResponse = await fetch(node + "/index/requests/" + shareId + "?token=" + encodeURIComponent(token));
+    return await pendingResponse.json();
   }
 }

@@ -90,3 +90,16 @@ export interface AmigoEntry {
     labels: Array<string>;
 }
 
+export interface PendingAmigoView { 
+    shareId: string;
+    revision: number;
+}
+
+export interface PendingAmigo { 
+    shareId: string;
+    revision: number;
+    message: AmigoMessage;
+    updated: number;
+}
+
+

@@ -10,7 +10,7 @@ export interface AttachCode {
 const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
 const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
 
-function getAmigoObject(message: AmigoMessage): Amigo {
+export function getAmigoObject(message: AmigoMessage): Amigo {
   // TODO validate message signature
   let amigo: Amigo = JSON.parse(base64.decode(message.data));
   // TODO confirm key hash

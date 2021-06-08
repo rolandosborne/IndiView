@@ -1,5 +1,6 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
+import { getAmigoObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
 import { Storage } from './Storage';
 
@@ -15,6 +16,7 @@ export enum DiatumEvent {
   Labels = 0,
   Identity,
   Amigos,
+  Pending,
   COUNT
 }
 
@@ -134,6 +136,7 @@ class _Diatum {
         // update index if revision change
         if(this.revisions.indexRevision != rev.indexRevision && this.access.enableIndex) {
           this.syncIndex();
+          this.syncPending();
           synced = true;
         }
 
@@ -313,9 +316,55 @@ class _Diatum {
     if(notify) {
       this.notifyListeners(DiatumEvent.Amigos);
     }
+  }
 
+  public async syncPending(): Promise<void> {
+    let notify: boolean = false;
 
-    // TODO SYNC PENDING
+    // retrieve remote list of pending shares
+    let remoteReq: PendingAmigoView[] = await DiatumApi.getPendingAmigoViews(this.session.amigoNode, this.session.amigoToken);
+    let remoteReqMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remoteReq.length; i++) {
+      remoteReqMap.set(remoteReq[i].shareId, remoteReq[i].revision);
+    }
+
+    // retrieve local list of pending shares
+    let localReq: PendingAmigoView[] = await this.storage.getPendingAmigoViews(this.session.amigoId);
+    let localReqMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < localReq.length; i++) {
+      localReqMap.set(localReq[i].shareId, localReq[i].revision);
+    } 
+
+    // add any new pending requests
+    await asyncForEach(remoteReqMap, async (value, key) => {
+
+      if(!localReqMap.has(key)) {
+
+        // add any remote entry not local
+        let amigo: PendingAmigo = await DiatumApi.getPendingAmigo(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.addPendingAmigo(this.session.amigoId, amigo.shareId, amigo.revision, getAmigoObject(amigo.message), amigo.updated);
+        notify = true;
+      }
+      else if(localReqMap.get(key) != value) {
+
+        // add any entry with different revision
+        let amigo: PendingAmigo = await DiatumApi.getPendingAmigo(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.updatePending(this.session.amigoId, amigo.shareId, amigo.revision, getAmigoObject(amigo.message), amigo.updated);
+        notify = true;
+      }
+    });
+
+    // remove old pending requests
+    asyncForEach(localReqMap, async (value, key) => {
+      if(!remoteReqMap.has(key)) {
+        await this.storage.removePendingAmigo(this.amigoId, key);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Pending);
+    }
   }
 
   public async getIdentity(): Promsie<Amigo> {

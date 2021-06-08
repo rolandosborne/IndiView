@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, Amigo } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -61,7 +61,7 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS group_" + id + " (label_id text, revision integer, name text, unique(label_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, amigo text, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, amigo_error integer, attribute_error integer, subject_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, unique(amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS indexgroup_" + id + " (label_id text, amigo_id text, unique (label_id, amigo_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, message text, updated integer, app_share text);");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, amigo text, updated integer, app_share text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profile_" + id + " (attribute_id text, revision integer, schema text, data text, unique(attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profilegroup_" + id + " (label_id text, attribute_id text, unique (label_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS show_" + id + " (subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, share integer, ready integer, assets text, originals text, app_subject text, searchable text, unique(subject_id));");
@@ -140,7 +140,7 @@ export class Storage {
     await this.db.executeSql("INSERT OR IGNORE INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
   }
   public async updateLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [this.encodeText(entry.name), entry.revision, entry.labelId]);
+    await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [encodeText(entry.name), entry.revision, entry.labelId]);
   }
   public async removeLabel(id: string, labelId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM group_" + id + " where label_id=?;", [labelId]);
@@ -160,11 +160,10 @@ export class Storage {
     return views;
   }
   public async addAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
-console.log("ADD AMIGO: " + amigoId);
     await this.db.executeSql("INSERT OR IGNORE INTO index_" + id + " (amigo_id, revision, notes) values (?, ?, ?);", [amigoId, revision, encodeText(notes)]);
   }
   public async updateAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
-    await this.db.executeSql("UPDATE index_" + id + " set notes=?, revision=? where amigo_id=?;", [this.encodeText(otes), revision, amigoId]);
+    await this.db.executeSql("UPDATE index_" + id + " set notes=?, revision=? where amigo_id=?;", [encodeText(notes), revision, amigoId]);
   }
   public async removeAmigo(id: string, amigoId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM index_" + id + " where amigo_id=?;", [amigoId]);
@@ -174,6 +173,25 @@ console.log("ADD AMIGO: " + amigoId);
   }
   public async clearAmigoLabels(id: string, amigoId: string) {
     await this.db.executeSql("DELETE FROM indexgroup_" + id + " where amigo_id=?;", [amigoId]);
+  }
+  public async getPendingAmigoViews(id: string): Promise<PendingAmigoView[]> {
+    let res = await this.db.executeSql("SELECT share_id, revision from pending_" + id + ";");
+    let views: PendingAmigoView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ shareId: res[0].rows.item(i).share_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addPendingAmigo(id: string, shareId: string, revision: number, amigo: Amigo, updated: number): Promise<void> {
+    await this.db.executeSql("INSERT OR IGNORE INTO pending_" + id + " (share_id, amigo, revision, updated) values (?, ?, ?, ?);", [shareId, encodeObject(amigo), revision, updated]);
+  }
+  public async updatePendingAmigo(id: string, shareId: string, revision: number, amigo: Amigo): Promise<void> {
+    await this.db.executeSql("UPDATE pending_" + id + " amigo=?, revision=?, updated=? where share_id=?;", [encodeObject(amigo), revision, updated, share_id]);
+  }
+  public async removePendingAmigo(id: string, shareId): Promise<void> {
+    await this.db.executeSql("DELETE FROM pending_" + id + " WHERE share_id=?;", [shareId]);
   }
 }
 
