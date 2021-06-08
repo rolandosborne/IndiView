@@ -102,4 +102,20 @@ export interface PendingAmigo {
     updated: number;
 }
 
+export interface AttributeView { 
+    attributeId: string;
+    revision: number;
+}
+
+export interface Attribute { 
+    attributeId: string;
+    revision: number;
+    schema: string;
+    data: string;
+}
+
+export interface AttributeEntry { 
+    attribute: Attribute;
+    labels: Array<string>;
+}
 

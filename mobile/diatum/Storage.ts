@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, Amigo } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoView, PendingAmigoView, AttributeView, Amigo } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -116,16 +116,6 @@ export class Storage {
 
 
   // group module synchronization
-  public async getLabels(id: string): Promise<LabelEntry[]> {
-    let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " ORDER BY name ASC;");
-    let labels: LabelEntry[] = [];
-    if(hasResult(res)) {
-      for(let i = 0; i < res[0].rows.length; i++) {
-        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.item(i).name)});
-      }
-    }
-    return labels;
-  }
   public async getLabelViews(id: string): Promise<LabelView[]> {
     let res = await this.db.executeSql("SELECT label_id, revision from group_" + id + ";");
     let views: LabelView[] = [];
@@ -193,5 +183,50 @@ export class Storage {
   public async removePendingAmigo(id: string, shareId): Promise<void> {
     await this.db.executeSql("DELETE FROM pending_" + id + " WHERE share_id=?;", [shareId]);
   }
+
+
+
+  // profile module synchronization
+  public async getAttributeViews(id: string): Promise<AttributeView[]> {
+    let res = await this.db.executeSql("SELECT attribute_id, revision from profile_" + id + ";");
+    let views: AttributeView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ attributeId: res[0].rows.item(i).attribute_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
+    await this.db.executeSql("INSERT OR IGNORE INTO profile_" + id + " (attribute_id, revision, schema, data) values (?, ?, ?, ?);", [attributeId, revision, schema, encodeText(data)]);
+  }
+  public async updateAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
+    await this.db.executeSql("UPDATE OR IGNORE profile_" + id + " set revision=?, schema=?, data=? where attribute_id=?;", [revision, schema, encodeText(data), attributeId]);
+  }
+  public async removeAttribute(id: string, attributeId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM profile_" + id + " where attribute_id=?;", [attributeId]);
+    await this.db.executeSql("DELETE FROM profilegroup_" + id + " where attribute_id=?;", [attributeId]);
+  }
+  public async setAttributeLabel(id: string, attributeId: string, labelId: string) {
+    await this.db.executeSql("INSERT OR IGNORE INTO profilegroup_" + id + " (attribute_id, label_id) values (?, ?);", [attributeId, labelId]);
+  }
+  public async clearAttributeLabels(id: string, attributeId: string) {
+    await this.db.executeSql("DELETE FROM profilegroup_" + id + " where attribute_id=?;", [attributeId]);
+  }
+
+
+
+  // app data access
+  public async getLabels(id: string): Promise<LabelEntry[]> {
+    let res = await this.db.executeSql("SELECT label_id, revision, name from group_" + id + " ORDER BY name ASC;");
+    let labels: LabelEntry[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.item(i).name)});
+      }
+    }
+    return labels;
+  }
+ 
 }
 

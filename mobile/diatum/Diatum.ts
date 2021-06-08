@@ -22,7 +22,7 @@ export enum DiatumEvent {
 
 export interface Diatum {
   // initialize SDK and retrive previous context
-  init(path: string): Promise<AppContext>;
+  init(path: string, attributes: string[]): Promise<AppContext>;
 
   // set SDK context for next init
   setAppContext(ctx: AppContext): Promise<void>;
@@ -67,10 +67,12 @@ class _Diatum {
   private revisions: Revisions;
   private access: ServiceAccess;
   private listeners: Map<DiatumEvent, Set<() => void>>;
+  private attributeFilter: string[];
 
-  constructor() {
+  constructor(attributes: string[]) {
     this.session = null;
     this.storage = new Storage();
+    this.attributeFilter = attributes;
     this.listeners = new Map<DiatumEvent, Set<() => void>>();
     for(let i = 0; i < DiatumEvent.COUNT; i++) {
       this.listeners.set(i, new Set<() => void>());
@@ -140,8 +142,9 @@ class _Diatum {
           synced = true;
         }
 
-        // update share if revision change
-        if(this.revisions.shareRevision != rev.shareRevision && this.access.enableShare) {
+        // update profile if revision change
+        if(this.revisions.profileRevision != rev.profileRevision && this.access.enableProfile) {
+          this.syncProfile();
           synced = true;
         }
 
@@ -150,8 +153,8 @@ class _Diatum {
           synced = true;
         }
 
-        // update profile if revision change
-        if(this.revisions.profileRevision != rev.profileRevision && this.access.enableProfile) {
+        // update share if revision change
+        if(this.revisions.shareRevision != rev.shareRevision && this.access.enableShare) {
           synced = true;
         }
 
@@ -367,6 +370,59 @@ class _Diatum {
     }
   }
 
+  public async syncProfile(): Promise<void> {
+    let notify: boolean = false;
+    
+    // get remote attribute entries
+    let remote: AttributeView[] = await DiatumApi.getAttributeViews(this.session.amigoNode, this.session.amigoToken, this.attributeFilter);
+    let remoteMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].attributeId, remote[i].revision);
+    }
+
+    // get local attribute entries
+    let local: AttributeView[] = await this.storage.getAttributeViews(this.session.amigoId);
+    let localMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].attributeId, local[i].revision);
+    }
+
+    await asyncForEach(remoteMap, async (value, key) => {
+
+      if(!localMap.has(key)) {
+
+        // add any remote entry not local
+        let entry: AttributeEntry = await DiatumApi.getAttribute(this.session.amigoNode, this.session.amigoToken, key);
+console.log("ADDING: ", entry);
+        await this.storage.addAttribute(this.session.amigoId, entry.attribute.attributeId, entry.attribute.revision, entry.attribute.schema, entry.attribute.data);
+        await this.storage.clearAttributeLabels(this.session.amigoId, entry.attribute.attributeId);
+        for(let i = 0; i < entry.labels.length; i++) {
+          await this.storage.setAttributeLabel(this.session.amigoId, key, entry.labels[i]);
+        }
+        notify = true;
+      }
+      else if(localMap.get(key) != value) {
+
+        // update any entry with different revision
+        let entry: AttributeEntry = await DiatumAPi.getAttribute(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.updateAttribute(this.session.amigoId, entry.attribute.attributeId, entry.attribute.revision, entry.attribute.schema, entry.attribute.data);
+        await this.storage.clearAttributeLabels(this.session.amigoId, entry.attribute.attributeId);
+        for(let i = 0; i < entry.labels.length; i++) {
+          await this.storage.setAttributeLabel(this.session.amigoId, entry.attribute.attributeId, entry.labels[i]);
+        }
+        notify = true;
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeAttribute(this.session.amigoId, key);
+        notify = true;
+      }
+    });
+  }
+
   public async getIdentity(): Promsie<Amigo> {
     amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
     if(amigo == null) {
@@ -392,11 +448,11 @@ function appState(state: AppStateStatus) {
   }
 }
 
-async function init(path: string): Promise<AppContext> {
+async function init(path: string, attributes: string[]): Promise<AppContext> {
   if(instance !== undefined) {
     throw "diatum already initialised";
   }
-  instance = new _Diatum();
+  instance = new _Diatum(attributes);
   let ctx = await instance.init(path);
   let active: boolean = true;
   let busy: boolean = false;

@@ -13,6 +13,14 @@ import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+const WEBSITE: string = 'b0e10c5cecaa8c451330740817e301a0cc6b22b57d0241ce3ffb20d8938dc067';
+const CARD: string = '081272d5ec5ab6fb6d7d55d12697f6c91e66bb0db562ec059cbfc5cc2c36278b';
+const EMAIL: string = 'da7084bf8a5187e049577d14030a8c76537e59830d224f6229548f765462c52b';
+const PHONE: string = '6424b72bbf3b3a2e8387c03c4e9599275ab7e1b3abb515dc9e4c8f69be36003f';
+const HOME: string = '89dd0b67823cb034b8eda59bb0a9af9a0707216830f32cd9634874c47c74a148';
+const WORK: string = '9b9b2cb50f416956aa33e463bcdc131ab8fe5acf934a4179b87248ea4b102f60';
+const SOCIAL: string = '4f181fd833399f33ea483b5e9dcf22fa81b7474ff53a38a327c5f2d1e71c5eb2';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
@@ -29,8 +37,10 @@ let personalNav = null;
 
 function RootScreen({ navigation }) {
   logoutNav = navigation;
+  
+  let attributes = [ WEBSITE, CARD, EMAIL, PHONE, HOME, WORK, SOCIAL ];
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v07.db").then(async ctx => {
+  diatum.init("indiview_v08.db", attributes).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -206,8 +216,12 @@ function FeedScreen({ route, navigation }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
-      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
-      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -261,8 +275,12 @@ function ContactScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Contact</Text>
-      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
-      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -336,8 +354,12 @@ function PersonalScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Personal</Text>
-      <TouchableOpacity style={{ position: "absolute", left: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleControl}></TouchableOpacity>
-      <TouchableOpacity style={{ position: "absolute", right: -24, top: '50%', translateY: -32, backgroundColor: '#282827', width: 32, height: 64, borderRadius: 8 }} onPress={toggleLabel}></TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
     </View>
   );
 }
