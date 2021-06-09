@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoView, PendingAmigoView, AttributeView, SubjectView, Amigo, Subject, SubjectTag } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Subject, SubjectTag } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -227,7 +227,6 @@ export class Storage {
     return views;
   }
   public async addSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
-console.log(subject.subjectId);
     await this.db.executeSql("INSERT INTO show_" + id + " (subject_id, revision, created, modified, expires, schema, data, share, ready, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0);", [subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, encodeText(subject.data), share, ready]);
   } 
   public async updateSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
@@ -253,6 +252,30 @@ console.log(subject.subjectId);
     }
     await this.db.executeSql("UPDATE show_" + id + " set tag_revision=?, tag_count=?, tags=? where subject_id=?;", [revision, count, encodeObject(tags), subjectId]);
   }
+
+  // share module synchronization
+  public async getConnectionViews(id: string): Promise<ShareView[]> {
+    let cmd: string = "select share_id, revision from share_" + id;
+
+    let res = await this.db.executeSql("SELECT share_id, revision from share_" + id + ";");
+    let views: SubjectView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ shareId: res[0].rows.item(i).share_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addConnection(id: string, entry: ShareEntry) { 
+    await this.db.executeSql("INSERT INTO share_" + id + " (amigo_id, share_id, revision, status, token, updated) values (?, ?, ?, ?, ?, ?);", [entry.amigoId, entry.shareId, entry.revision, entry.status, entry.token, entry.updated]);
+  }
+  public async updateConnection(id: string, entry: ShareEntry) {
+    await this.db.executeSql("UPDATE share_" + id + " set amigo_id=?, revision=?, status=?, token=?, updated=? where share_id=?;", [entry.amigoId, entry.revision, entry.status, entry.token, entry.updated, entry.shareId]);
+  }
+  public async removeConnection(id: string, shareId: string) {
+    await this.db.executeSql("DELETE FROM share_" + id + " WHERE share_id=?;", [shareId]);
+  }
+
 
   // app data access
   public async getLabels(id: string): Promise<LabelEntry[]> {

@@ -48,7 +48,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v08.db", attributes, subjects, tag).then(async ctx => {
+  diatum.init("indiview_v10.db", attributes, subjects, tag).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -406,7 +406,7 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
         props.navigate('Search');
       }} />
-      <DrawerItem label={'Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Label");
       }} />

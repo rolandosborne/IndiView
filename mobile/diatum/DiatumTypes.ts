@@ -196,3 +196,29 @@ export interface Tag {
     schema: string;
     data: string;
 }
+
+export interface ShareView { 
+    shareId: string;
+    revision: number;
+}
+
+export interface ShareEntry { 
+    shareId: string;
+    revision?: number;
+    status: ShareEntry.StatusEnum;
+    amigoId: string;
+    token?: string;
+    updated?: number;
+}
+
+export namespace ShareEntry {
+    export type StatusEnum = 'requesting' | 'requested' | 'received' | 'connected' | 'closing' | 'closed';
+    export const StatusEnum = {
+        Requesting: 'requesting' as StatusEnum,
+        Requested: 'requested' as StatusEnum,
+        Received: 'received' as StatusEnum,
+        Connected: 'connected' as StatusEnum,
+        Closing: 'closing' as StatusEnum,
+        Closed: 'closed' as StatusEnum
+    };
+}

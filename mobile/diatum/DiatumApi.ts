@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView } from './DiatumTypes';
 
 export class DiatumApi {
 
@@ -75,12 +75,24 @@ export class DiatumApi {
     let viewsResponse = await fetch(node + "/show/subjects/view?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filter) });
     return await viewsResponse.json();
   }
+
   public static async getSubject(node: string, token: string, subjectId: string): Promise<SubjectEntry> {
     let entryResponse = await fetch(node + "/show/subjects/" + subjectId + "?token=" + encodeURIComponent(token));
     return await entryResponse.json();
   }
+
   public static async getSubjectTags(node: string, token: string, subjectId: string, schema: string): Promise<SubjectTag> {
     let tagResponse = await fetch(node + "/show/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=false&token=" + encodeURIComponent(token));
     return await tagResponse.json();
+  }
+
+  public static async getConnectionViews(node: string, token: string): Promise<ShareView[]> {
+    let viewsResponse = await fetch(node + "/share/connections/view?token=" + encodeURIComponent(token));
+    return await viewsResponse.json();
+  }
+
+  public static async getConnection(node: string, token: string, shareId: string): Promise<ShareEntry> {
+    let entryResponse = await fetch(node + "/share/connections/" + shareId + "?token=" + encodeURIComponent(token));
+    return await entryResponse.json();
   }
 }

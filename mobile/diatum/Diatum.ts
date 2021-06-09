@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareEntry } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -19,6 +19,7 @@ export enum DiatumEvent {
   Pending,
   Attributes,
   Subjects,
+  Share,
   COUNT
 }
 
@@ -121,7 +122,7 @@ class _Diatum {
       
       // check node revisions every interval
       if(this.nodeSync + SYNC_NODE_MS < cur) {      
- 
+
         // update node sync time 
         this.nodeSync = cur;
         let synced: boolean = false;
@@ -162,6 +163,7 @@ class _Diatum {
 
         // update share if revision change
         if(this.revisions.shareRevision != rev.shareRevision && this.access.enableShare) {
+          await this.syncShare();
           synced = true;
         }
 
@@ -171,6 +173,9 @@ class _Diatum {
           this.storage.setAccountObject(this.session.amigoId, REVISIONS_KEY, rev);
         }
       }
+
+
+      // sync agent message
 
 
       // get most stale connected contact that has not been updated in SYNC_CONNECTED_MS time
@@ -400,7 +405,6 @@ class _Diatum {
 
         // add any remote entry not local
         let entry: AttributeEntry = await DiatumApi.getAttribute(this.session.amigoNode, this.session.amigoToken, key);
-console.log("ADDING: ", entry);
         await this.storage.addAttribute(this.session.amigoId, entry.attribute.attributeId, entry.attribute.revision, entry.attribute.schema, entry.attribute.data);
         await this.storage.clearAttributeLabels(this.session.amigoId, entry.attribute.attributeId);
         for(let i = 0; i < entry.labels.length; i++) {
@@ -466,7 +470,7 @@ console.log("ADDING: ", entry);
         }
         if(value.tag != 0) {
           let tag: SubjectTag = await DiatumApi.getSubjectTags(this.session.amigoNode, this.session.amigoToken, key, this.tagFilter);
-          await this.storage.updateSubjectTags(this.storage.amigoId, key, tag.revision, tag.tags);
+          await this.storage.updateSubjectTags(this.session.amigoId, key, tag.revision, tag.tags);
         }
         notify = true;
       }
@@ -500,6 +504,53 @@ console.log("ADDING: ", entry);
 
     if(notify) {
       this.notifyListeners(DiatumEvent.Subjects);
+    }
+  }
+
+  public async syncShare(): Promsie<void> {
+    let notify: boolean = false;
+
+    // get remote share entries
+    let remote: ShareView[] = await DiatumApi.getConnectionViews(this.session.amigoNode, this.session.amigoToken);
+    let remoteMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].shareId, remote[i].revision);
+    }
+
+    // get local share entries
+    let local: ShareView[] = await this.storage.getConnectionViews(this.session.amigoId);
+    let localMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].shareId, local[i].revision);
+    }
+
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+
+      if(!localMap.has(key)) {
+
+        let entry: ShareEntry = await DiatumApi.getConnection(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.addConnection(this.session.amigoId, entry);
+        notify = true;
+      }
+      else if(localMap.get(key) != value) {
+
+        let entry: ShareEntry = await DiatumApi.getConnection(this.session.amigoNode, this.session.amigoToken, key);
+        await this.storage.updateConnection(this.session.amigoId, entry);
+        notify = true;
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeConnection(this.session.amigoId, key);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Share);
     }
   }
 
