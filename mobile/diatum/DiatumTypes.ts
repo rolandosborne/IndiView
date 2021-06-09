@@ -38,6 +38,19 @@ export interface Amigo {
   handle?: string;
 }
 
+export interface AuthMessage { 
+    amigo: AmigoMessage;
+    data: string;
+    signature: string;
+}
+
+export interface Auth { 
+    amigoId: string;
+    issued: number;
+    expires: number;
+    token: string;
+}
+
 export interface Revisions { 
   showRevision?: number;
   identityRevision?: number;

@@ -1,4 +1,4 @@
-import { AmigoMessage } from './DiatumTypes';
+import { AmigoMessage, Amigo, AuthMessage, Auth } from './DiatumTypes';
 import base64 from 'react-native-base64'
 
 export interface AttachCode {
@@ -11,10 +11,22 @@ const DEFAULT_PORTAL: string = "https://portal.diatum.net/app"
 const DEFAULT_REGISTRY: string = "https://registry.diatum.net/app"
 
 export function getAmigoObject(message: AmigoMessage): Amigo {
+  if(message == null) {
+    return null;
+  }
   // TODO validate message signature
   let amigo: Amigo = JSON.parse(base64.decode(message.data));
   // TODO confirm key hash
   return amigo;
+}
+
+export function getAuthObject(message: AuthMessage): Auth {
+  if(message == null) {
+    return null;
+  }
+  // TODO validate message signature
+  let auth: Auth = JSON.parse(base64.decode(message.data));
+  return auth;
 }
 
 export async function getAttachCode(username: string, password: string, portal?: string): Promise<AttachCode> {

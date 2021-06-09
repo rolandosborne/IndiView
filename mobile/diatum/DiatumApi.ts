@@ -95,4 +95,9 @@ export class DiatumApi {
     let entryResponse = await fetch(node + "/share/connections/" + shareId + "?token=" + encodeURIComponent(token));
     return await entryResponse.json();
   }
+
+  private static async getAgentMessage(node: string, token: string): Promise<AuthMessage> {
+    let authResponse = await fetch(node + "/agent/service?token=" + encodeURIComponent(token), { method: 'PUT' });
+    return await authResponse.json();
+  }
 }
