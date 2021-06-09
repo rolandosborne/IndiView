@@ -119,3 +119,80 @@ export interface AttributeEntry {
     labels: Array<string>;
 }
 
+export interface SubjectView { 
+    subjectId: string;
+    revision: number;
+    tagRevision: number;
+}
+
+export interface Subject { 
+    subjectId: string;
+    revision: number;
+    created: number;
+    modified: number;
+    expires?: number;
+    schema?: string;
+    data?: string;
+}
+
+export interface SubjectEntry { 
+    subject: Subject;
+    share: boolean;
+    ready: boolean;
+    assets: Array<SubjectAsset>;
+    originals: Array<OriginalAsset>;
+    labels?: Array<string>;
+}
+
+export interface OriginalAsset { 
+    assetId: string;
+    originalName?: string;
+    state?: OriginalAsset.StateEnum;
+    size?: number;
+    hash?: string;
+    created?: number;
+}
+export namespace OriginalAsset {
+    export type StateEnum = 'uploaded' | 'deleted';
+    export const StateEnum = {
+        Uploaded: 'uploaded' as StateEnum,
+        Deleted: 'deleted' as StateEnum
+    };
+}
+
+export interface SubjectAsset { 
+    assetId: string;
+    originalId?: string;
+    transform?: string;
+    state?: SubjectAsset.StateEnum;
+    size?: number;
+    hash?: string;
+    created?: number;
+}
+
+export namespace SubjectAsset {
+    export type StateEnum = 'uploading' | 'pending' | 'processing' | 'ready' | 'failed' | 'deleted';
+    export const StateEnum = {
+        Uploading: 'uploading' as StateEnum,
+        Pending: 'pending' as StateEnum,
+        Processing: 'processing' as StateEnum,
+        Ready: 'ready' as StateEnum,
+        Failed: 'failed' as StateEnum,
+        Deleted: 'deleted' as StateEnum
+    };
+}
+
+export interface SubjectTag { 
+    revision: number;
+    tags: Array<Tag>;
+}
+
+export interface Tag { 
+    tagId: string;
+    amigoId: string;
+    amigoName: string;
+    amigoRegistry: string;
+    created: number;
+    schema: string;
+    data: string;
+}

@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoView, PendingAmigoView, AttributeView, Amigo } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoView, PendingAmigoView, AttributeView, SubjectView, Amigo, Subject, SubjectTag } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -127,7 +127,7 @@ export class Storage {
     return views;
   }
   public async addLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("INSERT OR IGNORE INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
+    await this.db.executeSql("INSERT INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
   }
   public async updateLabel(id: string, entry: LabelEntry): Promise<void> {
     await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [encodeText(entry.name), entry.revision, entry.labelId]);
@@ -150,7 +150,7 @@ export class Storage {
     return views;
   }
   public async addAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
-    await this.db.executeSql("INSERT OR IGNORE INTO index_" + id + " (amigo_id, revision, notes) values (?, ?, ?);", [amigoId, revision, encodeText(notes)]);
+    await this.db.executeSql("INSERT INTO index_" + id + " (amigo_id, revision, notes) values (?, ?, ?);", [amigoId, revision, encodeText(notes)]);
   }
   public async updateAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " set notes=?, revision=? where amigo_id=?;", [encodeText(notes), revision, amigoId]);
@@ -159,7 +159,7 @@ export class Storage {
     await this.db.executeSql("DELETE FROM index_" + id + " where amigo_id=?;", [amigoId]);
   }
   public async setAmigoLabel(id: string, amigoId: string, labelId: string) {
-    await this.db.executeSql("INSERT OR IGNORE INTO indexgroup_" + id + " (amigo_id, label_id) values (?, ?);", [amigoId, labelId]);
+    await this.db.executeSql("INSERT INTO indexgroup_" + id + " (amigo_id, label_id) values (?, ?);", [amigoId, labelId]);
   }
   public async clearAmigoLabels(id: string, amigoId: string) {
     await this.db.executeSql("DELETE FROM indexgroup_" + id + " where amigo_id=?;", [amigoId]);
@@ -175,7 +175,7 @@ export class Storage {
     return views;
   }
   public async addPendingAmigo(id: string, shareId: string, revision: number, amigo: Amigo, updated: number): Promise<void> {
-    await this.db.executeSql("INSERT OR IGNORE INTO pending_" + id + " (share_id, amigo, revision, updated) values (?, ?, ?, ?);", [shareId, encodeObject(amigo), revision, updated]);
+    await this.db.executeSql("INSERT INTO pending_" + id + " (share_id, amigo, revision, updated) values (?, ?, ?, ?);", [shareId, encodeObject(amigo), revision, updated]);
   }
   public async updatePendingAmigo(id: string, shareId: string, revision: number, amigo: Amigo): Promise<void> {
     await this.db.executeSql("UPDATE pending_" + id + " amigo=?, revision=?, updated=? where share_id=?;", [encodeObject(amigo), revision, updated, share_id]);
@@ -198,23 +198,61 @@ export class Storage {
     return views;
   }
   public async addAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
-    await this.db.executeSql("INSERT OR IGNORE INTO profile_" + id + " (attribute_id, revision, schema, data) values (?, ?, ?, ?);", [attributeId, revision, schema, encodeText(data)]);
+    await this.db.executeSql("INSERT INTO profile_" + id + " (attribute_id, revision, schema, data) values (?, ?, ?, ?);", [attributeId, revision, schema, encodeText(data)]);
   }
   public async updateAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
-    await this.db.executeSql("UPDATE OR IGNORE profile_" + id + " set revision=?, schema=?, data=? where attribute_id=?;", [revision, schema, encodeText(data), attributeId]);
+    await this.db.executeSql("UPDATE profile_" + id + " set revision=?, schema=?, data=? where attribute_id=?;", [revision, schema, encodeText(data), attributeId]);
   }
   public async removeAttribute(id: string, attributeId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM profile_" + id + " where attribute_id=?;", [attributeId]);
     await this.db.executeSql("DELETE FROM profilegroup_" + id + " where attribute_id=?;", [attributeId]);
   }
   public async setAttributeLabel(id: string, attributeId: string, labelId: string) {
-    await this.db.executeSql("INSERT OR IGNORE INTO profilegroup_" + id + " (attribute_id, label_id) values (?, ?);", [attributeId, labelId]);
+    await this.db.executeSql("INSERT INTO profilegroup_" + id + " (attribute_id, label_id) values (?, ?);", [attributeId, labelId]);
   }
   public async clearAttributeLabels(id: string, attributeId: string) {
     await this.db.executeSql("DELETE FROM profilegroup_" + id + " where attribute_id=?;", [attributeId]);
   }
 
 
+  // show module synchronization
+  public async getSubjectViews(id: string): Promise<SubjectView[]> {
+    let res = await this.db.executeSql("SELECT subject_id, revision, tag_revision from show_" + id + ";");
+    let views: SubjectView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ subjectId: res[0].rows.item(i).subject_id, revision: res[0].rows.item(i).revision, tagRevision: res[0].rows.item(i).tag_revision});
+      }
+    }
+    return views;
+  }
+  public async addSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
+console.log(subject.subjectId);
+    await this.db.executeSql("INSERT INTO show_" + id + " (subject_id, revision, created, modified, expires, schema, data, share, ready, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0);", [subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, encodeText(subject.data), share, ready]);
+  } 
+  public async updateSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
+    await this.db.executeSql("UPDATE show_" + id + " set revision=?, created=?, modified=?, expires=?, ready=?, share=?, schema=?, data=? where subject_id=?;", [subject.revision, subject.created, subject.modified, subject.expires, ready, share, subject.schema, encodeText(subject.data), subject.subjectId]);
+  }
+  public async removeSubject(id: string, subjectId: string) {
+    await this.db.executeSql("DELETE FROM show_" + id + " where subject_id=?;", [subjectId]);
+    await this.db.executeSql("DELETE FROM showlabel_" + id + " where subject_id=?;", [subjectId]);
+  }
+  public async setSubjectLabel(id: string, subjectId: string, labelId: string) {
+    await this.db.executeSql("INSERT INTO showgroup_" + id + " (subject_id, label_id) values (?, ?);", [subjectId, labelId]);
+  }
+  public async clearSubjectLabels(id: string, subjectId: string) {
+    await this.db.executeSql("DELETE FROM showgroup_" + id + " where subject_id=?;", [subjectId]);
+  }
+  public async updateSubjectTags(id: string, subjectId: string, revision: number, tags: Tag[]) {
+    let count: number = 0;
+    if(tags == null) {
+      count = 0;
+    }
+    else {
+      count = tags.length;
+    }
+    await this.db.executeSql("UPDATE show_" + id + " set tag_revision=?, tag_count=?, tags=? where subject_id=?;", [revision, count, encodeObject(tags), subjectId]);
+  }
 
   // app data access
   public async getLabels(id: string): Promise<LabelEntry[]> {

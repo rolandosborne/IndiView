@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -17,12 +17,14 @@ export enum DiatumEvent {
   Identity,
   Amigos,
   Pending,
+  Attributes,
+  Subjects,
   COUNT
 }
 
 export interface Diatum {
   // initialize SDK and retrive previous context
-  init(path: string, attributes: string[]): Promise<AppContext>;
+  init(path: string, attributes: string[], subjects: string[], tag: string): Promise<AppContext>;
 
   // set SDK context for next init
   setAppContext(ctx: AppContext): Promise<void>;
@@ -68,11 +70,15 @@ class _Diatum {
   private access: ServiceAccess;
   private listeners: Map<DiatumEvent, Set<() => void>>;
   private attributeFilter: string[];
+  private subjectFilter: string[];
+  private tagFilter: string;
 
-  constructor(attributes: string[]) {
+  constructor(attributes: string[], subjects: string[], tag: string) {
     this.session = null;
     this.storage = new Storage();
     this.attributeFilter = attributes;
+    this.subjectFilter = subjects;
+    this.tagFilter = tag;
     this.listeners = new Map<DiatumEvent, Set<() => void>>();
     for(let i = 0; i < DiatumEvent.COUNT; i++) {
       this.listeners.set(i, new Set<() => void>());
@@ -125,31 +131,32 @@ class _Diatum {
 
         // update identity if revision change
         if(this.revisions.identityRevision != rev.identityRevision && this.access.enableIdentity) {
-          this.syncIdentity();
+          await this.syncIdentity();
           synced = true;
         }
 
         // update group if revision change
         if(this.revisions.groupRevision != rev.groupRevision && this.access.enableGroup) {
-          this.syncGroup();
+          await this.syncGroup();
           synced = true;
         }
 
         // update index if revision change
         if(this.revisions.indexRevision != rev.indexRevision && this.access.enableIndex) {
-          this.syncIndex();
-          this.syncPending();
+          await this.syncIndex();
+          await this.syncPending();
           synced = true;
         }
 
         // update profile if revision change
         if(this.revisions.profileRevision != rev.profileRevision && this.access.enableProfile) {
-          this.syncProfile();
+          await this.syncProfile();
           synced = true;
         }
 
         // update show if revision change
         if(this.revisions.showRevision != rev.showRevision && this.access.enableShow) {
+          await this.syncShow();
           synced = true;
         }
 
@@ -421,6 +428,79 @@ console.log("ADDING: ", entry);
         notify = true;
       }
     });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Attributes);
+    }
+  }
+
+  public async syncShow(): Promise<void> {
+    let notify: boolean;
+
+    // get remote subject entries
+    let remote: SubjectView[] = await DiatumApi.getSubjectViews(this.session.amigoNode, this.session.amigoToken, this.subjectFilter);
+    let remoteMap: Map<string, any> = new Map<string, any>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].subjectId, { subject: remote[i].revision, tag: remote[i].tagRevision });
+    }
+
+    // get local subject entries
+    let local: SubjectView[] = await this.storage.getSubjectViews(this.session.amigoId);
+
+    let localMap: Map<string, any> = new Map<string, any>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].subjectId, { subject: local[i].revision, tag: local[i].tagRevision });
+    }
+
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+
+      if(!localMap.has(key)) {
+        let entry: SubjectEntry = await DiatumApi.getSubject(this.session.amigoNode, this.session.amigoToken, key);
+        let r: number = entry.ready ? 1 : 0;
+        let s: number = entry.share ? 1 : 0;
+        await this.storage.addSubject(this.session.amigoId, entry.subject, r, s);
+        await this.storage.clearSubjectLabels(this.session.amigoId, key);
+        for(let i = 0; i < entry.labels.length; i++) {
+          await this.storage.setSubjectLabel(this.session.amigoId, key, entry.labels[i]);
+        }
+        if(value.tag != 0) {
+          let tag: SubjectTag = await DiatumApi.getSubjectTags(this.session.amigoNode, this.session.amigoToken, key, this.tagFilter);
+          await this.storage.updateSubjectTags(this.storage.amigoId, key, tag.revision, tag.tags);
+        }
+        notify = true;
+      }
+      else {
+        if(localMap.get(key).subject != value.subject) {
+          let entry: SubjectEntry = await DiatumApi.getSubject(this.session.amigoNode, this.session.amigoToken, key);
+          let r: number = entry.ready ? 1 : 0;
+          let s: number = entry.share ? 1 : 0;
+          await this.storage.updateSubject(this.session.amigoId, entry.subject, r, s);
+          await this.storage.clearSubjectLabels(this.session.amigoId, key);
+          for(let i = 0; i < entry.labels.length; i++) {
+            await this.storage.setSubjectLabel(this.session.amigoId, key, entry.labels[i]);
+          }
+          notify = true;
+        }
+        if(localMap.get(key).tag != value.tag) {
+          let tag: SubjectTag = await DiatumApi.getSubjectTags(this.session.amigoNode, this.session.amigoToken, key, this.tagFilter);
+          await this.storage.updateSubjectTags(this.session.amigoId, key, tag.revision, tag.tags);
+          notify = true;
+        }
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeSubject(this.session.amigoId, key);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Subjects);
+    }
   }
 
   public async getIdentity(): Promsie<Amigo> {
@@ -448,11 +528,11 @@ function appState(state: AppStateStatus) {
   }
 }
 
-async function init(path: string, attributes: string[]): Promise<AppContext> {
+async function init(path: string, attributes: string[], subjects: string[], tag: string): Promise<AppContext> {
   if(instance !== undefined) {
     throw "diatum already initialised";
   }
-  instance = new _Diatum(attributes);
+  instance = new _Diatum(attributes, subjects, tag);
   let ctx = await instance.init(path);
   let active: boolean = true;
   let busy: boolean = false;
