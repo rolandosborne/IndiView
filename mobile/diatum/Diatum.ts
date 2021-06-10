@@ -6,6 +6,7 @@ import { Storage, AmigoConnection, AmigoReference } from './Storage';
 
 const SYNC_INTERVAL_MS: number = 1000
 const SYNC_NODE_MS: number = 5000
+const SYNC_REGISTRY_MS: number = 900000;
 const SYNC_AUTH_MS: number = 3600000;
 const SYNC_CONNECTION_MS: number = 15000;
 const SYNC_REFERENCE_MS: number = 300000;
@@ -70,6 +71,7 @@ class _Diatum {
 
   private nodeSync: number;
   private authSync: number;
+  private registrySync: number;
   private connectionSync: number;
   private referenceSync: number;
   private session: DiatumSession;
@@ -203,13 +205,22 @@ class _Diatum {
         if(connection != null) {
           await this.storage.updateStaleTime(this.session.amigoId, connection.amigoId, cur);
 
-          // pull revisions with agent auth
+          try {
+            // pull revisions with agent auth
+            let revisions = await DiatumApi.getContactRevisions(connection.node, connection.token, this.authToken, this.authMessage);
+            console.log(revisions);
 
-          // if identity revision is different, update registry
+            // if identity revision is different, update registry
 
-          // if attribute revision is different, update contact
+            // if attribute revision is different, update contact
 
-          // if subject revision is different, update view
+            // if subject revision is different, update view
+          }
+          catch(err) {
+            console.log(err);
+            // check if idenity changed in registry
+            this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
+          }
         }
       }
 
@@ -219,16 +230,30 @@ class _Diatum {
         let reference = await this.storage.getStaleAmigoReference(this.session.amigoId, cur - STALE_REFERENCE_MS);
         if(reference != null) {
           await this.storage.updateStaleTime(this.session.amigoId, reference.amigoId, cur);
-
-          // get registry revision
-          let revision = await DiatumApi.getRegistryRevision(reference.registry, reference.amigoId);
-          if(revision > reference.identityRevision) {
-            let message = await DiatumApi.getRegistryMessage(reference.registry, reference.amigoId);
-            let amigo = await DiatumApi.setAmigoIdentity(this.session.amigoNode, this.session.amigoToken, message);
-            await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
-          }
+          await this.syncContactRegistry(reference.registry, reference.amigoId, reference.revision);
         }
       }
+
+      // sync registry if dirty
+      if(this.registrySync + SYNC_REGISTRY_MS < cur) {
+        this.registrySync = cur;
+        let dirty = await DiatumApi.getDirtyIdentity(this.session.amigoNode, this.session.amigoToken);
+        if(dirty) {
+          let message = await DiatumApi.getAmigoMessage(this.session.amigoNode, this.session.amigoToken);
+          let amigo = getAmigoObject(message);
+          await DiatumApi.setRegistryMessage(amigo.registry, message);
+          await DiatumApi.clearDirtyIdentity(this.session.amigoNode, this.session.amigoToken, amigo.revision);
+        }
+      }
+    }
+  }
+
+  private async syncContactRegistry(registry: string, amigoId: string, revision: number): Promsie<void> {
+    let r = await DiatumApi.getRegistryRevision(registry, amigoId);
+    if(r > revision) {
+      let message = await DiatumApi.getRegistryMessage(registry, amigoId);
+      let amigo = await DiatumApi.setAmigoIdentity(this.session.amigoNode, this.session.amigoToken, message);
+      await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
     }
   }
 
@@ -266,6 +291,7 @@ class _Diatum {
       await this.storage.setAccountObject(amigo.amigoId, ACCESS_KEY, this.access);
     }
 
+    this.registrySync = 0;
     this.referenceSync = 0;
     this.connectionSync = 0;
     this.nodeSync = 0;
