@@ -51,6 +51,16 @@ export class DiatumApi {
     return await amigoResponse.json();
   }
 
+  public static async getAmigoIdentity(node: string, token: string, amigoId: string): Promise<Amigo> {
+    let amigoResponse = await fetch(node + "/index/amigos/" + amigoId + "/identity?token=" + encodeURIComponent(token));
+    return await amigoResponse.json();
+  }
+
+  public static async setAmigoIdentity(node: string, token: string, amigo: AmigoMessage): Promise<Amigo> {
+    let amigoResponse = await fetch(node + "/index/amigos?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(amigo) });
+    return await amigoResponse.json();
+  }
+
   public static async getPendingAmigoViews(node: string, token: string): Promise<PendingAmigoView[]> {
     let pendingResponse = await fetch(node + "/index/requests?token=" + encodeURIComponent(token));
     return await pendingResponse.json();
@@ -99,5 +109,15 @@ export class DiatumApi {
   private static async getAgentMessage(node: string, token: string): Promise<AuthMessage> {
     let authResponse = await fetch(node + "/agent/service?token=" + encodeURIComponent(token), { method: 'PUT' });
     return await authResponse.json();
+  }
+
+  private static async getRegistryRevision(registry: string, amigoId: string): Promise<number> {
+    let revisionResponse = await fetch(registry + "/amigo/messages/revision?amigoId=" + amigoId);
+    return await revisionResponse.json();
+  }
+  
+  private static async getRegistryMessage(registry: string, amigoId: string): Promise<AmigoMessage> {
+    let messageResponse = await fetch(registry + "/amigo/messages?amigoId=" + amigoId);
+    return await messageResponse.json();
   }
 }

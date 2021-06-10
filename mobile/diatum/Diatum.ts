@@ -2,13 +2,15 @@ import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revi
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
-import { Storage } from './Storage';
+import { Storage, AmigoConnection, AmigoReference } from './Storage';
 
 const SYNC_INTERVAL_MS: number = 1000
 const SYNC_NODE_MS: number = 5000
 const SYNC_AUTH_MS: number = 3600000;
-const SYNC_CONNECTED_MS: number = 15000;
-const SYNC_DISCONNECTED_MS: number = 900000;
+const SYNC_CONNECTION_MS: number = 15000;
+const SYNC_REFERENCE_MS: number = 300000;
+const STALE_CONNECTION_MS: number = 60000;
+const STALE_REFERENCE_MS: number = 900000;
 const REVISIONS_KEY: string = "diatum_revisions";
 const ACCESS_KEY: string = "service_access";
 const IDENTITY_KEY: string = "identity";
@@ -66,8 +68,10 @@ async function asyncForEach(map, handler) {
 
 class _Diatum {
 
-  private nodeSync: number = 0;
-  private authSync: number = 0;
+  private nodeSync: number;
+  private authSync: number;
+  private connectionSync: number;
+  private referenceSync: number;
   private session: DiatumSession;
   private storage: Storage;
   private revisions: Revisions;
@@ -77,7 +81,8 @@ class _Diatum {
   private subjectFilter: string[];
   private tagFilter: string;
   private authMessage: AuthMessage;
-  
+  private authToken: string;  
+
   constructor(attributes: string[], subjects: string[], tag: string) {
     this.session = null;
     this.revisions = null;
@@ -182,25 +187,48 @@ class _Diatum {
 
       // sync agent message
       if(this.authSync + SYNC_AUTH_MS < cur) {
+        this.authSyc = cur;
         let auth: Auth = getAuthObject(this.authMessage);
         if(auth == null || cur > (auth.issued + auth.expires / 2)) {
           this.authMessage = await DiatumApi.getAgentMessage(this.session.appNode, this.session.appToken);
+          this.authToken = getAuthObject(this.authMessage).token;
           await this.storage.setAccountObject(amigo.amigoId, AUTH_KEY, this.authMessage);
         }
       }
 
-      // get most stale connected contact that has not been updated in SYNC_CONNECTED_MS time
+      // sync connections
+      if(this.connectionSync + SYNC_CONNECTION_MS < cur) {
+        this.connectionSync = cur;
+        let connection = await this.storage.getStaleAmigoConnection(this.session.amigoId, cur - STALE_CONNECTION_MS);
+        if(connection != null) {
+          await this.storage.updateStaleTime(this.session.amigoId, connection.amigoId, cur);
 
-        // update listing if revision change
+          // pull revisions with agent auth
 
-        // update profile if revision change
+          // if identity revision is different, update registry
 
-        // update view if revision change      
+          // if attribute revision is different, update contact
 
+          // if subject revision is different, update view
+        }
+      }
 
-      // get most stale disconnected contact that has not been update in SYNC_DISCONNECTED_MS time
+      // sync references
+      if(this.referenceSync + SYNC_REFERENCE_MS < cur) {
+        this.referenceSync = cur;
+        let reference = await this.storage.getStaleAmigoReference(this.session.amigoId, cur - STALE_REFERENCE_MS);
+        if(reference != null) {
+          await this.storage.updateStaleTime(this.session.amigoId, reference.amigoId, cur);
 
-        // update registry if revision change
+          // get registry revision
+          let revision = await DiatumApi.getRegistryRevision(reference.registry, reference.amigoId);
+          if(revision > reference.identityRevision) {
+            let message = await DiatumApi.getRegistryMessage(reference.registry, reference.amigoId);
+            let amigo = await DiatumApi.setAmigoIdentity(this.session.amigoNode, this.session.amigoToken, message);
+            await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+          }
+        }
+      }
     }
   }
 
@@ -228,6 +256,9 @@ class _Diatum {
       await this.storage.setAccountObject(amigo.amigoId, AUTH_KEY, this.authMessage);
     }
 
+    // extract token
+    this.authToken = getAuthObject(this.authMessage).token
+
     // load current access
     this.access = await this.storage.getAccountObject(amigo.amigoId, ACCESS_KEY);
     if(this.access == null) {
@@ -235,6 +266,8 @@ class _Diatum {
       await this.storage.setAccountObject(amigo.amigoId, ACCESS_KEY, this.access);
     }
 
+    this.referenceSync = 0;
+    this.connectionSync = 0;
     this.nodeSync = 0;
     this.authSync = 0;
     this.session = amigo;
@@ -320,7 +353,10 @@ class _Diatum {
         
         // add any remote entry not local
         let amigo: AmigoEntry = await DiatumApi.getAmigo(this.session.amigoNode, this.session.amigoToken, key);
-        await this.storage.addAmigo(this.session.amigoId, amigo.amigoId, amigo.revision, amigo.notes);
+        let identity: Amigo = await DiatumApi.getAmigoIdentity(this.session.amigoNode, this.session.amigoToken, key); 
+       console.log(identity.name);
+
+        await this.storage.addAmigo(this.session.amigoId, identity, amigo.revision, amigo.notes);
         await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
         for(let i = 0; i < amigo.labels.length; i++) {
           await this.storage.setAmigoLabel(this.session.amigoId, key, amigo.labels[i]);
