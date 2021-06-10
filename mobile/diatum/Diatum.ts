@@ -208,18 +208,22 @@ class _Diatum {
           try {
             // pull revisions with agent auth
             let revisions = await DiatumApi.getContactRevisions(connection.node, connection.token, this.authToken, this.authMessage);
-            console.log(revisions);
 
             // if identity revision is different, update registry
+            if(revisions.listingRevision > connection.identityRevision) {
+              await this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
+            }
 
             // if attribute revision is different, update contact
+            console.log(revisions.contactRevision + " --- " + connection.attributeRevision);
 
             // if subject revision is different, update view
+            console.log(revisions.viewRevision + " --- " + connection.subjectRevision);
           }
           catch(err) {
             console.log(err);
             // check if idenity changed in registry
-            this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
+            await this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
           }
         }
       }
@@ -380,7 +384,6 @@ class _Diatum {
         // add any remote entry not local
         let amigo: AmigoEntry = await DiatumApi.getAmigo(this.session.amigoNode, this.session.amigoToken, key);
         let identity: Amigo = await DiatumApi.getAmigoIdentity(this.session.amigoNode, this.session.amigoToken, key); 
-       console.log(identity.name);
 
         await this.storage.addAmigo(this.session.amigoId, identity, amigo.revision, amigo.notes);
         await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
@@ -393,6 +396,7 @@ class _Diatum {
 
         // update any entry with different revision
         let amigo: AmigoEntry = await DiatumApi.getAmigo(this.session.amigoNode, this.session.amigoToken, key);
+
         await this.storage.updateAmigo(this.session.amigoId, amigo.amigoId, amigo.revision, amigo.notes);
         await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
         for(let i = 0; i < amigo.labels.length; i++) {

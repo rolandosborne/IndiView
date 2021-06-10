@@ -299,10 +299,10 @@ export class Storage {
 
   // get stale connection to update
   public async getStaleAmigoConnection(id: string, stale: number): Promise<AmigoConnection> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
     if(hasResult(res)) {
       let a = res[0].rows.item(0);
-      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision };
+      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision };
     }
     return null;
   }
