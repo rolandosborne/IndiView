@@ -165,11 +165,17 @@ function AgreeScreen({ route, navigation }) {
 }
 
 function MainScreen() {
+  const forFade = ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
+
   return (
-    <MainStack.Navigator initialRouteName="Home">
+    <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
-      <MainStack.Screen name="Search" component={SearchScreen} options={{headerShown: true}} />
-      <MainStack.Screen name="Label" component={LabelScreen} options={{headerShown: true}} />
+      <MainStack.Screen name="Search" component={SearchScreen} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Label" component={LabelScreen} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
 }
