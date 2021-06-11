@@ -336,7 +336,7 @@ export class Storage {
     return views;
   }
   public async addConnectionAttribute(id: string, amigoId: string, attribute: Attribute): Promise<void> {
-    await this.db.executeSql("INSERT INTO contact_" + id + " (amigo_id, attribute_id, revision, schema, data) values (?, ?, ?, ?);", [amigoId, attribute.attributeId, attribute.attributeId, attribute.revision, attribute.schema, attribute.data]);
+    await this.db.executeSql("INSERT INTO contact_" + id + " (amigo_id, attribute_id, revision, schema, data) values (?, ?, ?, ?, ?);", [amigoId, attribute.attributeId, attribute.revision, attribute.schema, attribute.data]);
   }
   public async updateConnectionAttribute(id: string, amigoId: string, attribute: Attribute): Promise<void> {
     await this.db.executeSql("UPDATE contact_" + id + " revision=?, schema=?, data=? WHERE amigo_id=? AND attribute_id=?;", [attribute.revision, attribute.schema, attribute.data, amigoId, attribute.attributeId]);
@@ -373,7 +373,7 @@ export class Storage {
     else {
       count = tags.length;
     }
-    await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amgioId, subjectId]);
+    await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amigoId, subjectId]);
   }
 
 

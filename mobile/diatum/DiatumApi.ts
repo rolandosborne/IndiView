@@ -173,12 +173,12 @@ export class DiatumApi {
     return await response.json();
   }
   public static async getConnectionSubject(node: string, token: string, agent: string, subjectId: string): Promise<Subject> {
-    let resposne = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    let response = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
     checkResponse(response);
     return await response.json();
   }
   public static async getConnectionSubjectTags(node: string, token: string, agent: string, subjectId: string, filter: string): Promise<Subject> {
-    let resposne = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter));
+    let response = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter));
     checkResponse(response);
     return await response.json();
   }

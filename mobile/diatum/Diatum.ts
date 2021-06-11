@@ -297,7 +297,7 @@ class _Diatum {
     await asyncForEach(remoteMap, async (value, key) => {
       if(!localMap.has(key)) {
         let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
-        await this.storeService.addConnectionAttribute(this.session.amigoId, amigoId, a);
+        await this.storage.addConnectionAttribute(this.session.amigoId, amigoId, a);
         notify = true;
       }
       else if(localMap.get(key) != value) {
@@ -343,7 +343,7 @@ class _Diatum {
         let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
         await this.storage.addConnectionSubject(this.session.amigoId, amigoId, subject);
         if(value.tag != null) {
-          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, this.tagFilter);
+          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, key, this.tagFilter);
           await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
         }
         notify = true;
@@ -356,7 +356,7 @@ class _Diatum {
         }
 
         if(localMap.get(key).tag != value.tag) {
-          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, this.tagFilter);
+          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, key, this.tagFilter);
           await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
           notify = true;
         }
@@ -457,7 +457,7 @@ class _Diatum {
       }
       else if(localMap.get(key) != value) {
         let entry = await this.groupService.getLabel(this.node, this.token, key);
-        await this.storeService.updateLabel(this.session.amigoId, entry);
+        await this.storage.updateLabel(this.session.amigoId, entry);
         notify = true;
       }
     });
