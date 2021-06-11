@@ -4,29 +4,17 @@ import base64 from 'react-native-base64'
 import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag } from './DiatumTypes';
 
 // helper funtions
-function decodeText(s: string): any {
-  if(s == null) {
-    return null;
-  }
-  return base64.decode(s);
-}
-function encodeText(o: string): string {
-  if(o == null) {
-    return null;
-  }
-  return base64.encode(o);
-}
 function decodeObject(s: string): any {
   if(s == null) {
     return null;
   }
-  return JSON.parse(base64.decode(s));
+  return JSON.parse(s);
 }
 function encodeObject(o: any): string {
   if(o == null) {
     return null;
   }
-  return base64.encode(JSON.stringify(o));
+  return JSON.stringify(o);
 }
 function hasResult(res): boolean {
   if(res === undefined || res[0] === undefined || res[0].rows === undefined || res[0].rows.length == 0) {
@@ -144,10 +132,10 @@ export class Storage {
     return views;
   }
   public async addLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("INSERT INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, encodeText(entry.name)]);
+    await this.db.executeSql("INSERT INTO group_" + id + " (label_id, revision, name) values (?, ?, ?);", [entry.labelId, entry.revision, entry.name]);
   }
   public async updateLabel(id: string, entry: LabelEntry): Promise<void> {
-    await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [encodeText(entry.name), entry.revision, entry.labelId]);
+    await this.db.executeSql("UPDATE group_" + id + " set name=?, revision=? where label_id=?;", [entry.name, entry.revision, entry.labelId]);
   }
   public async removeLabel(id: string, labelId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM group_" + id + " where label_id=?;", [labelId]);
@@ -218,10 +206,10 @@ export class Storage {
     return views;
   }
   public async addAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
-    await this.db.executeSql("INSERT INTO profile_" + id + " (attribute_id, revision, schema, data) values (?, ?, ?, ?);", [attributeId, revision, schema, encodeText(data)]);
+    await this.db.executeSql("INSERT INTO profile_" + id + " (attribute_id, revision, schema, data) values (?, ?, ?, ?);", [attributeId, revision, schema, data]);
   }
   public async updateAttribute(id: string, attributeId: string, revision: number, schema: string, data: string): Promise<void> {
-    await this.db.executeSql("UPDATE profile_" + id + " set revision=?, schema=?, data=? where attribute_id=?;", [revision, schema, encodeText(data), attributeId]);
+    await this.db.executeSql("UPDATE profile_" + id + " set revision=?, schema=?, data=? where attribute_id=?;", [revision, schema, data, attributeId]);
   }
   public async removeAttribute(id: string, attributeId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM profile_" + id + " where attribute_id=?;", [attributeId]);
@@ -247,10 +235,10 @@ export class Storage {
     return views;
   }
   public async addSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
-    await this.db.executeSql("INSERT INTO show_" + id + " (subject_id, revision, created, modified, expires, schema, data, share, ready, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0);", [subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, encodeText(subject.data), share, ready]);
+    await this.db.executeSql("INSERT INTO show_" + id + " (subject_id, revision, created, modified, expires, schema, data, share, ready, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0);", [subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, subject.data, share, ready]);
   } 
   public async updateSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
-    await this.db.executeSql("UPDATE show_" + id + " set revision=?, created=?, modified=?, expires=?, ready=?, share=?, schema=?, data=? where subject_id=?;", [subject.revision, subject.created, subject.modified, subject.expires, ready, share, subject.schema, encodeText(subject.data), subject.subjectId]);
+    await this.db.executeSql("UPDATE show_" + id + " set revision=?, created=?, modified=?, expires=?, ready=?, share=?, schema=?, data=? where subject_id=?;", [subject.revision, subject.created, subject.modified, subject.expires, ready, share, subject.schema, subject.data, subject.subjectId]);
   }
   public async removeSubject(id: string, subjectId: string) {
     await this.db.executeSql("DELETE FROM show_" + id + " where subject_id=?;", [subjectId]);
@@ -384,7 +372,7 @@ export class Storage {
     let labels: LabelEntry[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
-        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: decodeText(res[0].rows.item(i).name)});
+        labels.push({ labelId: res[0].rows.item(i).label_id, revision: res[0].rows.item(i).revision, name: res[0].rows.item(i).name});
       }
     }
     return labels;
