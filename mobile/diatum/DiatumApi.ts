@@ -139,24 +139,7 @@ export class DiatumApi {
     return await authResponse.json();
   }
 
-  public static async getRegistryRevision(registry: string, amigoId: string): Promise<number> {
-    let revisionResponse = await fetch(registry + "/amigo/messages/revision?amigoId=" + amigoId);
-    checkResponse(revisionResponse);
-    return await revisionResponse.json();
-  }
-  
-  public static async getRegistryMessage(registry: string, amigoId: string): Promise<AmigoMessage> {
-    let messageResponse = await fetch(registry + "/amigo/messages?amigoId=" + amigoId);
-    checkResponse(messageResponse);
-    return await messageResponse.json();
-  }
- 
-  public static async setRegistryMessage(registry: string, message: AmigoMessage): Promise<void> {
-    let messageResponse = await fetch(registry + "/amigo/messages", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
-    checkResponse(messageResponse);
-  }
-
-  public static async getContactRevisions(node: string, token: string, agent: string, message: AuthMessage): Promise<Revisions> {
+   public static async getConnectionRevisions(node: string, token: string, agent: string, message: AuthMessage): Promise<Revisions> {
     let revisionResponse = await fetch(node + "/token/revisions?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
     if(revisionResponse.status == 402) { // 402 means agent auth not set
       let auth = await fetch(node + "/token/agent?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
@@ -165,6 +148,43 @@ export class DiatumApi {
     checkResponse(revisionResponse);
     return await revisionResponse.json();
   }
+
+  public static async getConnectionListing(node: string, token: string, agent: string): Promise<Amigo> {
+    let response = await fetch(node + "/listing/identity?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getConnectionAttributeView(node: string, token: string, agent: string, filter: string[]): Promise<AttributeView> {
+    let response = await fetch(node + "/contact/attributes/view?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filter) });
+    checkResponse(response);
+    return await response.json();
+  }
+  public static async getConnectionAttribute(node: string, token: string, agent: string, attributeId: string): Promise<Attribute> {
+    let response = await fetch(node + "/contact/attributes/" + attributeId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    checkResponse(response);
+    return await response.json();
+  }
+
+
+  public static async getConnectionSubjectView(node: string, token: string, agent: string, filter: string[]): Promise<SubjectView> {
+    let response = await fetch(node + "/view/subjects/view?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filter) });
+    checkResponse(response);
+    return await response.json();
+  }
+  public static async getConnectionSubject(node: string, token: string, agent: string, subjectId: string): Promise<Subject> {
+    let resposne = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    checkResponse(response);
+    return await response.json();
+  }
+  public static async getConnectionSubjectTags(node: string, token: string, agent: string, subjectId: string, filter: string): Promise<Subject> {
+    let resposne = await fetch(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter));
+    checkResponse(response);
+    return await response.json();
+  }
+
+
+
 
   public static async getDirtyIdentity(node: string, token: string): Promise<boolean> {
     let dirtyResponse = await fetch(node + "/identity/dirty?token=" + encodeURIComponent(token));
@@ -182,4 +202,22 @@ export class DiatumApi {
     checkResponse(identityResponse);
     return await identityResponse.json();
   }
+ 
+  public static async getRegistryRevision(registry: string, amigoId: string): Promise<number> {
+    let revisionResponse = await fetch(registry + "/amigo/messages/revision?amigoId=" + amigoId);
+    checkResponse(revisionResponse);
+    return await revisionResponse.json();
+  }
+ 
+  public static async getRegistryMessage(registry: string, amigoId: string): Promise<AmigoMessage> {
+    let messageResponse = await fetch(registry + "/amigo/messages?amigoId=" + amigoId);
+    checkResponse(messageResponse);
+    return await messageResponse.json();
+  }
+ 
+  public static async setRegistryMessage(registry: string, message: AmigoMessage): Promise<void> {
+    let messageResponse = await fetch(registry + "/amigo/messages", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
+    checkResponse(messageResponse);
+  }
+
 }

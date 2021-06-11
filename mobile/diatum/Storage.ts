@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Subject, SubjectTag } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag } from './DiatumTypes';
 
 // helper funtions
 function decodeText(s: string): any {
@@ -317,6 +317,66 @@ export class Storage {
   public async updateStaleTime(id: string, amigoId: string, stale: number): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " set update_timestamp=? WHERE amigo_id=?;", [stale, amigoId]);
   }
+  public async updateConnectionAttributeRevision(id: string, amigoId: string, revision: number): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " set attribute_revision=? WHERE amigo_id=?;", [revision, amigoId]);
+  }
+  public async updateConnectionSubjectRevision(id: string, amigoId: string, revision: number): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " set subject_revision=? WHERE amigo_id=?;", [revision, amigoId]);
+  }
+
+
+  public async getConnectionAttributeView(id: string, amigoId: string): Promise<AttributeView[]> {
+    let res = await this.db.executeSql("SELECT attribute_id, revision FROM contact_" + id + " WHERE amigo_id=?;", [amigoId]);
+    let views: AttributeView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ attributeId: res[0].rows.item(i).attribute_id, revision: res[0].rows.item(i).revision});
+      }
+    }
+    return views;
+  }
+  public async addConnectionAttribute(id: string, amigoId: string, attribute: Attribute): Promise<void> {
+    await this.db.executeSql("INSERT INTO contact_" + id + " (amigo_id, attribute_id, revision, schema, data) values (?, ?, ?, ?);", [amigoId, attribute.attributeId, attribute.attributeId, attribute.revision, attribute.schema, attribute.data]);
+  }
+  public async updateConnectionAttribute(id: string, amigoId: string, attribute: Attribute): Promise<void> {
+    await this.db.executeSql("UPDATE contact_" + id + " revision=?, schema=?, data=? WHERE amigo_id=? AND attribute_id=?;", [attribute.revision, attribute.schema, attribute.data, amigoId, attribute.attributeId]);
+  }
+  public async removeConnectionAttribute(id: string, amigoId: string, attributeId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM contact_" + id + " WHERE amigo_id=? AND attribute_id=?", [amigoId, attributeId]);
+  }  
+
+
+  public async getConnectionSubjectView(id: string, amigoId: string): Promise<SubjectView[]> {
+    let res = await this.db.executeSql("SELECT subject_id, revision, tag_revision FROM view_" + id + " WHERE amigo_id=?;", [amigoId]);
+    let views: SubjectView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ subjectId: res[0].rows.item(i).subject_id, revision: res[0].rows.item(i).revision, tagRevision: res[0].rows.item(i).tag_revision});
+      }
+    }
+    return views;
+  } 
+  public async addConnectionSubject(id: string, amigoId: string, subject: Subject): Promise<void> {
+    await this.db.executeSql("INSERT INTO view_" + id + " (amigo_id, subject_id, revision, created, modified, expires, schema, data, hide, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0);", [amigoId, subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, subject.data]);
+  }
+  public async updateConnectionSubject(id: string, amigoId: string, subject: Subject): Promise<void> {
+    await this.db.executeSql("UPDATE view_" + id + " set revision=?, created=?, modified=?, expires=?, schema=?, data=? where amigo_id=? and subject_id=?;", [subject.revision, subject.created, subject.modified, subject.expires, subject.schema, subject.data, amigoId, subject.subjectId]);
+  }
+  public async removeConnectionSubject(id: string, amigoId: string, subjectId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM view_" + id + " where amigo_id=? and subject_id=?;", [amigoId, subjectId]);
+  }
+  public async updateConnectionSubjectTags(id: string, amigoId: string, subjectId: string, revision: number, tags: Tag[]) {
+    let count: number;
+    if(tags == null) {
+      count = 0;
+    }
+    else {
+      count = tags.length;
+    }
+    await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amgioId, subjectId]);
+  }
+
+
 
   // app data access
   public async getLabels(id: string): Promise<LabelEntry[]> {

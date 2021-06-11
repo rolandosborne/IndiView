@@ -25,6 +25,9 @@ export enum DiatumEvent {
   Attributes,
   Subjects,
   Share,
+  Listing,
+  Contact,
+  View,
   COUNT
 }
 
@@ -207,23 +210,33 @@ class _Diatum {
 
           try {
             // pull revisions with agent auth
-            let revisions = await DiatumApi.getContactRevisions(connection.node, connection.token, this.authToken, this.authMessage);
+            let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
 
             // if identity revision is different, update registry
-            if(revisions.listingRevision > connection.identityRevision) {
-              await this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
+            if(revisions.identityRevision != connection.identityRevision) {
+              let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
+              if(amigo.amigoId == connection.amigoId) { // sanity check
+                await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+                this.notifyListeners(DiatumEvent.Listing);
+              }
             }
 
             // if attribute revision is different, update contact
-            console.log(revisions.contactRevision + " --- " + connection.attributeRevision);
+            if(revisions.contactRevision != connection.attributeRevision) {
+              await this.syncConnectionContact(connection.amigoId, connection.node, connection.token);
+              await this.storage.updateConnectionAttributeRevision(this.session.amigoId, connection.amigoId, revisions.contactRevision);
+            }
 
             // if subject revision is different, update view
-            console.log(revisions.viewRevision + " --- " + connection.subjectRevision);
+            if(revisions.viewRevision != connection.subjectRevision) {
+              await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
+              await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
+            }
           }
           catch(err) {
             console.log(err);
             // check if idenity changed in registry
-            await this.syncContactRegistry(connection.registry, connection.amigoId, connection.revision);
+            await this.syncContactRegistry(connection.registry, connection.amigoId, connection.identityRevision);
           }
         }
       }
@@ -257,7 +270,109 @@ class _Diatum {
     if(r > revision) {
       let message = await DiatumApi.getRegistryMessage(registry, amigoId);
       let amigo = await DiatumApi.setAmigoIdentity(this.session.amigoNode, this.session.amigoToken, message);
-      await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+      if(amigo.amigoId == amigoId) { // sanity check
+        await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+      }
+    }
+  }
+
+  private async syncConnectionContact(amigoId: string, node: string, token: string): Promise<void> {
+    let notify: boolean = false;
+
+    // get remote attributes
+    let remote: AttributeView[] = await DiatumApi.getConnectionAttributeView(node, token, this.authToken, this.attributeFilter);
+    let remoteMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].attributeId, remote[i].revision);
+    }
+
+    // get local attributes
+    let local: AttributeView[] = await this.storage.getConnectionAttributeView(this.session.amigoId, amigoId);
+    let localMap: Map<string, number> = new Map<string, number>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].attributeId, local[i].revision);
+    }
+
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+      if(!localMap.has(key)) {
+        let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
+        await this.storeService.addConnectionAttribute(this.session.amigoId, amigoId, a);
+        notify = true;
+      }
+      else if(localMap.get(key) != value) {
+        let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
+        await this.storage.updateConnectionAttribute(this.session.amigoId, amigoId, a);
+        notify = true;
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeConnectionAttribute(this.session.amigoId, amigoId, key);
+        notify = true;
+      }
+    });
+    
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Contact);
+    }
+  }
+
+  private async syncConnectionView(amigoId: string, node: string, token: string): Promise<void> {
+    let notify: boolean = false;
+
+    // get remote subjects
+    let remote: SubjectView[] = await DiatumApi.getConnectionSubjectView(node, token, this.authToken, this.subjectFilter);
+    let remoteMap: Map<string, any> = new Map<string, any>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].subjectId, { subjet: remote[i].revision, tag: remote[i].tagRevision });
+    }
+
+    // get local subjects
+    let local: SubjectView[] = await this.storage.getConnectionSubjectView(this.session.amigoId, amigoId);
+    let localMap: Map<string, any> = new Map<string, any>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].subjectId, { subject: local[i].revision, tag: local[i].tagRevision });
+    }
+
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+      if(!localMap.has(key)) {
+        let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
+        await this.storage.addConnectionSubject(this.session.amigoId, amigoId, subject);
+        if(value.tag != null) {
+          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, this.tagFilter);
+          await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
+        }
+        notify = true;
+      }
+      else {
+        if(localMap.get(key).subject != value.subject) {
+          let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
+          await this.storage.updateConnectionSubject(this.session.amigoId, amigoId, subject);
+          notify = true;
+        }
+
+        if(localMap.get(key).tag != value.tag) {
+          let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, this.tagFilter);
+          await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
+          notify = true;
+        }
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeConnectionSubject(this.amigoId, amigoId, key);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.View);
     }
   }
 
