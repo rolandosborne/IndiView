@@ -135,7 +135,7 @@ class _Diatum {
     if(this.session != null) {
       let d: Date = new Date();
       let cur: number = d.getTime();
-      
+
       // check node revisions every interval
       if(this.nodeSync + SYNC_NODE_MS < cur) {      
 
@@ -197,7 +197,7 @@ class _Diatum {
         if(auth == null || cur > (auth.issued + auth.expires / 2)) {
           this.authMessage = await DiatumApi.getAgentMessage(this.session.appNode, this.session.appToken);
           this.authToken = getAuthObject(this.authMessage).token;
-          await this.storage.setAccountObject(amigo.amigoId, AUTH_KEY, this.authMessage);
+          await this.storage.setAccountObject(this.session.amigoId, AUTH_KEY, this.authMessage);
         }
       }
 

@@ -31,7 +31,7 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
 const ContactDrawer = createDrawerNavigator();
-const PersonalDrawer = createDrawerNavigator();
+const ConversationDrawer = createDrawerNavigator();
 const HomeDrawer = createDrawerNavigator();
 const MainStack = createStackNavigator();
 
@@ -39,7 +39,7 @@ let logoutNav = null;
 let homeNav = null;
 let feedNav = null;
 let contactNav = null;
-let personalNav = null;
+let conversationNav = null;
 
 function RootScreen({ navigation }) {
   logoutNav = navigation;
@@ -48,7 +48,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v23.db", attributes, subjects, tag).then(async ctx => {
+  diatum.init("indiview_v24.db", attributes, subjects, tag).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -299,8 +299,8 @@ function ContactScreen() {
   );
 }
 
-function PersonalDrawerContent(props) {
-  personalNav = props.navigation;
+function ConversationDrawerContent(props) {
+  conversationNav = props.navigation;
   const [labels, setLabels] = React.useState([]);
   let diatum: Diatum = useDiatum();
   const update = () => {
@@ -326,22 +326,22 @@ function PersonalDrawerContent(props) {
   );
 }
 
-function PersonalNavScreen() {
+function ConversationNavScreen() {
   const selected = (id: string) => {
     console.log("SELECTED: " + id);
   };
 
   return (
-    <PersonalDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <PersonalDrawerContent {...props} {...{onLabel: selected}} />}>
-      <PersonalDrawer.Screen name="PersonalScreen" component={PersonalScreen} />
-    </PersonalDrawer.Navigator>
+    <ConversationDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ConversationDrawerContent {...props} {...{onLabel: selected}} />}>
+      <ConversationDrawer.Screen name="ConversationScreen" component={ConversationScreen} />
+    </ConversationDrawer.Navigator>
   )
 }
 
-function PersonalScreen() {
+function ConversationScreen() {
 
   const toggleLabel = () => {
-    personalNav.openDrawer();
+    conversationNav.openDrawer();
   };
   const toggleControl = () => {
     homeNav.openDrawer();
@@ -367,7 +367,7 @@ function PersonalScreen() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Personal</Text>
+      <Text>Conversation</Text>
       <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
         <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
       </TouchableOpacity>
@@ -448,20 +448,13 @@ function HomeScreen({ navigation }) {
     if(contactNav != null) {
       contactNav.closeDrawer();
     }
-    if(personalNav != null) {
-      personalNav.closeDrawer();
+    if(conversationNav != null) {
+      conversationNav.closeDrawer();
     }
   };
 
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
-      <Tab.Screen name="Personal" component={PersonalNavScreen} 
-          listeners={({ navigation, route }) => ({
-            tabPress: e => { tabbed(); }
-          })}
-          options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="user" size={size} color={color} solid />
-          )}} />
       <Tab.Screen name="Contact" component={ContactNavScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }
@@ -475,6 +468,13 @@ function HomeScreen({ navigation }) {
           })}
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
+          )}} />
+      <Tab.Screen name="Conversation" component={ConversationNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="comments-o" size={size} color={color} solid />
           )}} />
     </Tab.Navigator>
   );

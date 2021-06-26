@@ -74,6 +74,11 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS share_" + id + " (amigo_id text, share_id text, revision integer, status text, token text, updated integer, app_share text, unique(amigo_id), unique(share_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
+
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, revision integer, unique(amigo_id, dialogue_id));");
+
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, topic_id text, revision integer, blurbs text, unique(amigo_id, dialogue_id, topic_id));");
+
   }
 
 
