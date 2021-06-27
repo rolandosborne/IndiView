@@ -64,6 +64,8 @@ export interface Revisions {
   listingRevision?: number;
   contactRevision?: number;
   viewRevision?: number;
+  dialogueRevision?: number;
+  insightRevision?: number;
 }
 
 export interface ServiceAccess { 
@@ -235,3 +237,15 @@ export namespace ShareEntry {
         Closed: 'closed' as StatusEnum
     };
 }
+
+export interface InsightView { 
+    amigoId: string;
+    dialogueId: string;
+    revision: number;
+}
+
+export interface DialogueView { 
+    dialogueId: string;
+    revision: number;
+}
+

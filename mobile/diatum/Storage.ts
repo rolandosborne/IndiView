@@ -75,7 +75,7 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
 
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, revision integer, unique(amigo_id, dialogue_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, revision integer, insight integer, unique(amigo_id, dialogue_id));");
 
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, topic_id text, revision integer, blurbs text, unique(amigo_id, dialogue_id, topic_id));");
 
@@ -367,6 +367,30 @@ export class Storage {
       count = tags.length;
     }
     await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amigoId, subjectId]);
+  }
+
+
+
+  // conversation module synchronization
+  public async getInsightViews(id: string): Promise<InsightView[]> {
+    let res = await this.db.executeSql("SELECT amigo_id, dialogue_id, revision from dialogue_" + id + " WHERE insight!=?;", [0]);
+    let views: InsightView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ amigoId: res[0].rows.item(i).amigo_id, dialogueId: res[0].rows.item(i).dialogue_id, revision: res[0].rows.item(i).revision });
+      }
+    }
+    return views;
+  }
+  public async getDialogueViews(id: string): Promise<DialogueView[]> {
+    let res = await this.db.executeSql("SELECT dialogue_id, revision from dialogue_" + id + " WHERE insight=?;", [0]);
+    let views: DialogueView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ dialogueId: res[0].rows.item(i).dialogue_id, revision: res[0].rows.item(i).revision });
+      }
+    }
+    return views;
   }
 
 

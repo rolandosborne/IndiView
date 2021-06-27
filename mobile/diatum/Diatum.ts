@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareEntry } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareEntry, InsightView, DialogueView } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -147,39 +147,51 @@ class _Diatum {
         let rev = await DiatumApi.getRevisions(this.session.amigoNode, this.session.amigoToken);
 
         // update identity if revision change
-        if(this.revisions.identityRevision != rev.identityRevision && this.access.enableIdentity) {
+        if(this.revisions.identityRevision !== rev.identityRevision && this.access.enableIdentity) {
           await this.syncIdentity();
           synced = true;
         }
 
         // update group if revision change
-        if(this.revisions.groupRevision != rev.groupRevision && this.access.enableGroup) {
+        if(this.revisions.groupRevision !== rev.groupRevision && this.access.enableGroup) {
           await this.syncGroup();
           synced = true;
         }
 
         // update index if revision change
-        if(this.revisions.indexRevision != rev.indexRevision && this.access.enableIndex) {
+        if(this.revisions.indexRevision !== rev.indexRevision && this.access.enableIndex) {
           await this.syncIndex();
           await this.syncPending();
           synced = true;
         }
 
         // update profile if revision change
-        if(this.revisions.profileRevision != rev.profileRevision && this.access.enableProfile) {
+        if(this.revisions.profileRevision !== rev.profileRevision && this.access.enableProfile) {
           await this.syncProfile();
           synced = true;
         }
 
         // update show if revision change
-        if(this.revisions.showRevision != rev.showRevision && this.access.enableShow) {
+        if(this.revisions.showRevision !== rev.showRevision && this.access.enableShow) {
           await this.syncShow();
           synced = true;
         }
 
         // update share if revision change
-        if(this.revisions.shareRevision != rev.shareRevision && this.access.enableShare) {
+        if(this.revisions.shareRevision !== rev.shareRevision && this.access.enableShare) {
           await this.syncShare();
+          synced = true;
+        }
+
+        // update insight if revision chage
+        if(this.revisions.insightRevision !== rev.insightRevision) {
+          await this.syncInsight();
+          synced = true;
+        }
+
+        // update dialogue if revision change
+        if(this.revisions.dialogueRevision !== rev.dialogueRevision) {
+          await this.syncDialogue();
           synced = true;
         }
 
@@ -753,6 +765,26 @@ class _Diatum {
     if(notify) {
       this.notifyListeners(DiatumEvent.Share);
     }
+  }
+
+  public async syncInsight(): Promise<void> {
+    let notify: boolean = false;
+    
+    let remote: InsightView[] = await DiatumApi.getInsightViews(this.session.amigoNode, this.session.amigoToken);
+    console.log("REMOTE INSIGHT: ", remote);
+
+    let local: InsightView[] = await this.storage.getInsightViews(this.session.amigoId);
+    console.log("LOCAL INSIGHT: ", local);
+  }
+
+  public async syncDialogue(): Promise<void> {
+    let notify: boolean = false;
+    
+    let remote: DialogueView[] = await DiatumApi.getDialogueViews(this.session.amigoNode, this.session.amigoToken);
+    console.log("REMOTE DIALOGUE: ", remote);
+
+    let local: DialogueView[] = await this.storage.getDialogueViews(this.session.amigoId);
+    console.log("LOCAL DIALOGUE: ", local);
   }
 
   public async getIdentity(): Promsie<Amigo> {

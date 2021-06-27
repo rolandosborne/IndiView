@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView, InsightView, DialogueView } from './DiatumTypes';
 
 function checkResponse(response) {
   if(response.status >= 400 && response.status < 600) {
@@ -220,4 +220,17 @@ export class DiatumApi {
     checkResponse(messageResponse);
   }
 
+
+
+  public static async getInsightViews(node: string, token: string): Promise<Insight[]> {
+    let response = await fetch(node + "/conversation/insight/view?token=" + encodeURIComponent(token));
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getDialogueViews(node: string, token: string): Promise<Dialogue[]> {
+    let response = await fetch(node + "/conversation/dialogue/view?token=" + encodeURIComponent(token));
+    checkResponse(response);
+    return await response.json();
+  }
 }
