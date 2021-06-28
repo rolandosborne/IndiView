@@ -249,3 +249,36 @@ export interface DialogueView {
     revision: number;
 }
 
+export interface Dialogue { 
+    dialogueId: string;
+    created: number;
+    modified: number;
+    revision: number;
+    active: boolean;
+    linked: boolean;
+    synced: boolean;
+    amigoId: string;
+    amigoRegistry?: string;
+}
+
+export interface TopicView { 
+    topicId: string;
+    revision: number;
+}
+
+export interface Blurb { 
+    blurbId: string;
+    amigoId: string;
+    schema: string;
+    data: string;
+    revision: number;
+    created: number;
+    updated: number;
+}
+
+export interface Topic { 
+    topicId: string;
+    revision: number;
+    blurbs: Array<Blurb>;
+}
+

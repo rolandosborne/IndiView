@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag } from './DiatumTypes';
+import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb } from './DiatumTypes';
 
 // helper funtions
 function decodeObject(s: string): any {
@@ -75,10 +75,8 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
 
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, revision integer, insight integer, unique(amigo_id, dialogue_id));");
-
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, topic_id text, revision integer, blurbs text, unique(amigo_id, dialogue_id, topic_id));");
-
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, linked integer, synced integer, revision integer, insight integer, insight_revision integer, offsync integer, unique(amigo_id, dialogue_id, insight));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, insight integer, topic_id text, position integer, revision integer, blurbs text, unique(amigo_id, dialogue_id, insight, topic_id));");
   }
 
 
@@ -289,6 +287,14 @@ export class Storage {
     await this.db.executeSql("DELETE FROM share_" + id + " WHERE share_id=?;", [shareId]);
   }
 
+  // get connection token
+  public async getConnectionToken(id: string, amigioId: string): Promise<string> {
+    let res = await this.db.executeSql("SELECT token from share_" + id + " where amigoId=? and status=?;", [amigoId, 'connected']);
+    if(hasResult(res)) {
+      return res[0].rows.item(0).token;
+    }
+    return null;
+  }
 
   // get stale connection to update
   public async getStaleAmigoConnection(id: string, stale: number): Promise<AmigoConnection> {
@@ -373,15 +379,49 @@ export class Storage {
 
   // conversation module synchronization
   public async getInsightViews(id: string): Promise<InsightView[]> {
-    let res = await this.db.executeSql("SELECT amigo_id, dialogue_id, revision from dialogue_" + id + " WHERE insight!=?;", [0]);
+    let res = await this.db.executeSql("SELECT amigo_id, dialogue_id, insight_revision from dialogue_" + id + " WHERE insight!=?;", [0]);
     let views: InsightView[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
-        views.push({ amigoId: res[0].rows.item(i).amigo_id, dialogueId: res[0].rows.item(i).dialogue_id, revision: res[0].rows.item(i).revision });
+        views.push({ amigoId: res[0].rows.item(i).amigo_id, dialogueId: res[0].rows.item(i).dialogue_id, revision: res[0].rows.item(i).insight_revision });
       }
     }
     return views;
   }
+  public async addInsight(id: string, amigoId: string, dialogueId: string): Promise<void> {
+    await this.db.executeSql("INSERT INTO dialogue_" + id + " (amigo_id, dialogue_id, insight) values (?, ?, ?);", [amigoId, dialogueId, 1]);
+  }
+  public async updateInsight(id: string, amigoId: string, dialogue: Dialogue): Promise<void> {
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, offset=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, 0, amigoId, dialogue.dialogueId, 0]);
+  }
+  public async updateInsightRevision(id: string, amigoId: string, dialogueId: string, revision: number, offsync: boolean): Promise<void> {
+    let s = offsync ? 1 : 0;
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET insight_revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [revision, s, amigoId, dialogueId, 0]);
+  }
+  public async removeInsight(id: string, amigoId: string, dialogueId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
+    await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
+  }
+  public async getInsightTopicView(id: string, amigoId: string, dialogueId: string): Promise<TopicView[]> {
+    let res = await this.db.executeSql("SELECT topic_id, revision FROM topic_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=? ORDER BY position ASC;", [amigoId, dialogueId, 0]);
+    let views: TopicView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ topicId: res[0].rows.item(i).topic_id, revision: res[0].rows.item(i).revision });
+      }
+    }
+    return views;
+  }
+  public async addInsightTopic(id: string, amigoId: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
+    await this.db.executeSql("INSERT INTO topic_" + id + " (amigo_id, dialogue_id, insight, topic_id, position, revision, blurbs) values (?, ?, ?, ?, ?, ?, ?);", [amigoId, dialogueId, 1, topic.topicId, position, topic.revision, encodeObject(topic.blurbs)]);
+  }
+  public async updateInsightTopic(id: string, amigoId: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
+    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE amigo_id=?, dialogue_id=?, insight!=?;", [position, topic.revision, encodeObject(topic.blurbs), amigoId, dialogueId, 0]);
+  }
+  public async removeInsightTopic(id: string, amigoId: string, dialogueId: string, topicId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigoId=?, dialogueId=?, topicId=?, insight!=?", [amigoId, dialogueId, topicId, 0]);  }
+
+
   public async getDialogueViews(id: string): Promise<DialogueView[]> {
     let res = await this.db.executeSql("SELECT dialogue_id, revision from dialogue_" + id + " WHERE insight=?;", [0]);
     let views: DialogueView[] = [];
@@ -392,7 +432,35 @@ export class Storage {
     }
     return views;
   }
-
+  public async addDialogue(id: string, dialogueId: string): Promise<void> {
+    await this.db.executeSql("INSERT INTO dialogue_" + id + " (dialogue_id, insight) values (?, ?);", [dialogueId, 0]);
+  }
+  public async updateDailogue(id: string, dialogue: Dialogue): Promise<void> {
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, amigo_id=? WHERE dialogue_id=? AND insight=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, dialogue.amigoId, dialogue.dialogueId, 0]);
+  }
+  public async removeDialoge(id: string, dialogueId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
+    await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
+  }
+  public async getDialogueTopicView(id: string, dialogueId: string): Promise<TopicView[]> {
+    let res = await this.db.executeSql("SELECT topic_id, revision FROM topic_" + id + " WHERE dialogue_id=?, insight=? ORDER BY position ASC;", [dialogueId, 0]);
+    let views: TopicView[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        views.push({ topicId: res[0].rows.item(i).topic_id, revision: res[0].rows.item(i).revision });
+      }
+    }
+    return views;
+  }
+  public async addDialogueTopic(id: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
+    await this.db.executeSql("INSERT INTO topic_" + id + " (dialogue_id, insight, topic_id, position, revision, blurbs) values (?, ?, ?, ?, ?, ?, ?);", [dialogueId, 0, topic.topicId, position, topic.revision, encodeObject(topic.blurbs)]);
+  }
+  public async updateDialogueTopic(id: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
+    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE dialogue_id=?, insight=?;", [position, topic.revision, encodeObject(topic.blurbs), dialogueId, 0]);
+  }
+  public async removeDialogueTopic(id: string, dialogueId: string, topicId: string): Promise<void> {
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogueId=?, topicId=?, insight=?", [dialogueId, topicId, 0]);
+  }
 
 
   // app data access
