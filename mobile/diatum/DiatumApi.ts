@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView, InsightView, DialogueView } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView, InsightView, DialogueView, Dialogue, TopicView, Topic } from './DiatumTypes';
 
 function checkResponse(response) {
   if(response.status >= 400 && response.status < 600) {
@@ -228,9 +228,59 @@ export class DiatumApi {
     return await response.json();
   }
 
+  public static async getInsight(node: string, token: string, dialogueId: string, agent: string, message: AuthMessage): Promise<Dialogue> {
+    let response = await fetch(node + "/commentary/dialogue/" + dialogueId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    if(response.status == 402) { // 402 means agent auth not set
+      let auth = await fetch(node + "/token/agent?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
+      response = await fetch(node + "/commentary/dialogue/" + dialogueId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    }
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getInsightTopicViews(node: string, token: string, dialogueId: string, agent: string, message: AuthMessage): Promise<TopicView[]> {
+    let response = await fetch(node + "/commentary/dialogue/" + dialogueId + "/topic/view?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    if(response.status == 402) { // 402 means agent auth not set
+      let auth = await fetch(node + "/token/agent?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
+      response = await fetch(node + "/commentary/dialogue/" + dialogueId + "/topic/view?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    }
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getInsightTopic(node: string, token: string, dialogueId: string, topicId: string, agent: string, message: AuthMessage): Promise<TopicView[]> {
+    let response = await fetch(node + "/commentary/dialogue/" + dialogueId + "/topic/" + topicId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    if(response.status == 402) { // 402 means agent auth not set
+      let auth = await fetch(node + "/token/agent?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message) });
+      response = await fetch(node + "/commentary/dialogue/" + dialogueId + "/topic/" + topicId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent));
+    }
+    checkResponse(response);
+    return await response.json();
+  }
+
+
   public static async getDialogueViews(node: string, token: string): Promise<Dialogue[]> {
     let response = await fetch(node + "/conversation/dialogue/view?token=" + encodeURIComponent(token));
     checkResponse(response);
     return await response.json();
   }
+
+  public static async getDialogue(node: string, token: string, dialogueId: string): Promise<Dialogue> {
+    let response = await fetch(node + "/conversation/dialogue/" + dialogueId + "?token=" + encodeURIComponent(token));
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getDialogueTopicViews(node: string, token: string, dialogueId: string): Promise<TopicView> {
+    let response = await fetch(node + "/conversation/dialogue/" + dialogueId + "/topic/view?token=" + encodeURIComponent(token));
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getDialogueTopic(node: string, token: string, dialogueId: string, topicId: string): Promise<Topic> {
+    let response = await fetch(node + "/conversation/dialogue/" + dialogueId + "/topic/" + topicId + "?token=" + encodeURIComponent(token));
+    checkResponse(response);
+    return await response.json();
+  }
+
 }

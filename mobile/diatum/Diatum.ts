@@ -2,7 +2,7 @@ import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revi
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
-import { Storage, AmigoConnection, AmigoReference } from './Storage';
+import { Storage, AmigoConnection, AmigoReference, AmigoPath } from './Storage';
 
 const SYNC_INTERVAL_MS: number = 1000
 const SYNC_NODE_MS: number = 5000
@@ -71,6 +71,11 @@ async function asyncForEach(map, handler) {
     await handler(arr[i].obj, arr[i].id);
   }
 }
+
+class IdPosition {
+  id: string;
+  position: number;
+} 
 
 class _Diatum {
 
@@ -529,7 +534,7 @@ class _Diatum {
         await this.storage.updateAmigo(this.session.amigoId, amigo.amigoId, amigo.revision, amigo.notes);
         await this.storage.clearAmigoLabels(this.session.amigoId, amigo.amigoId);
         for(let i = 0; i < amigo.labels.length; i++) {
-          await this.storage.setAmigoLabel(this.amigoId, amigo.amigoId, amigo.labels[i]);
+          await this.storage.setAmigoLabel(this.session.amigoId, amigo.amigoId, amigo.labels[i]);
         }
         notify = true
       }
@@ -771,20 +776,58 @@ class _Diatum {
 
   public async syncInsight(): Promise<void> {
     let notify: boolean = false;
-    
+
     let remote: InsightView[] = await DiatumApi.getInsightViews(this.session.amigoNode, this.session.amigoToken);
-    console.log("REMOTE INSIGHT: ", remote);
+    let remoteMap: Map<string, InsightView> = new Map<string, InsightView>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].amigoId + "::" + remote[i].dialogueId, remote[i]);
+    }
 
     let local: InsightView[] = await this.storage.getInsightViews(this.session.amigoId);
-    console.log("LOCAL INSIGHT: ", local);
+    let localMap: Map<string, InsightView> = new Map<string, InsightView>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].amigoId + "::" + local[i].dialogueId, local[i]);
+    }
 
-    // find any insight update
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
 
-      // retreive and save dialogue (flag on error)
+      if(!localMap.has(key)) {
+        await this.storage.addInsight(this.session.amigoId, value.amigoId, value.dialogueId);
+        try {
+          await this.syncInsightConversation(value.amigoId, value.dialogueId);
+          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, false);
+        }
+        catch(err) {
+          console.log(err);
+          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
+        }
+        notify = true;
+      }
+      else if(localMap.get(key).revision != value.revision) {
+        try {
+          await this.syncInsightConversation(value.amigoId, value.dialogueId);
+        }
+        catch(err) {
+          console.log(err);
+          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
+        }
+        notify = true;
+      }
+    });
 
-    // save insight revision
-      
-    // remove any unmatched insight
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeInsight(this.session.amigoId, value.amigoId, value.dialogueId);
+        notify = true;
+      }
+    });
+
+    if(notify) {
+      this.notifyListeners(DiatumEvent.Insight);
+    }
+
   }
 
   public async syncDialogue(): Promise<void> {
@@ -806,12 +849,12 @@ class _Diatum {
     await asyncForEach(remoteMap, async (value, key) => {
 
       if(!localMap.has(key)) {
-        await this.storage.addDialogue(key);
-        this.syncConversation(key);
+        await this.storage.addDialogue(this.session.amigoId, key);
+        await this.syncDialogueConversation(key);
         notify = true;
       }
       else if(localMap.get(key) != value) {
-        this.syncConversation(key);
+        await this.syncDialogueConversation(key);
         notify = true;
       }
     });
@@ -829,45 +872,90 @@ class _Diatum {
     }
   }
 
-  private async syncConversation(dialogueId: string): Promsie<void> {
-  
-    // retrieve dialogue
+  private async syncDialogueConversation(dialogueId: string): Promsie<void> {
 
-    // retreive remote topic view
+    let remote: TopicView[] = await DiatumApi.getDialogueTopicViews(this.session.amigoNode, this.session.amigoToken, dialogueId);
+    let remoteMap: Map<string, TopicView> = new Map<string, TopicView>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].topicId, remote[i]);
+    }
 
-    // retrieve local topic view
+    let local: TopicView[] = await this.storage.getDialogueTopicViews(this.session.amigoId, dialogueId);
+    let localMap: Map<string, TopicView> = new Map<string, TopicView>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].topicId, local[i]);
+    }
 
-    // find any topic update
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
+      if(!localMap.has(key)) {
+        let topic: Topic = await DiatumApi.getDialogueTopic(this.session.amigoNode, this.session.amigoToken, dialogueId, key);
+        await this.storage.addDialogueTopic(this.session.amigoId, dialogueId, topic, value.position);
+      }
+      else if(localMap.get(key).revision != value.revision || localMap.get(key).position != value.position) {
+        let topic: Topic = await DiatumApi.getDialogueTopic(this.session.amigoNode, this.session.amigoToken, dialogueId, key);
+        await this.storage.updateDialogueTopic(this.session.amigoId, dialogueId, topic, value.position);
+      }
+    });
 
-      // retrieve and save topic
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeDialogueTopic(this.session.amigoId, dialogueId, key);
+      }
+    });
 
-    // remove any deleted topics
-
-    // save dialogue
+    // update dialogue entry
+    let dialogue: Dialogue = await DiatumApi.getDialogue(this.session.amigoNode, this.session.amigoToken, dialogueId);
+    await this.storage.updateDialogue(this.session.amigoId, dialogue);
   }
 
-  private async syncCoversation(amgioId: string, dialogueId: string): Promise<void> {
-    
-    // retrieve token for syncing
-    let token: string = await this.storage.getConnectionToken(this.session.amigoId, amigoId);
-    if(token == null) {
+  private async syncInsightConversation(amigoId: string, dialogueId: string): Promise<void> {
+
+    // get amigo synchronization path
+    let path: AmigoPath = await this.storage.getAmigoPath(this.session.amigoId, amigoId);
+    if(path == null) {
       throw new Error("cannot update dialogue without connection");
     }
-   
-    // retrieve dialogue
 
-    // retreive remote topic view
+    let remote: TopicView[] = await DiatumApi.getInsightTopicViews(path.node, path.token, dialogueId, this.authToken, this.authMessage);
+    let remoteMap: Map<string, TopicView> = new Map<string, TopicView>();
+    for(let i = 0; i < remote.length; i++) {
+      remoteMap.set(remote[i].topicId, remote[i]);
+    }
 
-    // retrieve local topic view
 
-    // find any topic update
+    let local: TopicView[] = await this.storage.getInsightTopicViews(this.session.amigoId, amigoId, dialogueId);
+    let localMap: Map<string, TopicView> = new Map<string, TopicView>();
+    for(let i = 0; i < local.length; i++) {
+      localMap.set(local[i].topicId, local[i]);
+    }
 
-      // retrieve and save topic
+    // add remote entry not in local
+    await asyncForEach(remoteMap, async (value, key) => {
 
-    // remove any deleted topics
+      if(!localMap.has(key)) {
+        let topic: Topic = await DiatumApi.getInsightTopic(path.node, path.token, dialogueId, key, this.authToken, this.authMessage);
 
-    // save dialogue
- 
+        await this.storage.addInsightTopic(this.session.amigoId, amigoId, dialogueId, topic, value.position);
+      }
+      else if(localMap.get(key).revision != value.revision || localMap.get(key).position != value.position) {
+        let topic: Topic = await DiatumApi.getInsightTopic(path.node, path.token, dialogueId, key, this.authToken, this.authMessage);
+        await this.storage.updateInsightTopic(this.session.amigoId, dialogueId, topic, value.position);
+      }
+    });
+
+    // remove any local entry not in remote
+    await asyncForEach(localMap, async (value, key) => {
+      if(!remoteMap.has(key)) {
+        await this.storage.removeInsightTopic(this.session.amigoId, dialogueId, key);
+      }
+    });
+
+    // update dialogue entry
+    let dialogue: Dialogue = await DiatumApi.getInsight(path.node, path.token, dialogueId, this.authToken, this.authMessage);
+
+    await this.storage.updateInsight(this.session.amigoId, amigoId, dialogue);
   }
 
   public async getIdentity(): Promsie<Amigo> {

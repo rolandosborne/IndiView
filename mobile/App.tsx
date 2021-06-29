@@ -48,7 +48,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v28.db", attributes, subjects, tag).then(async ctx => {
+  diatum.init("indiview_v67.db", attributes, subjects, tag).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }

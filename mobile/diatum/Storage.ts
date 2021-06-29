@@ -40,6 +40,12 @@ export class AmigoReference {
   identityRevision: number;
 }
 
+export class AmigoPath {
+  node: string;
+  registry: string;
+  token: string;
+}
+
 export class Storage {
 
   private db: SQLite.SQLiteDatabase;
@@ -288,10 +294,10 @@ export class Storage {
   }
 
   // get connection token
-  public async getConnectionToken(id: string, amigioId: string): Promise<string> {
-    let res = await this.db.executeSql("SELECT token from share_" + id + " where amigoId=? and status=?;", [amigoId, 'connected']);
+  public async getAmigoPath(id: string, amigoId: string): Promise<AmigoPath> {
+    let res = await this.db.executeSql("SELECT node, registry, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where index_" + id + ".amigo_id=? AND status=?;", [amigoId, 'connected']);
     if(hasResult(res)) {
-      return res[0].rows.item(0).token;
+      return { node: res[0].rows.item(0).node, registry: res[0].rows.item(0).registry, token: res[0].rows.item(0).token };
     }
     return null;
   }
@@ -392,7 +398,7 @@ export class Storage {
     await this.db.executeSql("INSERT INTO dialogue_" + id + " (amigo_id, dialogue_id, insight) values (?, ?, ?);", [amigoId, dialogueId, 1]);
   }
   public async updateInsight(id: string, amigoId: string, dialogue: Dialogue): Promise<void> {
-    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, offset=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, 0, amigoId, dialogue.dialogueId, 0]);
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, 0, amigoId, dialogue.dialogueId, 0]);
   }
   public async updateInsightRevision(id: string, amigoId: string, dialogueId: string, revision: number, offsync: boolean): Promise<void> {
     let s = offsync ? 1 : 0;
@@ -402,12 +408,12 @@ export class Storage {
     await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
     await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
   }
-  public async getInsightTopicView(id: string, amigoId: string, dialogueId: string): Promise<TopicView[]> {
-    let res = await this.db.executeSql("SELECT topic_id, revision FROM topic_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=? ORDER BY position ASC;", [amigoId, dialogueId, 0]);
+  public async getInsightTopicViews(id: string, amigoId: string, dialogueId: string): Promise<TopicView[]> {
+    let res = await this.db.executeSql("SELECT topic_id, position, revision FROM topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=? ORDER BY position ASC;", [amigoId, dialogueId, 0]);
     let views: TopicView[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
-        views.push({ topicId: res[0].rows.item(i).topic_id, revision: res[0].rows.item(i).revision });
+        views.push({ topicId: res[0].rows.item(i).topic_id, position: res[0].rows.item(0).position, revision: res[0].rows.item(i).revision });
       }
     }
     return views;
@@ -416,10 +422,10 @@ export class Storage {
     await this.db.executeSql("INSERT INTO topic_" + id + " (amigo_id, dialogue_id, insight, topic_id, position, revision, blurbs) values (?, ?, ?, ?, ?, ?, ?);", [amigoId, dialogueId, 1, topic.topicId, position, topic.revision, encodeObject(topic.blurbs)]);
   }
   public async updateInsightTopic(id: string, amigoId: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
-    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE amigo_id=?, dialogue_id=?, insight!=?;", [position, topic.revision, encodeObject(topic.blurbs), amigoId, dialogueId, 0]);
+    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [position, topic.revision, encodeObject(topic.blurbs), amigoId, dialogueId, 0]);
   }
   public async removeInsightTopic(id: string, amigoId: string, dialogueId: string, topicId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigoId=?, dialogueId=?, topicId=?, insight!=?", [amigoId, dialogueId, topicId, 0]);  }
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigoId=? AND dialogueId=? AND topicId=? AND insight!=?", [amigoId, dialogueId, topicId, 0]);  }
 
 
   public async getDialogueViews(id: string): Promise<DialogueView[]> {
@@ -435,31 +441,31 @@ export class Storage {
   public async addDialogue(id: string, dialogueId: string): Promise<void> {
     await this.db.executeSql("INSERT INTO dialogue_" + id + " (dialogue_id, insight) values (?, ?);", [dialogueId, 0]);
   }
-  public async updateDailogue(id: string, dialogue: Dialogue): Promise<void> {
+  public async updateDialogue(id: string, dialogue: Dialogue): Promise<void> {
     await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, amigo_id=? WHERE dialogue_id=? AND insight=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, dialogue.amigoId, dialogue.dialogueId, 0]);
   }
   public async removeDialoge(id: string, dialogueId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
     await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
   }
-  public async getDialogueTopicView(id: string, dialogueId: string): Promise<TopicView[]> {
-    let res = await this.db.executeSql("SELECT topic_id, revision FROM topic_" + id + " WHERE dialogue_id=?, insight=? ORDER BY position ASC;", [dialogueId, 0]);
+  public async getDialogueTopicViews(id: string, dialogueId: string): Promise<TopicView[]> {
+    let res = await this.db.executeSql("SELECT topic_id, position, revision FROM topic_" + id + " WHERE dialogue_id=? AND insight=? ORDER BY position ASC;", [dialogueId, 0]);
     let views: TopicView[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
-        views.push({ topicId: res[0].rows.item(i).topic_id, revision: res[0].rows.item(i).revision });
+        views.push({ topicId: res[0].rows.item(i).topic_id, position: res[0].rows.item(i).position, revision: res[0].rows.item(i).revision });
       }
     }
     return views;
   }
   public async addDialogueTopic(id: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
-    await this.db.executeSql("INSERT INTO topic_" + id + " (dialogue_id, insight, topic_id, position, revision, blurbs) values (?, ?, ?, ?, ?, ?, ?);", [dialogueId, 0, topic.topicId, position, topic.revision, encodeObject(topic.blurbs)]);
+    await this.db.executeSql("INSERT INTO topic_" + id + " (dialogue_id, insight, topic_id, position, revision, blurbs) values (?, ?, ?, ?, ?, ?);", [dialogueId, 0, topic.topicId, position, topic.revision, encodeObject(topic.blurbs)]);
   }
   public async updateDialogueTopic(id: string, dialogueId: string, topic: Topic, position: number): Promise<void> {
-    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE dialogue_id=?, insight=?;", [position, topic.revision, encodeObject(topic.blurbs), dialogueId, 0]);
+    await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE dialogue_id=? AND insight=?;", [position, topic.revision, encodeObject(topic.blurbs), dialogueId, 0]);
   }
   public async removeDialogueTopic(id: string, dialogueId: string, topicId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogueId=?, topicId=?, insight=?", [dialogueId, topicId, 0]);
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogueId=? AND topicId=? AND insight=?", [dialogueId, topicId, 0]);
   }
 
 

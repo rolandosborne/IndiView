@@ -263,6 +263,7 @@ export interface Dialogue {
 
 export interface TopicView { 
     topicId: string;
+    position: number;
     revision: number;
 }
 
