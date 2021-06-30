@@ -348,26 +348,28 @@ function HomeDrawerContent(props) {
   });
 
   return (
-    <View>
-      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-        props.navigate('Search');
-      }} />
-      <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-        props.navigate("Label");
-      }} />
-      <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-      }} />
-      <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-      }} />
-      <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-      }} />
-      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View>
+        <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
+          props.navigation.closeDrawer();
+          props.navigate('Search');
+        }} />
+        <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
+          props.navigation.closeDrawer();
+          props.navigate("Label");
+        }} />
+        <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
+          props.navigation.closeDrawer();
+        }} />
+        <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
+          props.navigation.closeDrawer();
+        }} />
+        <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
+          props.navigation.closeDrawer();
+        }} />
+        <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -454,18 +456,16 @@ const App = () => {
   return (
     <DiatumProvider>
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }}>
-          <NavigationContainer>
-            <View style={{ flex: 1, backgroundColor: '#282827' }}>
-              <Stack.Navigator initialRouteName="Root">
-                <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-              </Stack.Navigator>
-            </View>
-          </NavigationContainer>
-        </SafeAreaView>
+        <NavigationContainer>
+          <View style={{ flex: 1, backgroundColor: '#282827' }}>
+            <Stack.Navigator initialRouteName="Root">
+              <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
+              <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+            </Stack.Navigator>
+          </View>
+        </NavigationContainer>
       </SafeAreaProvider>
     </DiatumProvider>
   );
