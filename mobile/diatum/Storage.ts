@@ -425,9 +425,8 @@ export class Storage {
     await this.db.executeSql("UPDATE topic_" + id + " SET position=?, revision=?, blurbs=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [position, topic.revision, encodeObject(topic.blurbs), amigoId, dialogueId, 0]);
   }
   public async removeInsightTopic(id: string, amigoId: string, dialogueId: string, topicId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigoId=? AND dialogueId=? AND topicId=? AND insight!=?", [amigoId, dialogueId, topicId, 0]);  }
-
-
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigoId=? AND dialogueId=? AND topicId=? AND insight!=?", [amigoId, dialogueId, topicId, 0]);  
+  }
   public async getDialogueViews(id: string): Promise<DialogueView[]> {
     let res = await this.db.executeSql("SELECT dialogue_id, revision from dialogue_" + id + " WHERE insight=?;", [0]);
     let views: DialogueView[] = [];

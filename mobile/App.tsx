@@ -13,6 +13,8 @@ import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+import { ContactScreen } from "./src/Contacts";
+
 // schema identifiers
 const WEBSITE: string = 'b0e10c5cecaa8c451330740817e301a0cc6b22b57d0241ce3ffb20d8938dc067';
 const CARD: string = '081272d5ec5ab6fb6d7d55d12697f6c91e66bb0db562ec059cbfc5cc2c36278b';
@@ -30,7 +32,6 @@ const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a8647
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const FeedDrawer = createDrawerNavigator();
-const ContactDrawer = createDrawerNavigator();
 const ConversationDrawer = createDrawerNavigator();
 const HomeDrawer = createDrawerNavigator();
 const MainStack = createStackNavigator();
@@ -38,7 +39,6 @@ const MainStack = createStackNavigator();
 let logoutNav = null;
 let homeNav = null;
 let feedNav = null;
-let contactNav = null;
 let conversationNav = null;
 
 function RootScreen({ navigation }) {
@@ -200,10 +200,10 @@ function FeedDrawerContent(props) {
     }, []);
 
   return (
-    <SafeAreaView>
+    <View>
       <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
       <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -240,65 +240,6 @@ function FeedScreen({ route, navigation }) {
   );
 }
 
-function ContactDrawerContent(props) {
-  contactNav = props.navigation;
-  const [labels, setLabels] = React.useState([]);
-  let diatum: Diatum = useDiatum();
-  const update = () => {
-    diatum.getLabels().then(l => {
-      setLabels(l);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
- 
-  useEffect(() => {
-        diatum.setListener(DiatumEvent.Labels, update);
-        return () => {
-          diatum.clearListener(DiatumEvent.Labels, update);
-        }
-    }, []);
-
-  return (
-    <SafeAreaView>
-      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
-      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
-    </SafeAreaView>
-  );
-}
-
-function ContactNavScreen() {
-  const selected = (id: string) => {
-    console.log("SELECTED: " + id);
-  };
-
-  return (
-    <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
-      <ContactDrawer.Screen name="ContactScreen" component={ContactScreen} />
-    </ContactDrawer.Navigator>
-  )
-}
-
-function ContactScreen() {
-  const toggleLabel = () => {
-    contactNav.openDrawer();
-  };
-  const toggleControl = () => {
-    homeNav.openDrawer();
-  };
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Contact</Text>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 function ConversationDrawerContent(props) {
   conversationNav = props.navigation;
   const [labels, setLabels] = React.useState([]);
@@ -319,10 +260,10 @@ function ConversationDrawerContent(props) {
     }, []);
 
   return (
-    <SafeAreaView>
+    <View>
       <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
       <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -407,7 +348,7 @@ function HomeDrawerContent(props) {
   });
 
   return (
-    <SafeAreaView style={{ paddingTop: 18 }}>
+    <View>
       <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate('Search');
@@ -426,7 +367,7 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -445,9 +386,6 @@ function HomeScreen({ navigation }) {
     if(feedNav != null) {
       feedNav.closeDrawer();
     }
-    if(contactNav != null) {
-      contactNav.closeDrawer();
-    }
     if(conversationNav != null) {
       conversationNav.closeDrawer();
     }
@@ -455,7 +393,7 @@ function HomeScreen({ navigation }) {
 
   return (
     <Tab.Navigator tabBarOptions={{showLabel: false}} >
-      <Tab.Screen name="Contact" component={ContactNavScreen} 
+      <Tab.Screen name="HomeContact" component={HomeContactScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }
           })}
@@ -480,6 +418,21 @@ function HomeScreen({ navigation }) {
   );
 }
 
+function HomeContactScreen() {
+  const toggleControl = () => {
+    homeNav.openDrawer();
+  };
+  return (
+    <View style={{ flex: 1 }}>
+      <ContactScreen></ContactScreen>
+
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+    </View>
+  );
+}  
+
 function SearchScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -501,16 +454,18 @@ const App = () => {
   return (
     <DiatumProvider>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <View style={{ flex: 1, backgroundColor: '#282827' }}>
-            <Stack.Navigator initialRouteName="Root">
-              <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-            </Stack.Navigator>
-          </View>
-        </NavigationContainer>
+        <SafeAreaView style={{ flex: 1 }}>
+          <NavigationContainer>
+            <View style={{ flex: 1, backgroundColor: '#282827' }}>
+              <Stack.Navigator initialRouteName="Root">
+                <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+              </Stack.Navigator>
+            </View>
+          </NavigationContainer>
+        </SafeAreaView>
       </SafeAreaProvider>
     </DiatumProvider>
   );
