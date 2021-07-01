@@ -17,6 +17,17 @@ const ACCESS_KEY: string = "service_access";
 const IDENTITY_KEY: string = "identity";
 const AUTH_KEY: string = "auth_message";
 
+export enum DiatumDataType {
+  Identity,
+  Attribute,
+  Subject,
+  AmigoIdentity,
+  AmigoAttribute,
+  AmigoSubject,
+  COUNT
+}
+  
+
 export enum DiatumEvent {
   Labels = 0,
   Identity,
@@ -35,7 +46,8 @@ export enum DiatumEvent {
 
 export interface Diatum {
   // initialize SDK and retrive previous context
-  init(path: string, attributes: string[], subjects: string[], tag: string): Promise<AppContext>;
+  init(path: string, attributes: string[], subjects: string[], tag: string,
+    callback: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<AppContext>;
 
   // set context for next init
   setAppContext(ctx: AppContext): Promise<void>;
@@ -56,10 +68,13 @@ export interface Diatum {
   clearListener(callback: () => void): Promise<void>;
 
   // get public profile
-  getIdentity(): Promsie<Amigo>
+  getIdentity(): Promsie<IdentityProfile>
 
   // get account labels
   getLabels(): Promise<LabelEntry[]>
+
+  // get contacts
+  getContacts(): Promise<ContactEntry[]>
 }
 
 async function asyncForEach(map, handler) {
@@ -94,6 +109,7 @@ class _Diatum {
   private tagFilter: string;
   private authMessage: AuthMessage;
   private authToken: string;  
+  private callback: (type: DiatumDataType, amigoId: string, objectId: string) => {};
 
   constructor(attributes: string[], subjects: string[], tag: string) {
     this.session = null;
@@ -109,7 +125,9 @@ class _Diatum {
     }
   }
 
-  public async init(path: string): Promise<any> {
+  public async init(path: string, cb: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<any> {
+    this.callback = cb;
+
     await this.storage.init(path);
     try {
       return await this.storage.getAppContext();
@@ -220,37 +238,20 @@ class _Diatum {
         }
       }
 
+      // sync all new connections
+      let connections = await this.storage.getStaleAmigoConnections(this.session.amigoId);
+      for(let i = 0; i < connections.length; i++) {
+        await this.storage.updateStaleTime(this.session.amigoId, connections[i].amigoId, cur);
+        await this.syncAmigoConnection(connections[i]);
+      }
+
       // sync connections
       if(this.connectionSync + SYNC_CONNECTION_MS < cur) {
         this.connectionSync = cur;
         let connection = await this.storage.getStaleAmigoConnection(this.session.amigoId, cur - STALE_CONNECTION_MS);
         if(connection != null) {
-          await this.storage.updateStaleTime(this.session.amigoId, connection.amigoId, cur);
-
           try {
-            // pull revisions with agent auth
-            let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
-
-            // if identity revision is different, update registry
-            if(revisions.identityRevision != connection.identityRevision) {
-              let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
-              if(amigo.amigoId == connection.amigoId) { // sanity check
-                await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
-                this.notifyListeners(DiatumEvent.Listing);
-              }
-            }
-
-            // if attribute revision is different, update contact
-            if(revisions.contactRevision != connection.attributeRevision) {
-              await this.syncConnectionContact(connection.amigoId, connection.node, connection.token);
-              await this.storage.updateConnectionAttributeRevision(this.session.amigoId, connection.amigoId, revisions.contactRevision);
-            }
-
-            // if subject revision is different, update view
-            if(revisions.viewRevision != connection.subjectRevision) {
-              await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
-              await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
-            }
+            await this.syncAmigoConnection(connection);
           }
           catch(err) {
             console.log(err);
@@ -282,6 +283,32 @@ class _Diatum {
         }
       }
     }
+  }
+
+  private async syncAmigoConnection(connection: AmigoConnection): Promise<void> {
+      // pull revisions with agent auth
+      let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
+
+      // if identity revision is different, update registry
+      if(revisions.identityRevision != connection.identityRevision) {
+        let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
+        if(amigo.amigoId == connection.amigoId) { // sanity check
+          await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+          this.notifyListeners(DiatumEvent.Listing);
+        }
+      }
+
+      // if attribute revision is different, update contact
+      if(revisions.contactRevision != connection.attributeRevision) {
+        await this.syncConnectionContact(connection.amigoId, connection.node, connection.token);
+        await this.storage.updateConnectionAttributeRevision(this.session.amigoId, connection.amigoId, revisions.contactRevision);
+      }
+
+      // if subject revision is different, update view
+      if(revisions.viewRevision != connection.subjectRevision) {
+        await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
+        await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
+      }
   }
 
   private async syncContactRegistry(registry: string, amigoId: string, revision: number): Promsie<void> {
@@ -317,11 +344,13 @@ class _Diatum {
       if(!localMap.has(key)) {
         let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
         await this.storage.addConnectionAttribute(this.session.amigoId, amigoId, a);
+        await this.callback(DiatumDataType.AmigoAttribute, amigoId, a.attributeId);
         notify = true;
       }
       else if(localMap.get(key) != value) {
         let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
         await this.storage.updateConnectionAttribute(this.session.amigoId, amigoId, a);
+        await this.callback(DiatumDataType.AmigoAttribute, amigoId, a.attributeId);
         notify = true;
       }
     });
@@ -335,6 +364,7 @@ class _Diatum {
     });
     
     if(notify) {
+      await this.callback(DiatumDataType.AmigoAttribute, amigoId);
       this.notifyListeners(DiatumEvent.Contact);
     }
   }
@@ -958,7 +988,7 @@ class _Diatum {
     await this.storage.updateInsight(this.session.amigoId, amigoId, dialogue);
   }
 
-  public async getIdentity(): Promsie<Amigo> {
+  public async getIdentity(): Promsie<IdentityProfile> {
     amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
     if(amigo == null) {
       return null;
@@ -969,6 +999,16 @@ class _Diatum {
 
   public async getLabels(): Promise<LabelEntry> {
     return await this.storage.getLabels(this.session.amigoId);
+  }
+
+  public async getContacts(): Promise<ContactEntry[]> {
+    let c: Contact = await this.storage.getContacts(this.session.amigoId);
+    let entries: ContactEntry[] = [];
+    for(let i = 0; i < c.length; i++) {
+      let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, status: c[i].status,imageUrl: url });
+    }
+    return entries;
   }
 }
 
@@ -983,12 +1023,13 @@ function appState(state: AppStateStatus) {
   }
 }
 
-async function init(path: string, attributes: string[], subjects: string[], tag: string): Promise<AppContext> {
+async function init(path: string, attributes: string[], subjects: string[], tag: string, 
+    callback: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<AppContext> {
   if(instance !== undefined) {
     throw "diatum already initialised";
   }
   instance = new _Diatum(attributes, subjects, tag);
-  let ctx = await instance.init(path);
+  let ctx = await instance.init(path, callback);
   let active: boolean = true;
   let busy: boolean = false;
 
@@ -1056,7 +1097,7 @@ async function clearListener(event: DiatumEvent, callback: () => void): Promise<
   return diatum.clearListener(event, callback);
 }
 
-async function getIdentity(): Promise<Amigo> {
+async function getIdentity(): Promise<IdentityProfile> {
   let diatum = await getInstance();
   return await diatum.getIdentity();
 }
@@ -1066,6 +1107,11 @@ async function getLabels(): Promise<LabelEntry[]> {
   return await diatum.getLabels();
 }
 
+async function getContacts(): Promise<ContactEntry[]> {
+  let diatum = await getInstance();
+  return await diatum.getContacts();
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getIdentity, getLabels };
+    setListener, clearListener, getIdentity, getLabels, getContacts };
 

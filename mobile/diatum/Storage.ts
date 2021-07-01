@@ -46,6 +46,13 @@ export class AmigoPath {
   token: string;
 }
 
+export class Contact {
+  amigoId: string;
+  name: string;
+  handle: string;
+  logoSet: boolean;
+}
+
 export class Storage {
 
   private db: SQLite.SQLiteDatabase;
@@ -70,7 +77,7 @@ export class Storage {
   public async setAccount(id: string): Promise<void> {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS _account_" + id + " (key text, value text null, unique(key))");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS group_" + id + " (label_id text, revision integer, name text, unique(label_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, amigo_error integer, attribute_error integer, subject_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, unique(amigo_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, logo_flag integer, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, amigo_error integer, attribute_error integer, subject_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, unique(amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS indexgroup_" + id + " (label_id text, amigo_id text, unique (label_id, amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, amigo text, updated integer, app_share text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profile_" + id + " (attribute_id text, revision integer, schema text, data text, unique(attribute_id));");
@@ -164,13 +171,13 @@ export class Storage {
     return views;
   }
   public async addAmigo(id: string, amigo: Amigo, revision: number, notes: string): Promise<void> {
-    await this.db.executeSql("INSERT INTO index_" + id + " (amigo_id, identity_revision, node, registry, name, handle, location, description, revision, notes) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", [amigo.amigoId, amigo.revision, amigo.node, amigo.registry, amigo.name, amigo.handle, amigo.location, amigo.description, revision, notes]);
+    await this.db.executeSql("INSERT INTO index_" + id + " (amigo_id, identity_revision, node, registry, name, handle, location, logo_flag, description, revision, notes) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", [amigo.amigoId, amigo.revision, amigo.node, amigo.registry, amigo.name, amigo.handle, amigo.location, amigo.logo != null, amigo.description, revision, notes]);
   }
   public async updateAmigo(id: string, amigoId: string, revision: number, notes: string): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " set notes=?, revision=? where amigo_id=?;", [notes, revision, amigoId]);
   }
   public async updateAmigoIdentity(id: string, amigo: Amigo): Promise<void> {
-    await this.db.executeSql("UPDATE index_" + id + " set node=?, registry=?, name=?, handle=?, location=?, description=?, revision=? WHERE amigo_id=?;", [amigo.node, amigo.registry, amigo.name, amigo.handle, amigo.location, amigo.description, amigo.revision, amigo.amigoId]);
+    await this.db.executeSql("UPDATE index_" + id + " set node=?, registry=?, name=?, handle=?, location=?, logo_flag=?, description=?, revision=? WHERE amigo_id=?;", [amigo.node, amigo.registry, amigo.name, amigo.handle, amigo.location, amigo.logo != null, amigo.description, amigo.revision, amigo.amigoId]);
   }
   public async removeAmigo(id: string, amigoId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM index_" + id + " where amigo_id=?;", [amigoId]);
@@ -303,6 +310,15 @@ export class Storage {
   }
 
   // get stale connection to update
+  public async getStaleAmigoConnections(id: string): Promise<AmigoConnection[]> {
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and update_timestamp is null");
+    let connections: AmigoConnection[] = [];
+    if(hasResult(res)) {
+      let a = res[0].rows.item(0);
+      connections.push({ amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision });
+    }
+    return connections;
+  }
   public async getStaleAmigoConnection(id: string, stale: number): Promise<AmigoConnection> {
     let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
     if(hasResult(res)) {
@@ -479,6 +495,16 @@ export class Storage {
     }
     return labels;
   }
- 
+  public async getContacts(id: string): Promise<Contact[]> {
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id;");
+    let contacts: Contacts[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, status: item.status, logoSet: item.logo_flag != 0 });
+      }
+    }
+    return contacts;
+  } 
 }
 

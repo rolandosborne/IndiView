@@ -11,11 +11,20 @@ export interface DiatumSession {
 }
 
 export interface IdentityProfile {
+  amigoId?: string;
   name?: string;
   imageUrl?: string;
   handle?: string;
   location?: string;
   description?: string;
+}
+
+export interface ContactEntry {
+  amigoId?: string;
+  name?: string;
+  imageUrl?: string;
+  handle?: string;
+  status?: string;
 }
 
 export interface AmigoMessage {

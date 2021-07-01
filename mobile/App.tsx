@@ -7,7 +7,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
-import { Diatum, DiatumEvent } from './diatum/Diatum';
+import { Diatum, DiatumEvent, DiatumDataType } from './diatum/Diatum';
 import { AttachCode, getAttachCode } from './diatum/DiatumUtil';
 import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
@@ -43,12 +43,19 @@ let conversationNav = null;
 
 function RootScreen({ navigation }) {
   logoutNav = navigation;
+
+  const dataCallback = async (type: DiatumDataType, amigoId: string, objectId: string) => {
+    // process attribute data
+    if(type == DiatumDataType.AmigoAttribute && objectId == null) {
+      console.log("AMIGO ATTRIBUTE: " + amigoId);
+    }
+  }
   
   let attributes = [ WEBSITE, CARD, EMAIL, PHONE, HOME, WORK, SOCIAL ];
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v67.db", attributes, subjects, tag).then(async ctx => {
+  diatum.init("indiview_v74.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -349,26 +356,24 @@ function HomeDrawerContent(props) {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View>
-        <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
-          props.navigation.closeDrawer();
-          props.navigate('Search');
-        }} />
-        <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
-          props.navigation.closeDrawer();
-          props.navigate("Label");
-        }} />
-        <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
-          props.navigation.closeDrawer();
-        }} />
-        <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
-          props.navigation.closeDrawer();
-        }} />
-        <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
-          props.navigation.closeDrawer();
-        }} />
-        <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
-      </View>
+      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+        props.navigate('Search');
+      }} />
+      <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+        props.navigate("Label");
+      }} />
+      <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+      }} />
+      <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+      }} />
+      <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+      }} />
+      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
     </SafeAreaView>
   );
 }
@@ -394,29 +399,31 @@ function HomeScreen({ navigation }) {
   };
 
   return (
-    <Tab.Navigator tabBarOptions={{showLabel: false}} >
-      <Tab.Screen name="HomeContact" component={HomeContactScreen} 
-          listeners={({ navigation, route }) => ({
-            tabPress: e => { tabbed(); }
-          })}
-          options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="users" size={size} color={color} solid />
-          )}} />
-      <Tab.Screen name="Feed" component={FeedNavScreen} 
-          listeners={({ navigation, route }) => ({
-            tabPress: e => { tabbed(); }
-          })}
-          options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="picture-o" size={size} color={color} solid />
-          )}} />
-      <Tab.Screen name="Conversation" component={ConversationNavScreen} 
-          listeners={({ navigation, route }) => ({
-            tabPress: e => { tabbed(); }
-          })}
-          options={{ tabBarIcon: ({ color, size }) => (
-            <Icon name="comments-o" size={size} color={color} solid />
-          )}} />
-    </Tab.Navigator>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Tab.Navigator tabBarOptions={{showLabel: false}} >
+        <Tab.Screen name="HomeContact" component={HomeContactScreen} 
+            listeners={({ navigation, route }) => ({
+              tabPress: e => { tabbed(); }
+            })}
+            options={{ tabBarIcon: ({ color, size }) => (
+              <Icon name="users" size={size} color={color} solid />
+            )}} />
+        <Tab.Screen name="Feed" component={FeedNavScreen} 
+            listeners={({ navigation, route }) => ({
+              tabPress: e => { tabbed(); }
+            })}
+            options={{ tabBarIcon: ({ color, size }) => (
+              <Icon name="picture-o" size={size} color={color} solid />
+            )}} />
+        <Tab.Screen name="Conversation" component={ConversationNavScreen} 
+            listeners={({ navigation, route }) => ({
+              tabPress: e => { tabbed(); }
+            })}
+            options={{ tabBarIcon: ({ color, size }) => (
+              <Icon name="comments-o" size={size} color={color} solid />
+            )}} />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 
@@ -425,13 +432,13 @@ function HomeContactScreen() {
     homeNav.openDrawer();
   };
   return (
-    <View style={{ flex: 1 }}>
-      <ContactScreen></ContactScreen>
+      <View style={{ flex: 1 }}>
+        <ContactScreen></ContactScreen>
 
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+          <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+        </TouchableOpacity>
+      </View>
   );
 }  
 
@@ -456,7 +463,6 @@ const App = () => {
   return (
     <DiatumProvider>
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }}>
         <NavigationContainer>
           <View style={{ flex: 1, backgroundColor: '#282827' }}>
             <Stack.Navigator initialRouteName="Root">
@@ -467,7 +473,6 @@ const App = () => {
             </Stack.Navigator>
           </View>
         </NavigationContainer>
-        </SafeAreaView>
       </SafeAreaProvider>
     </DiatumProvider>
   );

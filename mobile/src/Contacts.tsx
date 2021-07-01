@@ -1,12 +1,13 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground } from 'react-native';
+import { Alert, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import UserAvatar from 'react-native-user-avatar';
+//Linking.openURL(`tel:${phoneNumber}`)
 
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
@@ -44,12 +45,10 @@ function ContactDrawerContent(props) {
     }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <View>
         <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
         <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
       </View>
-    </SafeAreaView>
   );
 }
 
@@ -94,14 +93,28 @@ function ContactNavScreen(props) {
 
 function Contacts(props) {
 
-  const [entries, setEntries] = React.useState([]);
-  const [identity, setIdentity] = React.useState({});
+  const [identity, setIdentity] = React.useState([]);
   const [contacts, setContacts] = React.useState([]);
 
   let diatum: Diatum = useDiatum();
-  const update = () => {
+  const updateIdentity = () => {
     diatum.getIdentity().then(i => {
-      setEntries([ { type: 'identity', id: i.amigoId, name: i.name, handle: i.handle, imgUrl: i.imageUrl } ]);
+      let entry = [{ type: 'pad', amigoId: 'top' }];
+      if(i != null) {
+        entry.push({ type: 'identity', amigoId: i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl });
+      }
+      setIdentity(entry);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+  const updateContacts = () => {
+    diatum.getContacts().then(c => {
+      for(let i = 0; i < c.length; i++) {
+        c[i].type = 'contact';
+      }
+      c.push({ type: 'pad', amigoId: 'bottom' });
+      setContacts(c);
     }).catch(err => {
       console.log(err);
     });
@@ -115,33 +128,68 @@ function Contacts(props) {
     if(props.setListener != null) {
       props.setListener(setLabel);
     }
-    diatum.setListener(DiatumEvent.Identity, update);
+    diatum.setListener(DiatumEvent.Identity, updateIdentity);
+    diatum.setListener(DiatumEvent.Amigos, updateContacts);
+    diatum.setListener(DiatumEvent.Share, updateContacts);
     return () => {
       if(props.clearListener != null) {
         props.clearListener();
       }
-      diatum.clearListener(DiatumEvent.Identity, update);
+      diatum.clearListener(DiatumEvent.Identity, updateIdentity);
+      diatum.clearListener(DiatumEvent.Amigos, updateContacts);
+      diatum.clearListener(DiatumEvent.Share, updateContacts);
     }
   }, []);
 
   return (
-      <FlatList data={entries} keyExtractor={item => item.id} renderItem={ContactEntry} />
+      <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={ContactEntry} />
   )
 }
 
 function ContactEntry({item}) {
 
-  console.log("ITEM", item.imgUrl);
+  let name: string = "not set";
+  let nameColor: string = "#aaaaaa"
+  if(item.name != null) {
+    name = item.name;
+    nameColor = "#222222";
+  }
+  let imgSrc = {};
+  if(item.imageUrl == null) {
+    imgSrc = require('../assets/avatar.png');
+  }
+  else {
+    imgSrc = { uri: item.imageUrl, cache: 'force-cache' };
+  }
+
+  if(item.type == 'pad') {
+    return (
+      <View style={{ height: 8, flexDirection: 'row' }} />
+    )
+  }
+
+  if(item.type == 'contact') {
+    return (
+     <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
+        <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
+          <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#0088ff' }} source={imgSrc}/>
+        </View>
+        <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
+          <Text>{item.handle}</Text>
+        </View>
+      </View>
+    )
+  }
 
   if(item.type == 'identity') {
     return (
-        <View style={{ height: 64, flexDirection: 'row' }}>
-          <View style={{ width: 12, backgroundColor: 'green' }} />
+        <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
           <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
-            <Image style={{ width: 48, height: 48, borderRadius: 32 }} source={{ uri: item.imgUrl, cache: 'force-cache' }}/>
+            <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#00bb88' }} source={imgSrc}/>
           </View>
           <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
-            <Text style={{ fontSize: 18 }}><Icon name="user-o" style={{ fontSize: 16 }}/>&nbsp;{item.name}</Text>
+            <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>
             <Text>{item.handle}</Text>
           </View>
       </View>
