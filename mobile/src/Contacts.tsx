@@ -1,11 +1,13 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import UserAvatar from 'react-native-user-avatar';
+
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry } from '../diatum/DiatumTypes';
@@ -14,6 +16,13 @@ import { IndiViewCom } from "./IndiViewCom";
 
 const ContactDrawer = createDrawerNavigator();
 let contactNav = null;
+
+class ContactData {
+  type: string;
+  imgUrl: string;
+  name: string;
+  handle: string
+}
 
 function ContactDrawerContent(props) {
   contactNav = props.navigation;
@@ -85,21 +94,59 @@ function ContactNavScreen(props) {
 
 function Contacts(props) {
 
+  const [entries, setEntries] = React.useState([]);
+  const [identity, setIdentity] = React.useState({});
+  const [contacts, setContacts] = React.useState([]);
+
+  let diatum: Diatum = useDiatum();
+  const update = () => {
+    diatum.getIdentity().then(i => {
+      setEntries([ { type: 'identity', id: i.amigoId, name: i.name, handle: i.handle, imgUrl: i.imageUrl } ]);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+
   const setLabel = (id: string) => {
-    console.log("SET LABEL IN CONTACTS: " + id);
+    console.log("SET LABEL CONTACT: " + id);
   };
 
   useEffect(() => {
-    props.setListener(setLabel);
+    if(props.setListener != null) {
+      props.setListener(setLabel);
+    }
+    diatum.setListener(DiatumEvent.Identity, update);
     return () => {
-      props.clearListener();
+      if(props.clearListener != null) {
+        props.clearListener();
+      }
+      diatum.clearListener(DiatumEvent.Identity, update);
     }
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>-- CONTACTS --</Text>
-    </View>
+      <FlatList data={entries} keyExtractor={item => item.id} renderItem={ContactEntry} />
   )
+}
+
+function ContactEntry({item}) {
+
+  console.log("ITEM", item.imgUrl);
+
+  if(item.type == 'identity') {
+    return (
+        <View style={{ height: 64, flexDirection: 'row' }}>
+          <View style={{ width: 12, backgroundColor: 'green' }} />
+          <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
+            <Image style={{ width: 48, height: 48, borderRadius: 32 }} source={{ uri: item.imgUrl, cache: 'force-cache' }}/>
+          </View>
+          <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
+            <Text style={{ fontSize: 18 }}><Icon name="user-o" style={{ fontSize: 16 }}/>&nbsp;{item.name}</Text>
+            <Text>{item.handle}</Text>
+          </View>
+      </View>
+    )
+  }
+
 }
 

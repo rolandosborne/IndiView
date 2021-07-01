@@ -964,7 +964,7 @@ class _Diatum {
       return null;
     }
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
-        imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken };
+        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken };
   }
 
   public async getLabels(): Promise<LabelEntry> {

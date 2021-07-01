@@ -456,6 +456,7 @@ const App = () => {
   return (
     <DiatumProvider>
       <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1 }}>
         <NavigationContainer>
           <View style={{ flex: 1, backgroundColor: '#282827' }}>
             <Stack.Navigator initialRouteName="Root">
@@ -466,6 +467,7 @@ const App = () => {
             </Stack.Navigator>
           </View>
         </NavigationContainer>
+        </SafeAreaView>
       </SafeAreaProvider>
     </DiatumProvider>
   );
