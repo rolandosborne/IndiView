@@ -75,21 +75,21 @@ function RootScreen({ navigation }) {
           if(AttributeUtil.isCard(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.mainPhone != null) {
-              phoneNumbers.push({ value: obj.mainPhone, type: 'Card Main' });
+              phoneNumbers.push({ value: obj.mainPhone, type: 'Main' });
               if(obj.mainPhoneSms == true) {
-                textNumbers.push({ value: obj.mainPhone, type: 'Card Main' });
+                textNumbers.push({ value: obj.mainPhone, type: 'Main' });
               }
             }
             if(obj.directPhone != null) {
-              phoneNumbers.push({ value: obj.directPhone, type: 'Card Direct' });
+              phoneNumbers.push({ value: obj.directPhone, type: 'Direct' });
               if(obj.directPhoneSms == true) {
-                textNumbers.push({ value: obj.directPhone, type: 'Card Direct' });
+                textNumbers.push({ value: obj.directPhone, type: 'Direct' });
               }
             }
             if(obj.mobilePhone != null) {
-              phoneNumbers.push({ value: obj.mobilePhone, type: 'Card Mobile' });
+              phoneNumbers.push({ value: obj.mobilePhone, type: 'Mobile' });
               if(obj.mobilePhoneSms == true) {
-                textNumbers.push({ value: obj.mobilePhone, type: 'Card Mobile' });
+                textNumbers.push({ value: obj.mobilePhone, type: 'Mobile' });
               }
             }
           }
@@ -107,7 +107,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v95.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v96.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }

@@ -7,6 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import UserAvatar from 'react-native-user-avatar';
+import OptionsMenu from "react-native-option-menu";
 //Linking.openURL(`tel:${phoneNumber}`)
 
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -101,7 +102,7 @@ function Contacts(props) {
     diatum.getIdentity().then(i => {
       let entry = [{ type: 'pad', amigoId: 'top' }];
       if(i != null) {
-        entry.push({ type: 'identity', amigoId: i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl });
+        entry.push({ type: 'identity', amigoId: "_" + i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl });
       }
       setIdentity(entry);
     }).catch(err => {
@@ -150,28 +151,58 @@ function Contacts(props) {
 
 function ContactControl({attributes}) {
 
-  let hasPhone = attributes != null && attributes.phone != null && attributes.phone.length > 0;
-  let hasText = attributes != null && attributes.phone != null && attributes.text.length > 0;
+  let hasPhone: boolean = false;
+  let phoneOptions = [];
+  let phoneActions = [];
+  if(attributes != null && attributes.phone != null && attributes.phone.length > 0) {
+    hasPhone = true;
+    for(let i = 0; i < attributes.phone.length; i++) {
+      let type = attributes.phone[i].type == null ? "" : " - " + attributes.phone[i].type;
+      phoneOptions.push( attributes.phone[i].value + type );
+      phoneActions.push( () => { Linking.openURL("tel:" + attributes.phone[i].value.replace(/\D/g,'')) });
+    }
+    phoneOptions.push("Cancel");
+  }
+
+  let hasText: boolean = false;
+  let textOptions = [];
+  let textActions = [];
+  if(attributes != null && attributes.text != null && attributes.text.length > 0) {
+    hasText = true;
+    for(let i = 0; i < attributes.text.length; i++) {
+      let type = attributes.phone[i].type == null ? "" : " - " + attributes.phone[i].type;
+      textOptions.push(attributes.text[i].value + type);
+      textActions.push(() => { Linking.openURL("sms:+" + attributes.text[i].value.replace(/\D/g,'')) });
+    }
+    textOptions.push("Cancel");
+  }
  
+  const phone = (<Icon name="phone" style={{ color: '#444444', fontSize: 24 }} /> );
+  const text = (<Icon name="tty" style={{ color: '#444444', fontSize: 24 }} /> );
+  
   if(hasPhone && hasText) {
     return (
-      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
-        <Icon name="phone" style={{ fontSize: 24 }}/>
-        <Icon name="commenting" style={{ fontSize: 24 }}/>
+      <View style={{ paddingRight: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+        <View style={{ paddingLeft: 24 }}>
+          <OptionsMenu customButton={phone} options={phoneOptions} actions={phoneActions}/>
+        </View>
+        <View style={{ paddingLeft: 24 }}>
+          <OptionsMenu customButton={text} options={textOptions} actions={textActions}/>
+        </View>
       </View>
     )
   }
   if(hasPhone) {
     return (
-      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
-        <Icon name="phone" style={{ fontSize: 24 }}/>
+      <View style={{ paddingRight: 24, justifyContent: 'center' }}>
+        <OptionsMenu customButton={phone} options={phoneOptions} actions={phoneActions}/>
       </View>
     )
   }
   if(hasText) {
     return (
-      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
-        <Icon name="commenting" style={{ fontSize: 24 }}/>
+      <View style={{ paddingRight: 24, justifyContent: 'center' }}>
+        <OptionsMenu customButton={text} options={textOptions} actions={textActions}/>
       </View>
     )
   }

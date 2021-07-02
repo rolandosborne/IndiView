@@ -1013,8 +1013,6 @@ class _Diatum {
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
       entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, status: c[i].status,imageUrl: url, appAttribute: c[i].appAttribute });
-
-console.log(c[i].appAttribute);
     }
     return entries;
   }
