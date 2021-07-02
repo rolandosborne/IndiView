@@ -13,16 +13,10 @@ import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+import { AttributeUtil } from "./src/AttributeUtil";
 import { ContactScreen } from "./src/Contacts";
 
 // schema identifiers
-const WEBSITE: string = 'b0e10c5cecaa8c451330740817e301a0cc6b22b57d0241ce3ffb20d8938dc067';
-const CARD: string = '081272d5ec5ab6fb6d7d55d12697f6c91e66bb0db562ec059cbfc5cc2c36278b';
-const EMAIL: string = 'da7084bf8a5187e049577d14030a8c76537e59830d224f6229548f765462c52b';
-const PHONE: string = '6424b72bbf3b3a2e8387c03c4e9599275ab7e1b3abb515dc9e4c8f69be36003f';
-const HOME: string = '89dd0b67823cb034b8eda59bb0a9af9a0707216830f32cd9634874c47c74a148';
-const WORK: string = '9b9b2cb50f416956aa33e463bcdc131ab8fe5acf934a4179b87248ea4b102f60';
-const SOCIAL: string = '4f181fd833399f33ea483b5e9dcf22fa81b7474ff53a38a327c5f2d1e71c5eb2';
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
 const PHOTO: string = '6cf626f1b2222b128dc39dceabdfce7073ea961d97f34fe20fd30ef02b7bf8dd';
 const VIDEO: string = 'e245d8cc676a79055aac13a2d0aa9a3eb3f673765556070dc0bd131510e60e40';
@@ -48,14 +42,66 @@ function RootScreen({ navigation }) {
     // process attribute data
     if(type == DiatumDataType.AmigoAttribute && objectId == null) {
       console.log("AMIGO ATTRIBUTE: " + amigoId);
+      diatum.getContactAttributes(amigoId).then(a => {
+        for(let i = 0; i < a.length; i++) {
+          if(AttributeUtil.isPhone(a[i])) {
+            let obj = AttributeUtil.getDataObject(a[i]);
+            if(obj.phone != null) {
+              // extract phone & type
+              if(obj.phoneSms == true) {
+                // extract text & type
+              }
+            }
+          }
+          if(AttributeUtil.isWork(a[i])) {
+            let obj = AttributeUtil.getDataObject(a[i]);
+            if(obj.phoneNumber != null) {
+              // extract phone & WORK PHONE
+              if(obj.phoneNumberSms == true) {
+                // extract text & WORK PHONE
+              }
+            }
+          }
+          if(AttributeUtil.isHome(a[i])) {
+            let obj = AttributeUtil.getDataObject(a[i]);
+            if(obj.phoneNumber != null) {
+              // extract phone & HOME PHONE
+              if(obj.phoneNumberSms == true) {
+                // extract text & HOME PHONE
+              }
+            }
+          }
+          if(AttributeUtil.isCard(a[i])) {
+            let obj = AttributeUtil.getDataObject(a[i]);
+            if(obj.mainPhone != null) {
+              // extract phone & MAIN CARD
+              if(obj.mainPhoneSms == true) {
+                // extract text & MAIN CARD
+              }
+            }
+            if(obj.directPhone != null) {
+              // extract phone & DIRECT CARD
+              if(obj.directPhoneSms == true) {
+                // extract text & DIRECT CARD
+              }
+            }
+            if(obj.mobilePhone != null) {
+              // extract phone & MOBILE CARD
+              if(obj.mobilePhoneSms == true) {
+                // extract text & MOBILE CARD
+              }
+            }
+          }
+        }
+      });
     }
   }
   
-  let attributes = [ WEBSITE, CARD, EMAIL, PHONE, HOME, WORK, SOCIAL ];
+  let attributes = AttributeUtil.getSchemas();
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v74.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v84.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }

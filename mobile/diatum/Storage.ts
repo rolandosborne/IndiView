@@ -505,6 +505,17 @@ export class Storage {
       }
     }
     return contacts;
-  } 
+  }
+  public async getContactAttributes(id: string, amigoId: string): Promise<Attribute[]> {
+    let res = await this.db.executeSql("SELECT attribute_id, revision, schema, data FROM contact_" + id + " WHERE amigo_id=?;", [amigoId]);
+    let attributes: Attribute[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        attributes.push({ attributeId: item.attribute_id, revision: item.revision, schema: item.schema, data: item.data });
+      }
+    }
+    return attributes;
+  }
 }
 

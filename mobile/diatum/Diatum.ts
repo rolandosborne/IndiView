@@ -75,6 +75,9 @@ export interface Diatum {
 
   // get contacts
   getContacts(): Promise<ContactEntry[]>
+
+  // get attributes for specified contact
+  getContactAttributes(amigoId: string): Promise<Attribute[]>
 }
 
 async function asyncForEach(map, handler) {
@@ -1010,6 +1013,10 @@ class _Diatum {
     }
     return entries;
   }
+
+  public async getContactAttributes(amigoId: string): Promise<Attribute[]> {
+    return await this.storage.getContactAttributes(this.session.amigoId, amigoId);
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1112,6 +1119,11 @@ async function getContacts(): Promise<ContactEntry[]> {
   return await diatum.getContacts();
 }
 
+async function getContactAttributes(amigoId: string): Promsie<Attribute[]> {
+  let diatum = await getInstance();
+  return await diatum.getContactAttributes(amigoId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getIdentity, getLabels, getContacts };
+    setListener, clearListener, getIdentity, getLabels, getContacts, getContactAttributes };
 
