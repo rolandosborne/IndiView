@@ -51,6 +51,7 @@ export class Contact {
   name: string;
   handle: string;
   logoSet: boolean;
+  appAttribute: any;
 }
 
 export class Storage {
@@ -496,12 +497,12 @@ export class Storage {
     return labels;
   }
   public async getContacts(id: string): Promise<Contact[]> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id;");
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id;");
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, status: item.status, logoSet: item.logo_flag != 0 });
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, status: item.status, logoSet: item.logo_flag != 0, appAttribute: decodeObject(item.app_attribute) });
       }
     }
     return contacts;
@@ -516,6 +517,9 @@ export class Storage {
       }
     }
     return attributes;
+  }
+  public async setContactAttributeData(id: string, amigoId: string, obj: any): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " SET app_attribute=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }
 }
 

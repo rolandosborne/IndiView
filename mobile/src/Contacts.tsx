@@ -129,6 +129,7 @@ function Contacts(props) {
       props.setListener(setLabel);
     }
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
+    diatum.setListener(DiatumEvent.Contact, updateContacts);
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
     return () => {
@@ -136,6 +137,7 @@ function Contacts(props) {
         props.clearListener();
       }
       diatum.clearListener(DiatumEvent.Identity, updateIdentity);
+      diatum.clearListener(DiatumEvent.Contact, updateContacts);
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
       diatum.clearListener(DiatumEvent.Share, updateContacts);
     }
@@ -143,6 +145,38 @@ function Contacts(props) {
 
   return (
       <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={ContactEntry} />
+  )
+}
+
+function ContactControl({attributes}) {
+
+  let hasPhone = attributes != null && attributes.phone != null && attributes.phone.length > 0;
+  let hasText = attributes != null && attributes.phone != null && attributes.text.length > 0;
+ 
+  if(hasPhone && hasText) {
+    return (
+      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
+        <Icon name="phone" style={{ fontSize: 24 }}/>
+        <Icon name="commenting" style={{ fontSize: 24 }}/>
+      </View>
+    )
+  }
+  if(hasPhone) {
+    return (
+      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
+        <Icon name="phone" style={{ fontSize: 24 }}/>
+      </View>
+    )
+  }
+  if(hasText) {
+    return (
+      <View style={{ paddingRight: 16, justifyContent: 'center' }}>
+        <Icon name="commenting" style={{ fontSize: 24 }}/>
+      </View>
+    )
+  }
+  return (
+    <View></View>
   )
 }
 
@@ -170,7 +204,7 @@ function ContactEntry({item}) {
 
   if(item.type == 'contact') {
     return (
-     <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
+     <View style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
           <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#0088ff' }} source={imgSrc}/>
         </View>
@@ -178,6 +212,8 @@ function ContactEntry({item}) {
           <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
           <Text>{item.handle}</Text>
         </View>
+        <View style={{ flexGrow: 1 }}></View>
+        <ContactControl attributes={item.appAttribute} />
       </View>
     )
   }

@@ -25,6 +25,7 @@ export interface ContactEntry {
   imageUrl?: string;
   handle?: string;
   status?: string;
+  appAttribute?: any;
 }
 
 export interface AmigoMessage {

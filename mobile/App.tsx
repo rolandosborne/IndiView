@@ -9,7 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { Diatum, DiatumEvent, DiatumDataType } from './diatum/Diatum';
 import { AttachCode, getAttachCode } from './diatum/DiatumUtil';
-import { DiatumSession, LabelEntry } from './diatum/DiatumTypes';
+import { DiatumSession, LabelEntry, Attribute } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
@@ -39,61 +39,67 @@ function RootScreen({ navigation }) {
   logoutNav = navigation;
 
   const dataCallback = async (type: DiatumDataType, amigoId: string, objectId: string) => {
-    // process attribute data
-    if(type == DiatumDataType.AmigoAttribute && objectId == null) {
-      console.log("AMIGO ATTRIBUTE: " + amigoId);
-      diatum.getContactAttributes(amigoId).then(a => {
+    try {
+      if(type == DiatumDataType.AmigoAttribute && objectId == null) {
+        let phoneNumbers = [];
+        let textNumbers = [];
+        let a: Attribute[] = await diatum.getContactAttributes(amigoId);
         for(let i = 0; i < a.length; i++) {
           if(AttributeUtil.isPhone(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.phone != null) {
-              // extract phone & type
+              phoneNumbers.push({ value: obj.phone, type: obj.category });
               if(obj.phoneSms == true) {
-                // extract text & type
+                textNumbers.push({ value: obj.phone, type: obj.category });
               }
             }
           }
           if(AttributeUtil.isWork(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.phoneNumber != null) {
-              // extract phone & WORK PHONE
+              phoneNumbers.push({ value: obj.phoneNumber, type: 'Work' });
               if(obj.phoneNumberSms == true) {
-                // extract text & WORK PHONE
+                textNumbers.push({ value: obj.phoneNumber, type: 'Work' });
               }
             }
           }
           if(AttributeUtil.isHome(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.phoneNumber != null) {
-              // extract phone & HOME PHONE
+              phoneNumbers.push({ value: obj.phoneNumber, type: 'Home' });
               if(obj.phoneNumberSms == true) {
-                // extract text & HOME PHONE
+                textNumbers.push({ value: obj.phoneNumber, type: 'Home' });
               }
             }
           }
           if(AttributeUtil.isCard(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.mainPhone != null) {
-              // extract phone & MAIN CARD
+              phoneNumbers.push({ value: obj.mainPhone, type: 'Card Main' });
               if(obj.mainPhoneSms == true) {
-                // extract text & MAIN CARD
+                textNumbers.push({ value: obj.mainPhone, type: 'Card Main' });
               }
             }
             if(obj.directPhone != null) {
-              // extract phone & DIRECT CARD
+              phoneNumbers.push({ value: obj.directPhone, type: 'Card Direct' });
               if(obj.directPhoneSms == true) {
-                // extract text & DIRECT CARD
+                textNumbers.push({ value: obj.directPhone, type: 'Card Direct' });
               }
             }
             if(obj.mobilePhone != null) {
-              // extract phone & MOBILE CARD
+              phoneNumbers.push({ value: obj.mobilePhone, type: 'Card Mobile' });
               if(obj.mobilePhoneSms == true) {
-                // extract text & MOBILE CARD
+                textNumbers.push({ value: obj.mobilePhone, type: 'Card Mobile' });
               }
             }
           }
+            let obj = AttributeUtil.getDataObject(a[i]);
         }
-      });
+        await diatum.setContactAttributeData(amigoId, { phone: phoneNumbers, text: textNumbers });
+      }
+    }
+    catch(err) {
+      console.log(err);
     }
   }
   
@@ -101,7 +107,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v84.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v95.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
