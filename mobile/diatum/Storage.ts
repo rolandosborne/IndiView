@@ -496,8 +496,14 @@ export class Storage {
     }
     return labels;
   }
-  public async getContacts(id: string): Promise<Contact[]> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id;");
+  public async getContacts(id: string, labelId: string): Promise<Contact[]> {
+    let res;
+    if(labelId == null) {
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
+    }
+    else {
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
+    }
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {

@@ -74,7 +74,7 @@ export interface Diatum {
   getLabels(): Promise<LabelEntry[]>
 
   // get contacts
-  getContacts(): Promise<ContactEntry[]>
+  getContacts(labelId: string): Promise<ContactEntry[]>
 
   // get attributes for specified contact
   getContactAttributes(amigoId: string): Promise<Attribute[]>
@@ -1007,8 +1007,8 @@ class _Diatum {
     return await this.storage.getLabels(this.session.amigoId);
   }
 
-  public async getContacts(): Promise<ContactEntry[]> {
-    let c: Contact = await this.storage.getContacts(this.session.amigoId);
+  public async getContacts(labelId: string): Promise<ContactEntry[]> {
+    let c: Contact = await this.storage.getContacts(this.session.amigoId, labelId);
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
@@ -1121,9 +1121,9 @@ async function getLabels(): Promise<LabelEntry[]> {
   return await diatum.getLabels();
 }
 
-async function getContacts(): Promise<ContactEntry[]> {
+async function getContacts(labelId: string): Promise<ContactEntry[]> {
   let diatum = await getInstance();
-  return await diatum.getContacts();
+  return await diatum.getContacts(labelId);
 }
 
 async function getContactAttributes(amigoId: string): Promsie<Attribute[]> {

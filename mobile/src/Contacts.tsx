@@ -56,10 +56,12 @@ function ContactDrawerContent(props) {
 export function ContactScreen() {
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
-    console.log("SELECTED: " + id);
     if(callback != null) {
       callback(id);
     }
+  };
+  const toggleLabel = () => {
+    contactNav.openDrawer();
   };
 
   const setCallback = (cb: (id: string) => {}) => {
@@ -71,29 +73,20 @@ export function ContactScreen() {
   };
 
   return (
-    <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
-      <ContactDrawer.Screen name="ContactNavScreen">{(props) => <ContactNavScreen {...props} {...{setListener: setCallback, clearListner: clearCallback}}/>}</ContactDrawer.Screen>
-    </ContactDrawer.Navigator>
-  )
-}
-
-function ContactNavScreen(props) {
-  const toggleLabel = () => {
-    contactNav.openDrawer();
-  };
-  return (
     <View style={{ flex: 1 }}>
-      <Contacts {...props}></Contacts>
-
+      <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
+        <ContactDrawer.Screen name="Contacts">{(props) => <Contacts {...props} {...{setListener: setCallback, clearListner: clearCallback}}/>}</ContactDrawer.Screen>
+      </ContactDrawer.Navigator>
       <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
         <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
       </TouchableOpacity>
     </View>
-  );
+  )
 }
 
 function Contacts(props) {
 
+  const [labelId, setLabelId] = React.useState(null);
   const [identity, setIdentity] = React.useState([]);
   const [contacts, setContacts] = React.useState([]);
 
@@ -110,7 +103,11 @@ function Contacts(props) {
     });
   };
   const updateContacts = () => {
-    diatum.getContacts().then(c => {
+    updateLabelContacts(labelId);
+  };
+
+  const updateLabelContacts = (id: string) => {
+    diatum.getContacts(id).then(c => {
       for(let i = 0; i < c.length; i++) {
         c[i].type = 'contact';
       }
@@ -119,10 +116,11 @@ function Contacts(props) {
     }).catch(err => {
       console.log(err);
     });
-  };
+  }
 
   const setLabel = (id: string) => {
-    console.log("SET LABEL CONTACT: " + id);
+    setLabelId(id);
+    updateLabelContacts(id);
   };
 
   useEffect(() => {
