@@ -17,6 +17,7 @@ export interface IdentityProfile {
   handle?: string;
   location?: string;
   description?: string;
+  errorFlag?: boolean;
 }
 
 export interface ContactEntry {
@@ -25,6 +26,7 @@ export interface ContactEntry {
   imageUrl?: string;
   handle?: string;
   status?: string;
+  errorFlag?: boolean
   appAttribute?: any;
 }
 

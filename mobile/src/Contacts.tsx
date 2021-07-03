@@ -28,6 +28,7 @@ class ContactData {
 
 function ContactDrawerContent(props) {
   contactNav = props.navigation;
+  const [labelId, setLabelId] = React.useState(null);
   const [labels, setLabels] = React.useState([]);
   let diatum: Diatum = useDiatum();
   const update = () => {
@@ -37,6 +38,16 @@ function ContactDrawerContent(props) {
       console.log(err);
     });
   };
+
+  const setLabel = (id: string) => {
+    setLabelId(id);
+    props.onLabel(id);
+  }
+
+  const clearLabel = () => {
+    setLabelId(null);
+    props.onLabel(null);
+  }
 
   useEffect(() => {
         diatum.setListener(DiatumEvent.Labels, update);
@@ -48,14 +59,28 @@ function ContactDrawerContent(props) {
   return (
       <View>
         <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
-        <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
+        <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => { 
+          if(labelId == item.labelId) {
+            return <DrawerItem labelStyle={{ fontSize: 18, color: '#0072CC' }} label={item.name} onPress={() => {props.navigation.closeDrawer(); clearLabel();} } />
+          }
+          else {
+            return <DrawerItem labelStyle={{ fontSize: 18, color: '#282827' }} label={item.name} onPress={() => {props.navigation.closeDrawer(); setLabel(item.labelId);} } />
+          }
+        }} />
       </View>
   );
 }
 
 export function ContactScreen() {
+  const [latchColor, setLatchColor] = React.useState('#282827');
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
+    if(id == null) {
+      setLatchColor('#282827');
+    }
+    else {
+      setLatchColor('#0072CC');
+    }
     if(callback != null) {
       callback(id);
     }
@@ -75,11 +100,17 @@ export function ContactScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
-        <ContactDrawer.Screen name="Contacts">{(props) => <Contacts {...props} {...{setListener: setCallback, clearListner: clearCallback}}/>}</ContactDrawer.Screen>
+        <ContactDrawer.Screen name="Contacts">{(props) => { 
+          return (
+            <View style={{ flex: 1 }}>
+              <Contacts {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
+              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
+              </TouchableOpacity>
+            </View>
+          )
+        }}</ContactDrawer.Screen>
       </ContactDrawer.Navigator>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
     </View>
   )
 }
@@ -95,7 +126,7 @@ function Contacts(props) {
     diatum.getIdentity().then(i => {
       let entry = [{ type: 'pad', amigoId: 'top' }];
       if(i != null) {
-        entry.push({ type: 'identity', amigoId: "_" + i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl });
+        entry.push({ type: 'identity', amigoId: "_" + i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl, errorFlag: i.errorFlag });
       }
       setIdentity(entry);
     }).catch(err => {
@@ -211,11 +242,33 @@ function ContactControl({attributes}) {
 
 function ContactEntry({item}) {
 
+  let nameColor = '#aaaaaa';
+  let borderColor = '#888888';
+  
+  if(item.type == 'contact') {
+    if(item.status != 'connected') {
+      borderColor = '#444444';
+    }
+    else if(item.errorFlag) {
+      borderColor = '#ff8888';
+    }
+    else {
+      borderColor = '#0088ff';
+    }
+  }
+  if(item.type == 'identity') {
+    if(item.errorFlag) {
+      borderColor = '#dd8888';
+    }
+    else {
+      borderColor = '#00bb88';
+    }
+  }
+
   let name: string = "not set";
-  let nameColor: string = "#aaaaaa"
   if(item.name != null) {
     name = item.name;
-    nameColor = "#222222";
+    nameColor = '#222222';
   }
   let imgSrc = {};
   if(item.imageUrl == null) {
@@ -235,7 +288,7 @@ function ContactEntry({item}) {
     return (
      <View style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
-          <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#0088ff' }} source={imgSrc}/>
+          <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>
         <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
           <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
@@ -251,7 +304,7 @@ function ContactEntry({item}) {
     return (
         <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
           <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
-            <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#00bb88' }} source={imgSrc}/>
+            <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
           </View>
           <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
             <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>

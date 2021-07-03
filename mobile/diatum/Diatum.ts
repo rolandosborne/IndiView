@@ -114,7 +114,8 @@ class _Diatum {
   private subjectFilter: string[];
   private tagFilter: string;
   private authMessage: AuthMessage;
-  private authToken: string;  
+  private authToken: string;
+  private nodeError: boolean;
   private callback: (type: DiatumDataType, amigoId: string, objectId: string) => {};
 
   constructor(attributes: string[], subjects: string[], tag: string) {
@@ -125,6 +126,7 @@ class _Diatum {
     this.attributeFilter = attributes;
     this.subjectFilter = subjects;
     this.tagFilter = tag;
+    this.nodeError = false;
     this.listeners = new Map<DiatumEvent, Set<() => void>>();
     for(let i = 0; i < DiatumEvent.COUNT; i++) {
       this.listeners.set(i, new Set<() => void>());
@@ -174,62 +176,78 @@ class _Diatum {
         this.nodeSync = cur;
         let synced: boolean = false;
 
-        // retrieve current revisions
-        let rev = await DiatumApi.getRevisions(this.session.amigoNode, this.session.amigoToken);
+        try {
+          // retrieve current revisions
+          let rev = await DiatumApi.getRevisions(this.session.amigoNode, this.session.amigoToken);
 
-        // update identity if revision change
-        if(this.revisions.identityRevision !== rev.identityRevision && this.access.enableIdentity) {
-          await this.syncIdentity();
-          synced = true;
+          // update identity if revision change
+          if(this.revisions.identityRevision !== rev.identityRevision && this.access.enableIdentity) {
+            await this.syncIdentity();
+            synced = true;
+          }
+
+          // update group if revision change
+          if(this.revisions.groupRevision !== rev.groupRevision && this.access.enableGroup) {
+            await this.syncGroup();
+            synced = true;
+          }
+
+          // update index if revision change
+          if(this.revisions.indexRevision !== rev.indexRevision && this.access.enableIndex) {
+            await this.syncIndex();
+            await this.syncPending();
+            synced = true;
+          }
+
+          // update profile if revision change
+          if(this.revisions.profileRevision !== rev.profileRevision && this.access.enableProfile) {
+            await this.syncProfile();
+            synced = true;
+          }
+
+          // update show if revision change
+          if(this.revisions.showRevision !== rev.showRevision && this.access.enableShow) {
+            await this.syncShow();
+            synced = true;
+          }
+
+          // update share if revision change
+          if(this.revisions.shareRevision !== rev.shareRevision && this.access.enableShare) {
+            await this.syncShare();
+            synced = true;
+          }
+
+          // update insight if revision chage
+          if(this.revisions.insightRevision !== rev.insightRevision) {
+            await this.syncInsight();
+            synced = true;
+          }
+
+          // update dialogue if revision change
+          if(this.revisions.dialogueRevision !== rev.dialogueRevision) {
+            await this.syncDialogue();
+            synced = true;
+          }
+
+          // store update revisions
+          if(synced) {
+            this.revisions = rev;
+            this.storage.setAccountObject(this.session.amigoId, REVISIONS_KEY, rev);
+          }
+
+          // clear node error
+          if(this.nodeError != false) {
+            this.nodeError = false;
+            this.notifyListeners(DiatumEvent.Identity);
+          }
         }
-
-        // update group if revision change
-        if(this.revisions.groupRevision !== rev.groupRevision && this.access.enableGroup) {
-          await this.syncGroup();
-          synced = true;
-        }
-
-        // update index if revision change
-        if(this.revisions.indexRevision !== rev.indexRevision && this.access.enableIndex) {
-          await this.syncIndex();
-          await this.syncPending();
-          synced = true;
-        }
-
-        // update profile if revision change
-        if(this.revisions.profileRevision !== rev.profileRevision && this.access.enableProfile) {
-          await this.syncProfile();
-          synced = true;
-        }
-
-        // update show if revision change
-        if(this.revisions.showRevision !== rev.showRevision && this.access.enableShow) {
-          await this.syncShow();
-          synced = true;
-        }
-
-        // update share if revision change
-        if(this.revisions.shareRevision !== rev.shareRevision && this.access.enableShare) {
-          await this.syncShare();
-          synced = true;
-        }
-
-        // update insight if revision chage
-        if(this.revisions.insightRevision !== rev.insightRevision) {
-          await this.syncInsight();
-          synced = true;
-        }
-
-        // update dialogue if revision change
-        if(this.revisions.dialogueRevision !== rev.dialogueRevision) {
-          await this.syncDialogue();
-          synced = true;
-        }
-
-        // store update revisions
-        if(synced) {
-          this.revisions = rev;
-          this.storage.setAccountObject(this.session.amigoId, REVISIONS_KEY, rev);
+        catch(err) {
+          console.log(err);
+          // set node error
+          if(this.nodeError != true) {
+            this.nodeError = true;
+            this.notifyListeners(DiatumEvent.Identity);
+          }
         }
       }
 
@@ -248,7 +266,14 @@ class _Diatum {
       let connections = await this.storage.getStaleAmigoConnections(this.session.amigoId);
       for(let i = 0; i < connections.length; i++) {
         await this.storage.updateStaleTime(this.session.amigoId, connections[i].amigoId, cur);
-        await this.syncAmigoConnection(connections[i]);
+        try {
+          await this.syncAmigoConnection(connections[i]);
+        }
+        catch(err) {
+          console.log(err);
+          await this.storage.updateAmigoConnectionError(this.session.amigoId, connections[i].amigoId, true);
+          this.notifyListeners(DiatumEvent.Contact);
+        }
       }
 
       // sync connections
@@ -256,13 +281,22 @@ class _Diatum {
         this.connectionSync = cur;
         let connection = await this.storage.getStaleAmigoConnection(this.session.amigoId, cur - STALE_CONNECTION_MS);
         if(connection != null) {
+          await this.storage.updateStaleTime(this.session.amigoId, connection.amigoId, cur);
           try {
             await this.syncAmigoConnection(connection);
           }
           catch(err) {
             console.log(err);
+            await this.storage.updateAmigoConnectionError(this.session.amigoId, connection.amigoId, true);
+            this.notifyListeners(DiatumEvent.Contact);
+            
             // check if idenity changed in registry
-            await this.syncContactRegistry(connection.registry, connection.amigoId, connection.identityRevision);
+            try {
+              await this.syncContactRegistry(connection.registry, connection.amigoId, connection.identityRevision);
+            }
+            catch(err) {
+              console.log(err);
+            }
           }
         }
       }
@@ -273,7 +307,12 @@ class _Diatum {
         let reference = await this.storage.getStaleAmigoReference(this.session.amigoId, cur - STALE_REFERENCE_MS);
         if(reference != null) {
           await this.storage.updateStaleTime(this.session.amigoId, reference.amigoId, cur);
-          await this.syncContactRegistry(reference.registry, reference.amigoId, reference.revision);
+          try {
+            await this.syncContactRegistry(reference.registry, reference.amigoId, reference.revision);
+          }
+          catch(err) {
+            console.log(err);
+          }
         }
       }
 
@@ -292,29 +331,35 @@ class _Diatum {
   }
 
   private async syncAmigoConnection(connection: AmigoConnection): Promise<void> {
-      // pull revisions with agent auth
-      let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
+    // pull revisions with agent auth
+    let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
 
-      // if identity revision is different, update registry
-      if(revisions.identityRevision != connection.identityRevision) {
-        let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
-        if(amigo.amigoId == connection.amigoId) { // sanity check
-          await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
-          this.notifyListeners(DiatumEvent.Listing);
-        }
+    // if identity revision is different, update registry
+    if(revisions.identityRevision != connection.identityRevision) {
+      let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
+      if(amigo.amigoId == connection.amigoId) { // sanity check
+        await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
+        this.notifyListeners(DiatumEvent.Listing);
       }
+    }
 
-      // if attribute revision is different, update contact
-      if(revisions.contactRevision != connection.attributeRevision) {
-        await this.syncConnectionContact(connection.amigoId, connection.node, connection.token);
-        await this.storage.updateConnectionAttributeRevision(this.session.amigoId, connection.amigoId, revisions.contactRevision);
-      }
+    // if attribute revision is different, update contact
+    if(revisions.contactRevision != connection.attributeRevision) {
+      await this.syncConnectionContact(connection.amigoId, connection.node, connection.token);
+      await this.storage.updateConnectionAttributeRevision(this.session.amigoId, connection.amigoId, revisions.contactRevision);
+    }
 
-      // if subject revision is different, update view
-      if(revisions.viewRevision != connection.subjectRevision) {
-        await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
-        await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
-      }
+    // if subject revision is different, update view
+    if(revisions.viewRevision != connection.subjectRevision) {
+      await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
+      await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
+    }
+
+    // clear any error flag
+    if(connection.connectionError) {
+      await this.storage.updateAmigoConnectionError(this.session.amigoId, connection.amigoId, false);
+      this.notifyListeners(DiatumEvent.Contact);
+    }
   }
 
   private async syncContactRegistry(registry: string, amigoId: string, revision: number): Promsie<void> {
@@ -1000,7 +1045,7 @@ class _Diatum {
       return null;
     }
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
-        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken };
+        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken, errorFlag: this.nodeError };
   }
 
   public async getLabels(): Promise<LabelEntry> {
@@ -1012,7 +1057,7 @@ class _Diatum {
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, status: c[i].status,imageUrl: url, appAttribute: c[i].appAttribute });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, status: c[i].status,imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
     }
     return entries;
   }

@@ -30,6 +30,7 @@ export class AmigoConnection {
   identityRevision: number;
   attributeRevision: number;
   subjectRevision: number;
+  errorFlag: boolean;
   token: string;
 }
 
@@ -38,6 +39,7 @@ export class AmigoReference {
   node: string;
   registry: string;
   identityRevision: number;
+  errorFlag: boolean;
 }
 
 export class AmigoPath {
@@ -51,6 +53,7 @@ export class Contact {
   name: string;
   handle: string;
   logoSet: boolean;
+  errorFlag: boolean;
   appAttribute: any;
 }
 
@@ -78,7 +81,7 @@ export class Storage {
   public async setAccount(id: string): Promise<void> {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS _account_" + id + " (key text, value text null, unique(key))");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS group_" + id + " (label_id text, revision integer, name text, unique(label_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, logo_flag integer, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, amigo_error integer, attribute_error integer, subject_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, unique(amigo_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, logo_flag integer, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, connection_error integer, registry_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, unique(amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS indexgroup_" + id + " (label_id text, amigo_id text, unique (label_id, amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, amigo text, updated integer, app_share text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profile_" + id + " (attribute_id text, revision integer, schema text, data text, unique(attribute_id));");
@@ -312,32 +315,38 @@ export class Storage {
 
   // get stale connection to update
   public async getStaleAmigoConnections(id: string): Promise<AmigoConnection[]> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and update_timestamp is null");
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, connection_error, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and update_timestamp is null");
     let connections: AmigoConnection[] = [];
     if(hasResult(res)) {
       let a = res[0].rows.item(0);
-      connections.push({ amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision });
+      connections.push({ amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision, connectionError: a.connection_error!=0 });
     }
     return connections;
   }
   public async getStaleAmigoConnection(id: string, stale: number): Promise<AmigoConnection> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, connection_error, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status = 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
     if(hasResult(res)) {
       let a = res[0].rows.item(0);
-      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision };
+      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision, connectionError: a.connection_error!=0 };
     }
     return null;
   }
   public async getStaleAmigoReference(id: string, stale: number): Promise<AmigoReference> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status != 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, registry_error, index_" + id + ".identity_revision from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status != 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
     if(hasResult(res)) {
       let a = res[0].rows.item(0);
-      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, identityRevision: a.identity_revision };
+      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, identityRevision: a.identity_revision, registryError: a.registry_error!=0 };
     }
     return null;
   }
   public async updateStaleTime(id: string, amigoId: string, stale: number): Promise<void> {
-    await this.db.executeSql("UPDATE index_" + id + " set update_timestamp=? WHERE amigo_id=?;", [stale, amigoId]);
+    let res = await this.db.executeSql("UPDATE index_" + id + " set update_timestamp=? WHERE amigo_id=?;", [stale, amigoId]);
+  }
+  public async updateAmigoConnectionError(id: string, amigoId: string, error: boolean): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " set connection_error=? WHERE amigo_id=?;", [error ? 1 : 0, amigoId]);
+  }
+  public async updateAmigoRegistryError(id: string, amigoId: string, error: boolean): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " set registry_error=? WHERE amigo_id=?;", [status, amigoId]);
   }
   public async updateConnectionAttributeRevision(id: string, amigoId: string, revision: number): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " set attribute_revision=? WHERE amigo_id=?;", [revision, amigoId]);
@@ -499,16 +508,16 @@ export class Storage {
   public async getContacts(id: string, labelId: string): Promise<Contact[]> {
     let res;
     if(labelId == null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
     }
     else {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
     }
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, status: item.status, logoSet: item.logo_flag != 0, appAttribute: decodeObject(item.app_attribute) });
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) });
       }
     }
     return contacts;
