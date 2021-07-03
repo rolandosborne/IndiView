@@ -11,7 +11,7 @@ function checkResponse(response) {
 async function fetchWithTimeout(url, options) {
     return Promise.race([
         fetch(url, options),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout: ')), FETCH_TIMEOUT))
+        new Promise((_, reject) => setTimeout(() => reject(new Error(url + ' timeout')), FETCH_TIMEOUT))
     ]);
 }
 
