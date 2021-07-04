@@ -8,7 +8,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
-//Linking.openURL(`tel:${phoneNumber}`)
+import { useNavigation } from '@react-navigation/native';
 
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
@@ -71,7 +71,7 @@ function ContactDrawerContent(props) {
   );
 }
 
-export function ContactScreen() {
+export function Contacts() {
   const [latchColor, setLatchColor] = React.useState('#282827');
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
@@ -98,12 +98,12 @@ export function ContactScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
         <ContactDrawer.Screen name="Contacts">{(props) => { 
           return (
             <View style={{ flex: 1 }}>
-              <Contacts {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
+              <ContactList {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
               <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
                 <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
               </TouchableOpacity>
@@ -111,11 +111,11 @@ export function ContactScreen() {
           )
         }}</ContactDrawer.Screen>
       </ContactDrawer.Navigator>
-    </View>
+    </SafeAreaView>
   )
 }
 
-function Contacts(props) {
+function ContactList(props) {
 
   const [labelId, setLabelId] = React.useState(null);
   const [identity, setIdentity] = React.useState([]);
@@ -174,7 +174,7 @@ function Contacts(props) {
   }, []);
 
   return (
-      <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={ContactEntry} />
+      <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={({item}) => <ContactEntry item={item} /> } />
   )
 }
 
@@ -242,6 +242,12 @@ function ContactControl({attributes}) {
 
 function ContactEntry({item}) {
 
+  const navigation = useNavigation();
+  const onProfile = () => {
+    console.log(item);
+    navigation.navigate("ContactProfile", { amigoId: item.amigoId });
+  };
+
   let nameColor = '#aaaaaa';
   let borderColor = '#888888';
   
@@ -286,7 +292,7 @@ function ContactEntry({item}) {
 
   if(item.type == 'contact') {
     return (
-     <View style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
+      <TouchableOpacity style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
           <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>
@@ -296,20 +302,20 @@ function ContactEntry({item}) {
         </View>
         <View style={{ flexGrow: 1 }}></View>
         <ContactControl attributes={item.appAttribute} />
-      </View>
+      </TouchableOpacity>
     )
   }
 
   if(item.type == 'identity') {
     return (
-        <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
-          <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
-            <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
-          </View>
-          <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
-            <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>
-            <Text>{item.handle}</Text>
-          </View>
+      <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
+        <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
+          <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
+        </View>
+        <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>
+          <Text>{item.handle}</Text>
+        </View>
       </View>
     )
   }

@@ -14,7 +14,8 @@ import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
 import { AttributeUtil } from "./src/AttributeUtil";
-import { ContactScreen } from "./src/Contacts";
+import { Contacts } from "./src/Contacts";
+import { ContactProfile } from "./src/ContactProfile";
 
 // schema identifiers
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
@@ -23,12 +24,15 @@ const VIDEO: string = 'e245d8cc676a79055aac13a2d0aa9a3eb3f673765556070dc0bd13151
 const AUDIO: string = '6c816e6cfa33ba3685436ddc2279b39627d724a5a47f79413e4ff604273bf785';
 const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a86473991f7fe9f962';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator(); 
+const MainStack = createStackNavigator();
+const HomeDrawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
+
+const ContactStack = createStackNavigator();
+
 const FeedDrawer = createDrawerNavigator();
 const ConversationDrawer = createDrawerNavigator();
-const HomeDrawer = createDrawerNavigator();
-const MainStack = createStackNavigator();
 
 let logoutNav = null;
 let homeNav = null;
@@ -450,8 +454,12 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const toggleControl = () => {
+    homeNav.openDrawer();
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <Tab.Navigator tabBarOptions={{showLabel: false}} >
         <Tab.Screen name="HomeContact" component={HomeContactScreen} 
             listeners={({ navigation, route }) => ({
@@ -475,22 +483,25 @@ function HomeScreen({ navigation }) {
               <Icon name="comments-o" size={size} color={color} solid />
             )}} />
       </Tab.Navigator>
-    </SafeAreaView>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 function HomeContactScreen() {
-  const toggleControl = () => {
-    homeNav.openDrawer();
-  };
-  return (
-      <View style={{ flex: 1 }}>
-        <ContactScreen></ContactScreen>
+  const forFade = ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
 
-        <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-          <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-        </TouchableOpacity>
-      </View>
+  return (
+    <ContactStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
+      <ContactStack.Screen name="Contacts" component={Contacts} options={{headerShown: false}} />
+      <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
+    </ContactStack.Navigator>
   );
 }  
 
