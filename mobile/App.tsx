@@ -141,15 +141,17 @@ function LoginScreen({ navigation }) {
   const [busy, onBusy] = React.useState(false);
 
   const attach = (() => {
-    if(username != "" && password != "") {
-      onBusy(true);
-      getAttachCode(username, password).then(c => {
-        onBusy(false);
-        navigation.replace("Agree", { code: c });
-      }).catch(err => {
-        onBusy(false);
-        Alert.alert("failed to retrieve attachment code");
-      });
+    if(!busy) {
+      if(username != "" && password != "") {
+        onBusy(true);
+        getAttachCode(username, password).then(c => {
+          onBusy(false);
+          navigation.replace("Agree", { code: c });
+        }).catch(err => {
+          onBusy(false);
+          Alert.alert("failed to retrieve attachment code");
+        });
+      }
     }
   });
 
@@ -178,18 +180,19 @@ function AgreeScreen({ route, navigation }) {
   const [busy, onBusy] = React.useState(false);
 
   const agree = (async () => {
-    onBusy(true);
-    try {
-      let l = await IndiViewCom.attach(code);
-      console.log("APP TOKEN: " + l.appToken);
-      await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
-      await diatum.setAppContext(l);
-      onBusy(false);
-      navigation.replace("Main");
-    }
-    catch(err) {
-      console.log(err);
-      Alert.alert("failed to attach app");
+    if(!busy) {
+      onBusy(true);
+      try {
+        let l = await IndiViewCom.attach(code);
+        await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        await diatum.setAppContext(l);
+        onBusy(false);
+        navigation.replace("Main");
+      }
+      catch(err) {
+        console.log(err);
+        Alert.alert("failed to attach app");
+      }
     }
   });
 

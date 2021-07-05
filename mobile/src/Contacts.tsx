@@ -190,7 +190,7 @@ function ContactControl({attributes}) {
       phoneOptions.push( attributes.phone[i].value + type );
       phoneActions.push( () => { Linking.openURL("tel:" + attributes.phone[i].value.replace(/\D/g,'')) });
     }
-    phoneOptions.push("Cancel");
+    //phoneOptions.push("Cancel");
   }
 
   let hasText: boolean = false;
@@ -203,19 +203,19 @@ function ContactControl({attributes}) {
       textOptions.push(attributes.text[i].value + type);
       textActions.push(() => { Linking.openURL("sms:+" + attributes.text[i].value.replace(/\D/g,'')) });
     }
-    textOptions.push("Cancel");
+    //textOptions.push("Cancel");
   }
  
-  const phone = (<Icon name="phone" style={{ color: '#444444', fontSize: 24 }} /> );
-  const text = (<Icon name="tty" style={{ color: '#444444', fontSize: 24 }} /> );
-  
+  const phone = (<View style={{ width: 40, height: 40, backgroundColor: '#dddddd', justifyContent: 'center', alignItems: 'center', borderRadius: 8 }}><Icon name="phone" style={{ color: '#444444', fontSize: 24 }} /></View>)
+  const text = (<View style={{ width: 40, height: 40, backgroundColor: '#dddddd', justifyContent: 'center', alignItems: 'center', borderRadius: 8 }}><Icon name="tty" style={{ color: '#444444', fontSize: 24 }} /></View>)
+
   if(hasPhone && hasText) {
     return (
-      <View style={{ paddingRight: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
-        <View style={{ paddingLeft: 24 }}>
+      <View style={{ paddingRight: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+        <View style={{ marginRight: 8, marginLeft: 8 }}>
           <OptionsMenu customButton={phone} options={phoneOptions} actions={phoneActions}/>
         </View>
-        <View style={{ paddingLeft: 24 }}>
+        <View style={{ marginRight: 8, marginLeft: 8 }}>
           <OptionsMenu customButton={text} options={textOptions} actions={textActions}/>
         </View>
       </View>
@@ -223,14 +223,16 @@ function ContactControl({attributes}) {
   }
   if(hasPhone) {
     return (
-      <View style={{ paddingRight: 24, justifyContent: 'center' }}>
-        <OptionsMenu customButton={phone} options={phoneOptions} actions={phoneActions}/>
+      <View style={{ paddingRight: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+        <View style={{ marginRight: 8, marginLeft: 8 }}>
+          <OptionsMenu customButton={phone} options={phoneOptions} actions={phoneActions}/>
+        </View>
       </View>
     )
   }
   if(hasText) {
     return (
-      <View style={{ paddingRight: 24, justifyContent: 'center' }}>
+      <View style={{ width: 40, height: 40, backgroundColor: '#ccddee', justifyContent: 'center', alignItems: 'center', borderRadius: 8, marginRight: 16 }}>
         <OptionsMenu customButton={text} options={textOptions} actions={textActions}/>
       </View>
     )
@@ -292,7 +294,7 @@ function ContactEntry({item}) {
 
   if(item.type == 'contact') {
     return (
-      <TouchableOpacity style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
+      <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
           <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>

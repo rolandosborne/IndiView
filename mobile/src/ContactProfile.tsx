@@ -17,7 +17,6 @@ import { IndiViewCom } from "./IndiViewCom";
 
 export function ContactProfile({ route, navigation }) {
   const { amigoId } = route.params;
-  console.log(amigoId);
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
