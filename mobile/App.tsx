@@ -99,6 +99,8 @@ function RootScreen({ navigation }) {
           }
             let obj = AttributeUtil.getDataObject(a[i]);
         }
+        console.log("SETTING APP DATA: " + amigoId);
+        //0ee5be507d9226313bb1e2746eb79954e5e3f8f55b105f3d528fa9ea900524c9
         await diatum.setContactAttributeData(amigoId, { phone: phoneNumbers, text: textNumbers });
       }
     }
@@ -111,7 +113,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
-  diatum.init("indiview_v97.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v98.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -503,7 +505,7 @@ function HomeContactScreen() {
   return (
     <ContactStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <ContactStack.Screen name="Contacts" component={Contacts} options={{headerShown: false}} />
-      <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
+      <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{ headerBackTitle: null, headerShow: true }} />
     </ContactStack.Navigator>
   );
 }  

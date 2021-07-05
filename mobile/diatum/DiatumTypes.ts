@@ -25,6 +25,8 @@ export interface ContactEntry {
   name?: string;
   imageUrl?: string;
   handle?: string;
+  location?: string;
+  description?: string;
   status?: string;
   errorFlag?: boolean
   appAttribute?: any;

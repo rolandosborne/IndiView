@@ -16,11 +16,65 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 
 export function ContactProfile({ route, navigation }) {
-  const { amigoId } = route.params;
+  console.log(route.params.name);
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: route.params.handle, 
+      headerRight: () => (
+        <Icon name="save" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} onPress={() => console.log("TAPPED")} />
+      ),
+    });
+  }, [navigation]);
+
+
+  let imgSrc = {};
+  if(route.params.imageUrl == null) {
+    imgSrc = require('../assets/avatar.png');
+  }
+  else {
+    imgSrc = { uri: route.params.imageUrl, cache: 'force-cache' };
+  }
+
+  let name: string = "not set";
+  let nameColor: '#aaaaaa';
+  if(route.params.name != null) {
+    name = route.params.name;
+    nameColor = '#222222';
+  }
+
+  let latchColor = "#282827";
+  let toggleLabel = () => {
+    console.log("label");
+  }
+
+  let ProfileDescription = () => {
+    if(route.params.description == null) {
+      return (<></>);
+    }
+    return (
+      <Text style={{ marginTop: 16, marginLeft: 8, marginRight: 8, textAlign: 'center' }}>{ route.params.description }</Text>
+    );
+  };
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', padding: 12, margin: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Image style={{ flex: 2, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
+            <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: nameColor }}>{ name }</Text>
+              <Text style={{ color: '#222222' }}>{ route.params.location }</Text>
+            </View>
+          </View>
+          <ProfileDescription />
+        </View>
+      </View>
       <Text>Contact Profile</Text>
+      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+        <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
+      </TouchableOpacity>
     </View>
   )
 }

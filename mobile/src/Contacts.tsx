@@ -98,7 +98,7 @@ export function Contacts() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ paddingTop: 48, flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
         <ContactDrawer.Screen name="Contacts">{(props) => { 
           return (
@@ -111,7 +111,7 @@ export function Contacts() {
           )
         }}</ContactDrawer.Screen>
       </ContactDrawer.Navigator>
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -247,7 +247,7 @@ function ContactEntry({item}) {
   const navigation = useNavigation();
   const onProfile = () => {
     console.log(item);
-    navigation.navigate("ContactProfile", { amigoId: item.amigoId });
+    navigation.navigate("ContactProfile", { ...item });
   };
 
   let nameColor = '#aaaaaa';
