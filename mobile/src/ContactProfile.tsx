@@ -16,7 +16,7 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 
 export function ContactProfile({ route, navigation }) {
-  console.log(route.params.name);
+  const [name, setName] = React.useState(route.params.name);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -36,11 +36,13 @@ export function ContactProfile({ route, navigation }) {
     imgSrc = { uri: route.params.imageUrl, cache: 'force-cache' };
   }
 
-  let name: string = "not set";
-  let nameColor: '#aaaaaa';
-  if(route.params.name != null) {
-    name = route.params.name;
-    nameColor = '#222222';
+  const ContactName = () => {
+    if(name != null) {
+      return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#222222' }}>{ name }</Text>);
+    }
+    else {
+      return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#aaaaaa' }}>No Name</Text>);
+    }
   }
 
   let latchColor = "#282827";
@@ -64,7 +66,7 @@ export function ContactProfile({ route, navigation }) {
           <View style={{ flexDirection: 'row' }}>
             <Image style={{ flex: 2, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: nameColor }}>{ name }</Text>
+              <ContactName />
               <Text style={{ color: '#222222' }}>{ route.params.location }</Text>
             </View>
           </View>
