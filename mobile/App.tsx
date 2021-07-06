@@ -58,15 +58,6 @@ function RootScreen({ navigation }) {
               }
             }
           }
-          if(AttributeUtil.isWork(a[i])) {
-            let obj = AttributeUtil.getDataObject(a[i]);
-            if(obj.phoneNumber != null) {
-              phoneNumbers.push({ value: obj.phoneNumber, type: 'Work' });
-              if(obj.phoneNumberSms == true) {
-                textNumbers.push({ value: obj.phoneNumber, type: 'Work' });
-              }
-            }
-          }
           if(AttributeUtil.isHome(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
             if(obj.phoneNumber != null) {

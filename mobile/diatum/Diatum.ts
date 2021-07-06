@@ -157,13 +157,13 @@ class _Diatum {
     this.listeners.get(event).delete(callback);
   }
 
-  private async notifyListeners(event: DiatumEvent): Promsie<void> {
+  private async notifyListeners(event: DiatumEvent, param): Promsie<void> {
     let arr = [];
     this.listeners.get(event).forEach(v => {
       arr.push(v);
     });
     for(let i = 0; i < arr.length; i++) {
-      await arr[i]();
+      await arr[i](param);
     }
   }
 
@@ -274,8 +274,10 @@ class _Diatum {
         }
         catch(err) {
           console.log(err);
-          await this.storage.updateAmigoConnectionError(this.session.amigoId, connections[i].amigoId, true);
-          this.notifyListeners(DiatumEvent.Contact);
+          if(!connection.connectionError) {
+            await this.storage.updateAmigoConnectionError(this.session.amigoId, connections[i].amigoId, true);
+            this.notifyListeners(DiatumEvent.Contact, amigoId);
+          }
         }
       }
 
@@ -289,10 +291,12 @@ class _Diatum {
             await this.syncAmigoConnection(connection);
           }
           catch(err) {
-            console.log(err);
-            await this.storage.updateAmigoConnectionError(this.session.amigoId, connection.amigoId, true);
-            this.notifyListeners(DiatumEvent.Contact);
-            
+            if(!connection.connectionError) {
+              console.log(err);
+              await this.storage.updateAmigoConnectionError(this.session.amigoId, connection.amigoId, true);
+              this.notifyListeners(DiatumEvent.Contact, connection.amigoId);
+            } 
+
             // check if idenity changed in registry
             try {
               await this.syncContactRegistry(connection.registry, connection.amigoId, connection.identityRevision);
@@ -361,7 +365,7 @@ class _Diatum {
     // clear any error flag
     if(connection.connectionError) {
       await this.storage.updateAmigoConnectionError(this.session.amigoId, connection.amigoId, false);
-      this.notifyListeners(DiatumEvent.Contact);
+      this.notifyListeners(DiatumEvent.Contact, connection.amigoId);
     }
   }
 
@@ -419,7 +423,7 @@ class _Diatum {
     
     if(notify) {
       await this.callback(DiatumDataType.AmigoAttribute, amigoId);
-      this.notifyListeners(DiatumEvent.Contact);
+      this.notifyListeners(DiatumEvent.Contact, amigoId);
     }
   }
 
