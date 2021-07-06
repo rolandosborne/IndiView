@@ -6,27 +6,60 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
-import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
-import { DiatumSession, LabelEntry } from '../diatum/DiatumTypes';
+import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
+import { AttributeUtil } from './AttributeUtil';
 
 export function ContactProfile({ route, navigation }) {
-  const [name, setName] = React.useState(route.params.name);
+  const [contact, setContact] = React.useState(route.params);
+  const [attributes, setAttributes] = React.useState([]);
 
+  // setup screen header
   React.useLayoutEffect(() => {
     navigation.setOptions({
       title: route.params.handle, 
       headerRight: () => (
-        <Icon name="save" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} onPress={() => console.log("TAPPED")} />
       ),
     });
   }, [navigation]);
 
+  // retrieve attributes
+  let diatum: Diatum = useDiatum();
+  const updateContact = async () => {
+    try {
+      let a: Attribute[] = await diatum.getContactAttributes(contact.amigoId);
+      setAttributes(a);
+    }
+    catch(err) {
+      console.log(err);
+      setAttributes([]);
+    }
+  };
+  const updateAmigo = async () => {
+    try {
+      let c: ContactEntry = await diatum.getContact(contact.amigoId);
+      setContact(c);
+    }
+    catch(err) {
+      console.log(err);
+    }
+  };
+ 
+  // register event to update attributes
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Contact, updateContact);
+    diatum.setListener(DiatumEvent.Amigos, updateAmigo);
+    return async () => {
+      await diatum.clearListener(DiatumEvent.Contact, updateContact);
+      await diatum.clearListener(DiatumEvent.Amigos, updateAmigo);
+    }
+  }, []);
 
   let imgSrc = {};
   if(route.params.imageUrl == null) {
@@ -37,11 +70,41 @@ export function ContactProfile({ route, navigation }) {
   }
 
   const ContactName = () => {
-    if(name != null) {
-      return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#222222' }}>{ name }</Text>);
+    if(contact.name != null) {
+      return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#222222' }}>{ contact.name }</Text>);
     }
     else {
       return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#aaaaaa' }}>No Name</Text>);
+    }
+  }
+
+  const ContactNotes = () => {
+    if(contact.notes != null) {
+      return (
+        <View style={{ marginTop: 32, width: '100%' }}>
+          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Personal Notes</Text></View>
+          <View style={{ marginLeft: 32, marginRight: 32, marginTop: 4, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
+            <Text style={{ color: '#222222' }}>{contact.notes}</Text>
+          </View>
+        </View>
+      ); 
+    }
+    else {
+      return (<></>);
+    }
+  }
+
+  const ContactAttributes = () => {
+    if(attributes.length > 0) { 
+      return (
+        <View style={{ marginTop: 32, width: '100%' }}>
+          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Contact Info</Text></View>
+          <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 4, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+        </View>
+      )
+    }
+    else {
+      return (<></>)
     }
   }
 
@@ -55,13 +118,14 @@ export function ContactProfile({ route, navigation }) {
       return (<></>);
     }
     return (
-      <Text style={{ marginTop: 16, marginLeft: 8, marginRight: 8, textAlign: 'center' }}>{ route.params.description }</Text>
+      <Text style={{ marginTop: 16, marginLeft: 8, marginRight: 8, textAlign: 'center' }}>{ contact.description }</Text>
     );
   };
 
   return (
     <View style={{ flex: 1, alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', padding: 12, margin: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
+
+      <View style={{ flexDirection: 'row', padding: 12, marginTop: 16, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
             <Image style={{ flex: 2, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
@@ -73,11 +137,233 @@ export function ContactProfile({ route, navigation }) {
           </View>
         </View>
       </View>
-      <Text>Contact Profile</Text>
+
+      <ContactNotes />
+
+      <ContactAttributes />
+
+
       <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
         <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
       </TouchableOpacity>
     </View>
   )
+}
+
+function AttributeEntry({item}) {
+  const [data, setData] = React.useState({});
+
+  useEffect(() => {
+    if(item.data != null) {
+      setData(JSON.parse(item.data));
+    }
+    else {
+      setData({});
+    }
+  }, []);
+
+  const CardCompanyName = () => {
+    if(data.companyName != null) {
+      return (<Text>{data.companyName}</Text>);
+    }
+    return (<></>);
+  }
+  const CardProfessionName = () => {
+    if(data.professionName != null) {
+      return (<Text>{data.professionName}</Text>);
+    }
+    return (<></>);
+  }
+  const CardTitle = () => {
+    if(data.title != null) {
+      return (<Text>{data.title}</Text>);
+    }
+    return (<></>);
+  }
+  const CardWebsite = () => {
+    if(data.website != null) {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ flexGrow: 1 }}>{ data.website }</Text>
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardAddress = () => {
+    if(data.streetPo != null || data.cityTown != null || data.provinceStateCounty != null || data.postalCode != null || data.country != null) {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{ data.streetPo }</Text>
+            <Text>{ data.cityTown }{ data.provinceStateCounty}&nbsp{data.postalCode}</Text>
+            <Text>{ data.country }</Text>
+          </View>
+          <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        </View>
+      );
+    }
+    return (<></>);
+  } 
+  const CardEmail = () => {
+    if(data.email != null) {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ flexGrow: 1 }}>{ data.email }</Text>
+          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardDirectPhoneSms = () => {
+    if(data.directPhoneSms == true) {
+      return (
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+      );
+    }
+    return (<></>);
+  }
+  const CardDirectPhone = () => {
+    if(data.directPhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Direct Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.directPhone }</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <CardDirectPhoneSms />
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardMainPhoneSms = () => {
+    if(data.mainPhoneSms == true) {
+      return (
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+      );
+    }
+    return (<></>);
+  }
+  const CardMainPhone = () => {
+    if(data.mainPhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Main Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.mainPhone }</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <CardDirectPhoneSms />
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardMobilePhoneSms = () => {
+    if(data.mobilePhoneSms == true) {
+      return (
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+      );
+    }
+    return (<></>);
+  }
+  const CardMobilePhone = () => {
+    if(data.mobilePhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Mobile Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.mobilePhone }</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <CardDirectPhoneSms />
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
+
+
+  const onAttribute = () => {
+    console.log("ATTRIBUTE");
+  };
+
+  if(AttributeUtil.isEmail(item)) {
+    console.log("email");
+  }
+  if(AttributeUtil.isHome(item)) {
+    console.log("home");
+  }
+  if(AttributeUtil.isWork(item)) {
+    console.log("work");
+  }
+  if(AttributeUtil.isSocial(item)) {
+    console.log("social");
+  }
+
+  if(AttributeUtil.isCard(item)) {
+    return (
+      <View style={{ padding: 16 }}>
+        <CardCompanyName />
+        <CardProfessionName />
+        <CardTitle />
+        <CardWebsite />
+        <CardAddress />
+        <CardEmail />
+        <CardMainPhone />
+        <CardDirectPhone />
+        <CardMobilePhone />
+      </View>
+    );
+  }
+  else if(AttributeUtil.isPhone(item)) {
+    return (
+      <View style={{ flexDirection: 'row', padding: 16 }}>
+        <View style={{ flexGrow: 1 }}>
+          <Text>{data.type} Phone</Text>
+          <Text style={{ color: '#444444' }}>{data.phone}</Text>
+        </View>
+        <View style={{ justifyContent: 'center' }}>
+          <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isWebsite(item)) {
+    return (
+      <View style={{ flexDirection: 'row', padding: 16 }}>
+        <View style={{ flexGrow: 1 }}>
+          <Text>{data.name}</Text>
+          <Text style={{ color: '#444444' }}>{data.url}</Text>
+        </View>
+        <View style={{ justifyContent: 'center' }}>
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        </View>
+      </View>
+    );
+  }
+  else {
+    return (<Text>TEXT</Text>);
+  }
 }
 

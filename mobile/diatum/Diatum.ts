@@ -76,6 +76,9 @@ export interface Diatum {
   // get contacts
   getContacts(labelId: string): Promise<ContactEntry[]>
 
+  // get specified contact
+  getContact(amigoId: string): Promise<ContactEntry>
+
   // get attributes for specified contact
   getContactAttributes(amigoId: string): Promise<Attribute[]>
 
@@ -1057,9 +1060,15 @@ class _Diatum {
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, location: c[i].location, description: c[i].description, status: c[i].status,imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, location: c[i].location, description: c[i].description, notes: c[i].notes, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
     }
     return entries;
+  }
+
+  public async getContact(amigoId: string): Promise<ContactEntry> {
+    let c: Contact =  await this.storage.getContact(this.session.amigoId, amigoId);
+    let url: string = c.logoSet ? this.session.amigoNode + "/index/amigos/" + c.amigoId + "/logo?token=" + this.session.amigoToken : null;
+    return { amigoId: c.amigoId, name: c.name, handle: c.handle, location: c.location, description: c.description, notes: c.notes, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
   }
 
   public async getContactAttributes(amigoId: string): Promise<Attribute[]> {
@@ -1171,6 +1180,11 @@ async function getContacts(labelId: string): Promise<ContactEntry[]> {
   return await diatum.getContacts(labelId);
 }
 
+async function getContact(amigoId: string): Promise<ContactEntry> {
+  let diatum = await getInstance();
+  return await diatum.getContact(amigoId);
+}
+
 async function getContactAttributes(amigoId: string): Promsie<Attribute[]> {
   let diatum = await getInstance();
   return await diatum.getContactAttributes(amigoId);
@@ -1182,5 +1196,5 @@ async function setContactAttributeData(amigoId: string, obj: any): Promise<void>
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getIdentity, getLabels, getContacts, getContactAttributes, setContactAttributeData };
+    setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, setContactAttributeData };
 
