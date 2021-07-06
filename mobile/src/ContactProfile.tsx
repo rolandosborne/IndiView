@@ -68,9 +68,9 @@ export function ContactProfile({ route, navigation }) {
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <ContactName />
               <Text style={{ color: '#222222' }}>{ route.params.location }</Text>
+              <ProfileDescription />
             </View>
           </View>
-          <ProfileDescription />
         </View>
       </View>
       <Text>Contact Profile</Text>

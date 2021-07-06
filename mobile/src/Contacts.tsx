@@ -98,7 +98,7 @@ export function Contacts() {
   };
 
   return (
-    <View style={{ paddingTop: 48, flex: 1 }}>
+    <View style={{ paddingTop: Platform.OS === 'ios' ? 48 : 0, flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
         <ContactDrawer.Screen name="Contacts">{(props) => { 
           return (
