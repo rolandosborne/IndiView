@@ -546,6 +546,16 @@ export class Storage {
     }
     return attributes;
   }
+  public async getContactLabels(id: string, amigoId: string): Promise<string[]> {
+    let res = await this.db.executeSql("SELECT label_id FROM indexgroup_" + id + " WHERE amigo_id=?;", [amigoId]);
+    let labels: string[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        labels.push(res[0].rows.item(i).label_id);
+      }
+    }
+    return labels;
+  }
   public async setContactAttributeData(id: string, amigoId: string, obj: any): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " SET app_attribute=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }

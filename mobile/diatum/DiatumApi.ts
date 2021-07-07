@@ -292,4 +292,13 @@ export class DiatumApi {
     return await response.json();
   }
 
+  
+  public static async setAmigoLabel(node: string, token: string, amigoId: string, labelId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'POST', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+  public static async clearAmigoLabel(node: string, token: string, amigoId: string, labelId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
 }

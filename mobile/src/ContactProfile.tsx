@@ -15,19 +15,127 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { AttributeUtil } from './AttributeUtil';
 
+const ProfileDrawer = createDrawerNavigator();
+let contactNav = null;
+
+function ProfileDrawerContent(props) {
+
+  contactNav = props.navigation;
+  const [amigoId, setAmigoId] = React.useState(props.amigoId);
+  const [amigoLabels, setAmigoLabels] = React.useState([]);
+  const [labels, setLabels] = React.useState(props.labels);
+
+  let diatum: Diatum = useDiatum();
+
+  const updateAssigned = () => {
+    diatum.getContactLabels(amigoId).then(l => {
+      setAmigoLabels(l);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+
+  const updateList = () => {
+    diatum.getLabels().then(l => {
+      setLabels(l);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Labels, updateList);
+    diatum.setListener(DiatumEvent.Amigos, updateAssigned);
+    return () => {
+      diatum.clearListener(DiatumEvent.Labels, updateList);
+      diatum.clearListener(DiatumEvent.Amigos, updateAssigned);
+    }
+  }, []);
+
+  const setLabel = async (id: string) => {
+    await diatum.setContactLabel(amigoId, id);
+  }
+
+  const clearLabel = async (id: string) => {
+    await diatum.clearContactLabel(amigoId, id);
+    //props.onLabel(null);
+  }
+
+  const hasLabel = (id: string) => {
+    for(let i = 0; i < amigoLabels.length; i++) {
+      if(amigoLabels[i] == id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return (
+      <View>
+        <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Assigned Labels'} />
+        <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => {
+          if(hasLabel(item.labelId)) {
+            return <DrawerItem labelStyle={{ fontSize: 18, color: '#0072CC' }} label={item.name} onPress={() => {clearLabel(item.labelId);} } />
+          }
+          else {
+            return <DrawerItem labelStyle={{ fontSize: 18, color: '#282827' }} label={item.name} onPress={() => {setLabel(item.labelId);} } />
+          }
+        }} />
+      </View>
+  );
+}
+
 export function ContactProfile({ route, navigation }) {
   const [contact, setContact] = React.useState(route.params);
-  const [attributes, setAttributes] = React.useState([]);
+  const [latchColor, setLatchColor] = React.useState('#282827');
+  const [amigoLabels, setAmigoLabels] = React.useState([]);
+  const [labels, setLabels] = React.useState([]);
+  const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
 
   // setup screen header
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      title: route.params.handle, 
+      title: contact.handle,
       headerRight: () => (
         <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} onPress={() => console.log("TAPPED")} />
       ),
     });
   }, [navigation]);
+
+  const selected = (labels: string[]) => {
+    if(labels.length == 0) {
+      setLatchColor('#282827');
+    }
+    else {
+      setLatchColor('#0072CC');
+    }
+  };
+  const toggleLabel = () => {
+    contactNav.openDrawer();
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: amigoId}} />}>
+        <ProfileDrawer.Screen name="Contacts">{(props) => {
+          return (
+            <View style={{ flex: 1 }}>
+              <ContactProfilePage entry={contact} />
+              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+                <View style={{ width: 16, height: 64, backgroundColor: '#aabbcc', borderRadius: 8 }}></View>
+              </TouchableOpacity>
+            </View>
+          )
+        }}</ProfileDrawer.Screen>
+      </ProfileDrawer.Navigator>
+    </View>
+  )
+}
+
+export function ContactProfilePage({ entry }) {
+
+  const [contact, setContact] = React.useState(entry);
+  const [attributes, setAttributes] = React.useState([]);
 
   // retrieve attributes
   let diatum: Diatum = useDiatum();
@@ -62,11 +170,11 @@ export function ContactProfile({ route, navigation }) {
   }, []);
 
   let imgSrc = {};
-  if(route.params.imageUrl == null) {
+  if(contact.imageUrl == null) {
     imgSrc = require('../assets/avatar.png');
   }
   else {
-    imgSrc = { uri: route.params.imageUrl, cache: 'force-cache' };
+    imgSrc = { uri: contact.imageUrl, cache: 'force-cache' };
   }
 
   const ContactName = () => {
@@ -82,7 +190,7 @@ export function ContactProfile({ route, navigation }) {
     if(contact.notes != null) {
       return (
         <View style={{ marginTop: 16, width: '100%' }}>
-          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Personal Notes</Text></View>
+          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Notes</Text></View>
           <View style={{ marginLeft: 32, marginRight: 32, marginTop: 4, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
             <Text style={{ color: '#222222' }}>{contact.notes}</Text>
           </View>
@@ -99,7 +207,9 @@ export function ContactProfile({ route, navigation }) {
       return (
         <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Contact Info</Text></View>
-          <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 4, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+          <View style={{ marginBottom: 16 }}>
+            <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 4, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+          </View>
         </View>
       )
     }
@@ -114,7 +224,7 @@ export function ContactProfile({ route, navigation }) {
   }
 
   let ProfileDescription = () => {
-    if(route.params.description == null) {
+    if(entry.description == null) {
       return (<></>);
     }
     return (
@@ -131,7 +241,7 @@ export function ContactProfile({ route, navigation }) {
             <Image style={{ flex: 2, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <ContactName />
-              <Text style={{ color: '#222222' }}>{ route.params.location }</Text>
+              <Text style={{ color: '#222222' }}>{ entry.location }</Text>
               <ProfileDescription />
             </View>
           </View>
@@ -231,7 +341,7 @@ function AttributeEntry({item}) {
   const CardDirectPhoneSms = () => {
     if(data.directPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -259,7 +369,7 @@ function AttributeEntry({item}) {
   const CardMainPhoneSms = () => {
     if(data.mainPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -287,7 +397,7 @@ function AttributeEntry({item}) {
   const CardMobilePhoneSms = () => {
     if(data.mobilePhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -312,11 +422,10 @@ function AttributeEntry({item}) {
     }
     return (<></>);
   }
-  
   const HomePhoneSms = () => {
     if(data.phoneNumberSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -331,7 +440,7 @@ function AttributeEntry({item}) {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
-            <CardDirectPhoneSms />
+            <HomePhoneSms />
           </View>
         </View>
       );
@@ -358,7 +467,14 @@ function AttributeEntry({item}) {
     }
     return (<></>);
   } 
-
+  const PhoneSms = () => {
+    if(data.phoneSms == true) {
+      return (
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+      );
+    }
+    return (<></>);
+  }
 
   const onAttribute = () => {
     return (
@@ -431,8 +547,9 @@ function AttributeEntry({item}) {
           <Text>{data.type} Phone</Text>
           <Text style={{ color: '#444444' }}>{data.phone}</Text>
         </View>
-        <View style={{ justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <PhoneSms />
         </View>
       </View>
     );

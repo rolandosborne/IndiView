@@ -82,6 +82,15 @@ export interface Diatum {
   // get attributes for specified contact
   getContactAttributes(amigoId: string): Promise<Attribute[]>
 
+  // get labels for specified contact
+  getContactLabels(amigoId: string): Promise<string[]>
+
+  // set contact label
+  setContactLabel(amigoId: string, labelId: string): Promise<void>;
+
+  // clear contact label
+  clearContactLabel(amigoId: string, labelId: string): Promise<void>;
+
   // set app data for amigo
   setContactAttributeData(amigoId: string, obj: any): Promise<void>
 }
@@ -346,7 +355,7 @@ class _Diatum {
       let amigo = await DiatumApi.getConnectionListing(connection.node, connection.token, this.authToken);
       if(amigo.amigoId == connection.amigoId) { // sanity check
         await this.storage.updateAmigoIdentity(this.session.amigoId, amigo);
-        this.notifyListeners(DiatumEvent.Listing);
+        this.notifyListeners(DiatumEvent.Listing, connection.amigoId);
       }
     }
 
@@ -358,6 +367,7 @@ class _Diatum {
 
     // if subject revision is different, update view
     if(revisions.viewRevision != connection.subjectRevision) {
+console.log("REVISION CHANGE");
       await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
       await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
     }
@@ -479,7 +489,7 @@ class _Diatum {
     });
 
     if(notify) {
-      this.notifyListeners(DiatumEvent.View);
+      this.notifyListeners(DiatumEvent.View, amigoId);
     }
   }
 
@@ -612,7 +622,7 @@ class _Diatum {
         for(let i = 0; i < amigo.labels.length; i++) {
           await this.storage.setAmigoLabel(this.session.amigoId, key, amigo.labels[i]);
         }
-        notify = true;  
+        notify = true; 
       }
       else if(localMap.get(key) != value) {
 
@@ -624,7 +634,7 @@ class _Diatum {
         for(let i = 0; i < amigo.labels.length; i++) {
           await this.storage.setAmigoLabel(this.session.amigoId, amigo.amigoId, amigo.labels[i]);
         }
-        notify = true
+        notify = true;
       }
     });
 
@@ -1079,6 +1089,20 @@ class _Diatum {
     return await this.storage.getContactAttributes(this.session.amigoId, amigoId);
   }
 
+  public async getContactLabels(amigoId: string): Promise<string[]> {
+    return await this.storage.getContactLabels(this.session.amigoId, amigoId);
+  }
+
+  public async setContactLabel(amigoId: string, labelId: string): Promise<void> {
+    await DiatumApi.setAmigoLabel(this.session.amigoNode, this.session.amigoToken, amigoId, labelId); 
+    await this.syncIndex();
+  }
+
+  public async clearContactLabel(amigoId: string, labelId: string): Promise<void> {
+    await DiatumApi.clearAmigoLabel(this.session.amigoNode, this.session.amigoToken, amigoId, labelId); 
+    await this.syncIndex();
+  }
+
   public async setContactAttributeData(amigoId: string, obj: any): Promise<void> {
     return await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
   }
@@ -1194,11 +1218,27 @@ async function getContactAttributes(amigoId: string): Promsie<Attribute[]> {
   return await diatum.getContactAttributes(amigoId);
 }
 
+async function getContactLabels(amigoId: string): Promise<string[]> {
+  let diatum = await getInstance();
+  return await diatum.getContactLabels(amigoId);
+}
+
+async function setContactLabel(amigoId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setContactLabel(amigoId, labelId);
+}
+
+async function clearContactLabel(amigoId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.clearContactLabel(amigoId, labelId);
+}
+
 async function setContactAttributeData(amigoId: string, obj: any): Promise<void> {
   let diatum = await getInstance();
   return await diatum.setContactAttributeData(amigoId, obj);
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, setContactAttributeData };
+    setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
+    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData };
 
