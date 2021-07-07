@@ -30,6 +30,7 @@ function ProfileDrawerContent(props) {
   const updateAssigned = () => {
     diatum.getContactLabels(amigoId).then(l => {
       setAmigoLabels(l);
+      props.callback(l);
     }).catch(err => {
       console.log(err);
     });
@@ -53,12 +54,23 @@ function ProfileDrawerContent(props) {
   }, []);
 
   const setLabel = async (id: string) => {
-    await diatum.setContactLabel(amigoId, id);
+    try {
+      await diatum.setContactLabel(amigoId, id);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to set label");
+    }
   }
 
   const clearLabel = async (id: string) => {
-    await diatum.clearContactLabel(amigoId, id);
-    //props.onLabel(null);
+    try {
+      await diatum.clearContactLabel(amigoId, id);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to clear label");
+    }
   }
 
   const hasLabel = (id: string) => {
@@ -102,12 +114,14 @@ export function ContactProfile({ route, navigation }) {
     });
   }, [navigation]);
 
-  const selected = (labels: string[]) => {
-    if(labels.length == 0) {
+  const onLabel = (labels: string[]) => {
+console.log("selected: ", labels);
+
+    if(labels == null || labels.length == 0) {
       setLatchColor('#282827');
     }
     else {
-      setLatchColor('#0072CC');
+      setLatchColor('#0077CC');
     }
   };
   const toggleLabel = () => {
@@ -116,13 +130,13 @@ export function ContactProfile({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: amigoId}} />}>
+      <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: amigoId, callback: onLabel}} />}>
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
               <ContactProfilePage entry={contact} />
-              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-                <View style={{ width: 16, height: 64, backgroundColor: '#aabbcc', borderRadius: 8 }}></View>
+              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
               </TouchableOpacity>
             </View>
           )
@@ -190,8 +204,8 @@ export function ContactProfilePage({ entry }) {
     if(contact.notes != null) {
       return (
         <View style={{ marginTop: 16, width: '100%' }}>
-          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Notes</Text></View>
-          <View style={{ marginLeft: 32, marginRight: 32, marginTop: 4, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
+          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Notes</Text></View>
+          <View style={{ marginLeft: 32, marginRight: 32, marginTop: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
             <Text style={{ color: '#222222' }}>{contact.notes}</Text>
           </View>
         </View>
@@ -206,9 +220,9 @@ export function ContactProfilePage({ entry }) {
     if(attributes.length > 0) { 
       return (
         <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
-          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#444444' }}>Contact Info</Text></View>
+          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Contact Info</Text></View>
           <View style={{ marginBottom: 16 }}>
-            <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 4, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+            <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
           </View>
         </View>
       )
@@ -233,7 +247,7 @@ export function ContactProfilePage({ entry }) {
   };
 
   return (
-    <View style={{ flex: 1, alignItems: 'center' }}>
+    <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
 
       <View style={{ flexDirection: 'row', padding: 12, marginTop: 16, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -251,11 +265,6 @@ export function ContactProfilePage({ entry }) {
       <ContactNotes />
 
       <ContactAttributes />
-
-
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-        <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
-      </TouchableOpacity>
     </View>
   )
 }
@@ -298,7 +307,7 @@ function AttributeEntry({item}) {
             <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
           </View>
           <Text style={{ flexGrow: 1 }}>{ data.website }</Text>
-          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
         </View>
       );
     }
@@ -317,7 +326,7 @@ function AttributeEntry({item}) {
             <Text>{ data.country }</Text>
           </View>
           <View style={{ justifyContent: 'center' }}>
-            <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
           </View>
         </View>
       );
@@ -332,7 +341,7 @@ function AttributeEntry({item}) {
             <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
           </View>
           <Text style={{ flexGrow: 1 }}>{ data.email }</Text>
-          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
         </View>
       );
     }
@@ -341,7 +350,7 @@ function AttributeEntry({item}) {
   const CardDirectPhoneSms = () => {
     if(data.directPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -358,7 +367,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.directPhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -369,7 +378,7 @@ function AttributeEntry({item}) {
   const CardMainPhoneSms = () => {
     if(data.mainPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -386,7 +395,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.mainPhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -397,7 +406,7 @@ function AttributeEntry({item}) {
   const CardMobilePhoneSms = () => {
     if(data.mobilePhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -414,7 +423,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.mobilePhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -425,7 +434,7 @@ function AttributeEntry({item}) {
   const HomePhoneSms = () => {
     if(data.phoneNumberSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -439,7 +448,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.phoneNumber }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
             <HomePhoneSms />
           </View>
         </View>
@@ -459,7 +468,7 @@ function AttributeEntry({item}) {
               <Text>{ a.country }</Text>
             </View>
             <View style={{ justifyContent: 'center' }}>
-              <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+              <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
             </View>
           </View>
         );
@@ -470,7 +479,7 @@ function AttributeEntry({item}) {
   const PhoneSms = () => {
     if(data.phoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 16, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
       );
     }
     return (<></>);
@@ -507,7 +516,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.link}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="copy" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="copy" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
         </View>
       </View>
     );
@@ -520,7 +529,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.email}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
         </View>
       </View>
     );
@@ -548,7 +557,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.phone}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon name="phone" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
           <PhoneSms />
         </View>
       </View>
@@ -562,7 +571,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.url}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 16 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
         </View>
       </View>
     );

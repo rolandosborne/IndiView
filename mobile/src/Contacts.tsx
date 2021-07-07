@@ -97,7 +97,7 @@ export function Contacts() {
           return (
             <View style={{ flex: 1 }}>
               <ContactList {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
-              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+              <TouchableOpacity style={{ marginTop: 24, alignItems: 'center', position: "absolute", right: -24, top: '50%', width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
                 <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
               </TouchableOpacity>
             </View>

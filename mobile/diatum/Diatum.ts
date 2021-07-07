@@ -265,7 +265,7 @@ class _Diatum {
 
       // sync agent message
       if(this.authSync + SYNC_AUTH_MS < cur) {
-        this.authSyc = cur;
+        this.authSync = cur;
         let auth: Auth = getAuthObject(this.authMessage);
         if(auth == null || cur > (auth.issued + auth.expires / 2)) {
           this.authMessage = await DiatumApi.getAgentMessage(this.session.appNode, this.session.appToken);
@@ -347,6 +347,7 @@ class _Diatum {
   }
 
   private async syncAmigoConnection(connection: AmigoConnection): Promise<void> {
+
     // pull revisions with agent auth
     let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
 
