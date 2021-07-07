@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { Alert, Animated, Dimensions, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -103,6 +103,9 @@ export function ContactProfile({ route, navigation }) {
   const [amigoLabels, setAmigoLabels] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
   const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
+  const [latchRef, setLatchRef] = React.useState(null);
+  const [latchPad, setLatchPad] = React.useState(0);
+  const [latchShift, setLatchShift] = React.useState(-48);
 
   // setup screen header
   React.useLayoutEffect(() => {
@@ -114,11 +117,25 @@ export function ContactProfile({ route, navigation }) {
     });
   }, [navigation]);
 
-  const onLabel = (labels: string[]) => {
-console.log("selected: ", labels);
+  setLayout = () => {
+    if(latchRef != null) {
+      let height = Dimensions.get('window').height;
+      latchRef.measure((a,b,c,d,e,f) => {
+        setLatchPad((height/2) - f);
+        setTimeout(() => {
+          setLatchShift(-24);
+        }, 100);
+      });
+    }
+  };
 
+  setRef = (ref) => {
+    setLatchRef(ref);
+  };
+
+  const onLabel = (labels: string[]) => {
     if(labels == null || labels.length == 0) {
-      setLatchColor('#282827');
+      setLatchColor('#444444');
     }
     else {
       setLatchColor('#0077CC');
@@ -129,14 +146,14 @@ console.log("selected: ", labels);
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }} >
       <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: amigoId, callback: onLabel}} />}>
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
               <ContactProfilePage entry={contact} />
-              <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
+              <TouchableOpacity style={{ top: latchPad, alignItems: 'center', position: "absolute", right: latchShift, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
+                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }} ref={(ref) => { setRef(ref) }} onLayout={setLayout}></View>
               </TouchableOpacity>
             </View>
           )

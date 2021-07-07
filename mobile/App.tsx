@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, Dimensions, Platform, Linking, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -230,6 +230,8 @@ function MainScreen() {
     },
   });
 
+
+
   return (
     <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
@@ -290,9 +292,6 @@ function FeedScreen({ route, navigation }) {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Feed</Text>
       <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
         <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
       </TouchableOpacity>
     </View>
@@ -371,9 +370,6 @@ function ConversationScreen() {
       <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
         <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
       </TouchableOpacity>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", right: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -440,6 +436,8 @@ function HomeNavScreen({ navigation }) {
 }
 
 function HomeScreen({ navigation }) {
+  const [latchRef, setLatchRef] = React.useState(null);
+  const [latchPad, setLatchPad] = React.useState(0);
 
   const tabbed = () => {
     if(feedNav != null) {
@@ -454,8 +452,21 @@ function HomeScreen({ navigation }) {
     homeNav.openDrawer();
   };
 
+  const setLayout = () => {
+    if(latchRef != null) {
+      let height = Dimensions.get('window').height;
+      latchRef.measure((a,b,c,d,e,f) => {
+        setLatchPad((height/2) - f);
+      });
+    }
+  };
+
+  const setRef = (ref) => {
+    setLatchRef(ref);
+  };
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }} >
       <Tab.Navigator tabBarOptions={{showLabel: false}} >
         <Tab.Screen name="HomeContact" component={HomeContactScreen} 
             listeners={({ navigation, route }) => ({
@@ -479,8 +490,8 @@ function HomeScreen({ navigation }) {
               <Icon name="comments-o" size={size} color={color} solid />
             )}} />
       </Tab.Navigator>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      <TouchableOpacity style={{ top: latchPad, alignItems: 'center', position: "absolute", left: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }} ref={(ref) => { setRef(ref) }} onLayout={setLayout}></View>
       </TouchableOpacity>
     </View>
   );
