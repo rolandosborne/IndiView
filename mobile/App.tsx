@@ -13,6 +13,7 @@ import { DiatumSession, LabelEntry, Attribute } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+import { Latch, LatchProvider, useLatch } from './src/LatchContext';
 import { AttributeUtil } from "./src/AttributeUtil";
 import { Contacts } from "./src/Contacts";
 import { ContactProfile } from "./src/ContactProfile";
@@ -230,8 +231,6 @@ function MainScreen() {
     },
   });
 
-
-
   return (
     <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
@@ -427,17 +426,43 @@ function HomeDrawerContent(props) {
 }
 
 function HomeNavScreen({ navigation }) {
-  
+ 
+  const [labelLatch, setLabelLatch] = React.useState('#272728');
+  let latch: Latch = useLatch();
+  const onLatch = (color: string) => {
+    setLabelLatch(color);
+  };
+  useEffect(() => {
+    latch.setColorListener(onLatch);
+    return () => {
+      latch.clearColorListener(onLatch);
+    }
+  });
+ 
+  const toggleControl = () => {
+    homeNav.toggleDrawer();
+  };
+
+  const toggleLabels = () => {
+    latch.toggle();
+  }
+
   return (
-    <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} />}>
-      <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} initialParams={{ callback: 'ro' }} />
-    </HomeDrawer.Navigator>
+    <View style={{ flex: 1 }}>
+      <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} />}>
+        <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} initialParams={{ callback: 'ro' }} />
+      </HomeDrawer.Navigator>
+      <TouchableOpacity style={{ top: '50%', marginTop: -32, alignItems: 'center', position: "absolute", right: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabels}>
+        <View style={{ width: 16, height: 64, backgroundColor: labelLatch, borderRadius: 8 }}></View>
+      </TouchableOpacity>
+      <TouchableOpacity style={{ top: '50%', marginTop: -32, alignItems: 'center', position: "absolute", left: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
+        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+      </TouchableOpacity>
+    </View>
   )
 }
 
 function HomeScreen({ navigation }) {
-  const [latchRef, setLatchRef] = React.useState(null);
-  const [latchPad, setLatchPad] = React.useState(0);
 
   const tabbed = () => {
     if(feedNav != null) {
@@ -448,52 +473,30 @@ function HomeScreen({ navigation }) {
     }
   };
 
-  const toggleControl = () => {
-    homeNav.openDrawer();
-  };
-
-  const setLayout = () => {
-    if(latchRef != null) {
-      let height = Dimensions.get('window').height;
-      latchRef.measure((a,b,c,d,e,f) => {
-        setLatchPad((height/2) - f);
-      });
-    }
-  };
-
-  const setRef = (ref) => {
-    setLatchRef(ref);
-  };
-
   return (
-    <View style={{ flex: 1 }} >
-      <Tab.Navigator tabBarOptions={{showLabel: false}} >
-        <Tab.Screen name="HomeContact" component={HomeContactScreen} 
-            listeners={({ navigation, route }) => ({
-              tabPress: e => { tabbed(); }
-            })}
-            options={{ tabBarIcon: ({ color, size }) => (
-              <Icon name="users" size={size} color={color} solid />
-            )}} />
-        <Tab.Screen name="Feed" component={FeedNavScreen} 
-            listeners={({ navigation, route }) => ({
-              tabPress: e => { tabbed(); }
-            })}
-            options={{ tabBarIcon: ({ color, size }) => (
-              <Icon name="picture-o" size={size} color={color} solid />
-            )}} />
-        <Tab.Screen name="Conversation" component={ConversationNavScreen} 
-            listeners={({ navigation, route }) => ({
-              tabPress: e => { tabbed(); }
-            })}
-            options={{ tabBarIcon: ({ color, size }) => (
-              <Icon name="comments-o" size={size} color={color} solid />
-            )}} />
-      </Tab.Navigator>
-      <TouchableOpacity style={{ top: latchPad, alignItems: 'center', position: "absolute", left: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }} ref={(ref) => { setRef(ref) }} onLayout={setLayout}></View>
-      </TouchableOpacity>
-    </View>
+    <Tab.Navigator tabBarOptions={{showLabel: false}} >
+      <Tab.Screen name="HomeContact" component={HomeContactScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="users" size={size} color={color} solid />
+          )}} />
+      <Tab.Screen name="Feed" component={FeedNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="picture-o" size={size} color={color} solid />
+          )}} />
+      <Tab.Screen name="Conversation" component={ConversationNavScreen} 
+          listeners={({ navigation, route }) => ({
+            tabPress: e => { tabbed(); }
+          })}
+          options={{ tabBarIcon: ({ color, size }) => (
+            <Icon name="comments-o" size={size} color={color} solid />
+          )}} />
+    </Tab.Navigator>
   );
 }
 
@@ -532,18 +535,20 @@ const App = () => {
 
   return (
     <DiatumProvider>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <View style={{ flex: 1, backgroundColor: '#282827' }}>
-            <Stack.Navigator initialRouteName="Root">
-              <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
-              <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-            </Stack.Navigator>
-          </View>
-        </NavigationContainer>
-      </SafeAreaProvider>
+      <LatchProvider> 
+        <SafeAreaProvider>
+          <NavigationContainer>
+            <View style={{ flex: 1, backgroundColor: '#282827' }}>
+              <Stack.Navigator initialRouteName="Root">
+                <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
+                <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+              </Stack.Navigator>
+            </View>
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </LatchProvider>
     </DiatumProvider>
   );
 

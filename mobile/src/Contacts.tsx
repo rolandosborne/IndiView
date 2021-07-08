@@ -10,6 +10,7 @@ import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 
+import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry } from '../diatum/DiatumTypes';
@@ -65,17 +66,29 @@ function ContactDrawerContent(props) {
 }
 
 export function Contacts() {
-  const [latchColor, setLatchColor] = React.useState('#282827');
-  const [latchRef, setLatchRef] = React.useState(null);
-  const [latchPad, setLatchPad] = React.useState(0);
+
+  let latch: Latch = useLatch();
+  const onLatch = () => {
+    contactNav.toggleDrawer();
+  };
+
+  useEffect(() => {
+    latch.setToggleListener(onLatch);
+    latch.push('#272728');
+    return () => {
+      latch.clearToggleListener(onLatch);
+      latch.pop();
+    }
+  }, []);
+
 
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
     if(id == null) {
-      setLatchColor('#282827');
+      latch.setColor('#282827');
     }
     else {
-      setLatchColor('#0072CC');
+      latch.setColor('#0072CC');
     }
     if(callback != null) {
       callback(id);
@@ -93,19 +106,6 @@ export function Contacts() {
     callback = null;
   };
 
-  setLayout = () => {
-    if(latchRef != null) {
-      let height = Dimensions.get('window').height;
-      latchRef.measure((a,b,c,d,e,f) => {
-        setLatchPad((height/2) - f);
-      });
-    }
-  };
-
-  setRef = (ref) => {
-    setLatchRef(ref);
-  };
-
   return (
     <View style={{ paddingTop: Platform.OS === 'ios' ? 48 : 0, flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
@@ -113,9 +113,6 @@ export function Contacts() {
           return (
             <View style={{ flex: 1 }}>
               <ContactList {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
-              <TouchableOpacity style={{ marginTop: latchPad, alignItems: 'center', position: "absolute", right: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }} ref={(ref) => { setRef(ref) }} onLayout={setLayout}></View>
-              </TouchableOpacity>
             </View>
           )
         }}</ContactDrawer.Screen>

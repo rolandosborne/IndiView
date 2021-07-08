@@ -8,6 +8,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 
+import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
@@ -99,13 +100,9 @@ function ProfileDrawerContent(props) {
 
 export function ContactProfile({ route, navigation }) {
   const [contact, setContact] = React.useState(route.params);
-  const [latchColor, setLatchColor] = React.useState('#282827');
   const [amigoLabels, setAmigoLabels] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
   const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
-  const [latchRef, setLatchRef] = React.useState(null);
-  const [latchPad, setLatchPad] = React.useState(0);
-  const [latchShift, setLatchShift] = React.useState(-48);
 
   // setup screen header
   React.useLayoutEffect(() => {
@@ -117,32 +114,27 @@ export function ContactProfile({ route, navigation }) {
     });
   }, [navigation]);
 
-  setLayout = () => {
-    if(latchRef != null) {
-      let height = Dimensions.get('window').height;
-      latchRef.measure((a,b,c,d,e,f) => {
-        setLatchPad((height/2) - f);
-        setTimeout(() => {
-          setLatchShift(-24);
-        }, 100);
-      });
+  let latch: Latch = useLatch();
+  const onLatch = () => {
+    contactNav.toggleDrawer();
+  };
+
+  useEffect(() => {
+    latch.setToggleListener(onLatch);
+    latch.push('#272728');
+    return () => {
+      latch.clearToggleListener(onLatch);
+      latch.pop();
     }
-  };
-
-  setRef = (ref) => {
-    setLatchRef(ref);
-  };
-
+  }, []);
+  
   const onLabel = (labels: string[]) => {
     if(labels == null || labels.length == 0) {
-      setLatchColor('#444444');
+      latch.setColor('#282827');
     }
     else {
-      setLatchColor('#0077CC');
+      latch.setColor('#0077CC');
     }
-  };
-  const toggleLabel = () => {
-    contactNav.openDrawer();
   };
 
   return (
@@ -152,9 +144,6 @@ export function ContactProfile({ route, navigation }) {
           return (
             <View style={{ flex: 1 }}>
               <ContactProfilePage entry={contact} />
-              <TouchableOpacity style={{ top: latchPad, alignItems: 'center', position: "absolute", right: latchShift, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabel}>
-                <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }} ref={(ref) => { setRef(ref) }} onLayout={setLayout}></View>
-              </TouchableOpacity>
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -247,11 +236,6 @@ export function ContactProfilePage({ entry }) {
     else {
       return (<></>)
     }
-  }
-
-  let latchColor = "#282827";
-  let toggleLabel = () => {
-    console.log("label");
   }
 
   let ProfileDescription = () => {
