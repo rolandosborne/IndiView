@@ -335,7 +335,7 @@ export class Storage {
     return null;
   }
   public async getStaleAmigoReference(id: string, stale: number): Promise<AmigoReference> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, registry_error, index_" + id + ".identity_revision from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status != 'connected' and (update_timestamp is null or update_timestamp < ?) order by update_timestamp asc", [stale]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, registry_error, index_" + id + ".identity_revision from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where (status is null or status != 'connected') and (update_timestamp is null or update_timestamp < ?) order by update_timestamp ASC LIMIT 1", [stale]);
     if(hasResult(res)) {
       let a = res[0].rows.item(0);
       return { amigoId: a.amigo_id, node: a.node, registry: a.registry, identityRevision: a.identity_revision, registryError: a.registry_error!=0 };

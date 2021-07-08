@@ -187,7 +187,7 @@ export function ContactProfilePage({ entry }) {
 
   // update border color on error
   useEffect(() => {
-    if(contact.errorFlag) {
+    if(contact.errorFlag && contact.status == 'connected') {
       setProfileColor('#dd8888');
     }
     else {
