@@ -161,6 +161,7 @@ export function ContactProfilePage({ entry }) {
 
   const [contact, setContact] = React.useState(entry);
   const [attributes, setAttributes] = React.useState([]);
+  const [profileColor, setProfileColor] = React.useState('#aaaaaa');
 
   // retrieve attributes
   let diatum: Diatum = useDiatum();
@@ -183,7 +184,17 @@ export function ContactProfilePage({ entry }) {
       console.log(err);
     }
   };
- 
+
+  // update border color on error
+  useEffect(() => {
+    if(contact.errorFlag) {
+      setProfileColor('#dd8888');
+    }
+    else {
+      setProfileColor('#aaaaaa');
+    }
+  }); 
+
   // register event to update attributes
   useEffect(() => {
     diatum.setListener(DiatumEvent.Contact, updateContact);
@@ -208,6 +219,37 @@ export function ContactProfilePage({ entry }) {
     }
     else {
       return (<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#aaaaaa' }}>No Name</Text>);
+    }
+  }
+
+  const ContactStatus = () => {
+    if(contact.status == 'connected') {
+      return (
+        <Text style={{ fontSize: 12 }}>
+          <Text style={{ color: "#0077CC" }}>[Connected]</Text>
+        </Text>
+      ); 
+    }
+    else if(contact.status == 'received') {
+      return (
+        <Text style={{ fontSize: 12 }}>
+          <Text style={{ color: "#FF8000" }}>(Request Received)</Text>
+        </Text>
+      ); 
+    }
+    else if(contact.status == 'requested') {
+      return (
+        <Text style={{ fontSize: 12 }}>
+          <Text style={{ color: "#FF8000" }}>(Request Sent)</Text>
+        </Text>
+      ); 
+    }
+    else {
+      return (
+        <Text style={{ fontSize: 12 }}>
+          <Text style={{ color: "#444444" }}>(Profile Saved)</Text>
+        </Text>
+      ); 
     }
   }
 
@@ -243,7 +285,7 @@ export function ContactProfilePage({ entry }) {
     }
   }
 
-  let ProfileDescription = () => {
+  const ProfileDescription = () => {
     if(entry.description == null) {
       return (<></>);
     }
@@ -251,17 +293,18 @@ export function ContactProfilePage({ entry }) {
       <Text style={{ marginTop: 16, marginLeft: 8, marginRight: 8, textAlign: 'center' }}>{ contact.description }</Text>
     );
   };
-
+  
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
 
-      <View style={{ flexDirection: 'row', padding: 12, marginTop: 16, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
+      <View style={{ flexDirection: 'row', padding: 12, marginTop: 16, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: profileColor }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
-            <Image style={{ flex: 2, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
+            <Image style={{ flex: 2, maxWidth: 256, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <ContactName />
-              <Text style={{ color: '#222222' }}>{ entry.location }</Text>
+              <ContactStatus />
+              <Text style={{ color: '#222222', marginTop: 8 }}>{ entry.location }</Text>
               <ProfileDescription />
             </View>
           </View>
