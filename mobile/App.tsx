@@ -15,8 +15,12 @@ import { IndiViewCom } from "./src/IndiViewCom";
 
 import { Latch, LatchProvider, useLatch } from './src/LatchContext';
 import { AttributeUtil } from "./src/AttributeUtil";
+
 import { Contacts } from "./src/Contacts";
 import { ContactProfile } from "./src/ContactProfile";
+
+import { Feed } from "./src/Feed";
+import { Conversation } from "./src/Conversation";
 
 // schema identifiers
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
@@ -31,6 +35,8 @@ const HomeDrawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
 
 const ContactStack = createStackNavigator();
+const FeedStack = createStackNavigator();
+const ConversationStack = createStackNavigator();
 
 const FeedDrawer = createDrawerNavigator();
 const ConversationDrawer = createDrawerNavigator();
@@ -267,111 +273,33 @@ function FeedDrawerContent(props) {
   );
 }
 
-function FeedNavScreen() {
-  
-  const selected = (id: string) => {
-    console.log("SELECTED: " + id);
-  };
+function HomeFeedScreen() {
+  const forFade = ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
 
   return (
-    <FeedDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <FeedDrawerContent {...props} {...{onLabel: selected}} />}>
-      <FeedDrawer.Screen name="FeedScreen" component={FeedScreen} />
-    </FeedDrawer.Navigator>
-  )
-}
-
-function FeedScreen({ route, navigation }) {
-  const toggleLabel = () => {
-    feedNav.openDrawer();
-  };
-  const toggleControl = () => {
-    homeNav.openDrawer();
-  };
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Feed</Text>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-    </View>
+    <FeedStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
+      <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
+    </FeedStack.Navigator>
   );
-}
+}  
 
-function ConversationDrawerContent(props) {
-  conversationNav = props.navigation;
-  const [labels, setLabels] = React.useState([]);
-  let diatum: Diatum = useDiatum();
-  const update = () => {
-    diatum.getLabels().then(l => {
-      setLabels(l);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
- 
-  useEffect(() => {
-        diatum.setListener(DiatumEvent.Labels, update);
-        return () => {
-          diatum.clearListener(DiatumEvent.Labels, update);
-        }
-    }, []);
+function HomeConversationScreen() {
+  const forFade = ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
 
   return (
-    <View>
-      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
-      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
-    </View>
+    <ConversationStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
+      <ConversationStack.Screen name="Conversation" component={Conversation} options={{headerShown: false}} />
+    </ConversationStack.Navigator>
   );
-}
-
-function ConversationNavScreen() {
-  const selected = (id: string) => {
-    console.log("SELECTED: " + id);
-  };
-
-  return (
-    <ConversationDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ConversationDrawerContent {...props} {...{onLabel: selected}} />}>
-      <ConversationDrawer.Screen name="ConversationScreen" component={ConversationScreen} />
-    </ConversationDrawer.Navigator>
-  )
-}
-
-function ConversationScreen() {
-
-  const toggleLabel = () => {
-    conversationNav.openDrawer();
-  };
-  const toggleControl = () => {
-    homeNav.openDrawer();
-  };
-
-  const [labels, setLabels] = React.useState([]);
-  let diatum: Diatum = useDiatum();
-  const update = () => {
-    diatum.getIdentity().then(i => {
-      console.log(i);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
- 
-  useEffect(() => {
-        diatum.setListener(DiatumEvent.Identity, update);
-        return () => {
-          diatum.clearListener(DiatumEvent.Identity, update);
-        }
-    }, []);
-
-
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Conversation</Text>
-      <TouchableOpacity style={{ alignItems: 'center', position: "absolute", left: -24, top: '50%', translateY: -32, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
-      </TouchableOpacity>
-    </View>
-  );
-}
+}  
 
 function HomeDrawerContent(props) {
   homeNav = props.navigation;
@@ -432,12 +360,13 @@ function HomeNavScreen({ navigation }) {
   const onLatch = (color: string) => {
     setLabelLatch(color);
   };
+
   useEffect(() => {
     latch.setColorListener(onLatch);
     return () => {
       latch.clearColorListener(onLatch);
     }
-  });
+  }, []);
  
   const toggleControl = () => {
     homeNav.toggleDrawer();
@@ -482,14 +411,14 @@ function HomeScreen({ navigation }) {
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="users" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Feed" component={FeedNavScreen} 
+      <Tab.Screen name="Feed" component={HomeFeedScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }
           })}
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Conversation" component={ConversationNavScreen} 
+      <Tab.Screen name="Conversation" component={HomeConversationScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }
           })}

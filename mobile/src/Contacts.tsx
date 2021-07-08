@@ -65,37 +65,43 @@ function ContactDrawerContent(props) {
   );
 }
 
-export function Contacts() {
+export function Contacts({ navigation }) {
+  
+  const [latchColor, setLatchColor] = React.useState('#282827');
+  const latchColorRef = useRef(latchColor);
+  const _setLatchColor = color => {
+    latchColorRef.current = color;
+    setLatchColor(color);
+    latch.setColor(color);
+  };
 
-  let latch: Latch = useLatch();
+  const latch = useLatch();
   const onLatch = () => {
     contactNav.toggleDrawer();
   };
 
   useEffect(() => {
-    latch.setToggleListener(onLatch);
-    latch.push('#272728');
-    return () => {
+    _setLatchColor(latchColor);
+    const unfocus = navigation.addListener('focus', () => {
+      latch.setToggleListener(onLatch, latchColorRef.current);
+    });
+    return (() => {
       latch.clearToggleListener(onLatch);
-      latch.pop();
-    }
-  }, []);
-
+      unfocus();
+    }) 
+  }, [navigation]);
 
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
     if(id == null) {
-      latch.setColor('#282827');
+      _setLatchColor('#282827');
     }
     else {
-      latch.setColor('#0072CC');
+      _setLatchColor('#0077CC');
     }
     if(callback != null) {
       callback(id);
     }
-  };
-  const toggleLabel = () => {
-    contactNav.openDrawer();
   };
 
   const setCallback = (cb: (id: string) => {}) => {

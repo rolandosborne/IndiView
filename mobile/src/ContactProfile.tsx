@@ -103,6 +103,7 @@ export function ContactProfile({ route, navigation }) {
   const [amigoLabels, setAmigoLabels] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
   const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
+  const [latchColor, setLatchColor] = React.useState('#282827');
 
   // setup screen header
   React.useLayoutEffect(() => {
@@ -114,25 +115,29 @@ export function ContactProfile({ route, navigation }) {
     });
   }, [navigation]);
 
-  let latch: Latch = useLatch();
+ let latch: Latch = useLatch();
+  
   const onLatch = () => {
     contactNav.toggleDrawer();
   };
-
-  useEffect(() => {
-    latch.setToggleListener(onLatch);
-    latch.push('#272728');
-    return () => {
-      latch.clearToggleListener(onLatch);
-      latch.pop();
-    }
-  }, []);
   
+  useEffect(() => { 
+    const unfocus = navigation.addListener('focus', () => {
+      latch.setToggleListener(onLatch, latchColor);
+    });
+    return (() => {
+      latch.clearToggleListener(onLatch);
+      unfocus();
+    }) 
+  }, [navigation]);
+ 
   const onLabel = (labels: string[]) => {
     if(labels == null || labels.length == 0) {
+      setLatchColor('#282827');
       latch.setColor('#282827');
     }
     else {
+      setLatchColor('#0077CC');
       latch.setColor('#0077CC');
     }
   };

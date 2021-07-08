@@ -2,69 +2,43 @@ import React, { useContext, useState } from "react";
 import { Alert } from 'react-native';
 
 export class Latch {
-  private latchColor: string[] = [];
-  private toggleListener: (() => {})[];
-  private colorListener: ((string) => {})[];
+  private toggleListener: (() => {});
+  private colorListener: ((string) => {});
 
   constructor() {
-    this.toggleListener = [];
-    this.colorListener = [];
+    this.toggleListener = null;
+    this.colorListener = null;
   }
 
-  public setToggleListener(callback: () => {}) {
-    this.toggleListener.push(callback);
+  public setToggleListener(callback: () => {}, color: string) {
+    this.toggleListener = callback;
+    this.setColor(color);
   }
   public clearToggleListener(callback: () => {}) {
-    if(this.toggleListener.length > 0) {
-      this.toggleListener.pop(callback);
+    if(this.toggleListener == callback) {
+      this.toggleListener = null;
+      this.setColor('#282827');
     }
   }
 
   public setColorListener(callback: (string) => {}) {
-    this.colorListener.push(callback);
+    this.colorListener = callback;
   }
   public clearColorListener(callback: (string) => {}) {
-    if(this.colorListener.length > 0) {
-      this.colorListener.pop(callback);
+    if(this.colorListener == callback) {
+      this.colorListener = null;
     }
-  }
-
-  public push(color: string) {
-    this.latchColor.push(color);
-    this.notifyColor();
-  }
-
-  public pop() {
-    if(this.latchColor.length > 0) {
-      this.latchColor.pop();
-    }
-    this.notifyColor();
   }
 
   public setColor(color: string) {
-    if(this.latchColor.length > 0) {
-      this.latchColor[this.latchColor.length - 1] = color;
+    if(this.colorListener != null) {
+      this.colorListener(color);
     }
-    this.notifyColor();
-  }
-
-  private getColor(): string {
-    if(this.latchColor.length > 0) {
-      return this.latchColor[this.latchColor.length - 1];
-    }
-    return '#272728';
   }
 
   public toggle() {
-    if(this.toggleListener.length > 0) {
-      this.toggleListener[this.toggleListener.length - 1]();
-    }
-  }
-
-  private notifyColor() {
-    let color: string = this.getColor();
-    if(this.colorListener.length > 0) {
-      this.colorListener[this.colorListener.length - 1](color);
+    if(this.toggleListener != null) {
+      this.toggleListener();
     }
   }
 };
