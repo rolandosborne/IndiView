@@ -559,5 +559,13 @@ export class Storage {
   public async setContactAttributeData(id: string, amigoId: string, obj: any): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " SET app_attribute=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }
+
+  public async getContactShareId(id: string, amigoId: string): Promsie<string> {
+    let res = await this.db.executeSql("SELECT share_id from share_" + id + " WHERE amigo_id=?;", [amigoId]);
+    if(hasResult(res)) {
+      return res[0].rows.item(0).share_id;
+    }
+    return null;
+  }
 }
 

@@ -93,6 +93,9 @@ export interface Diatum {
 
   // set app data for amigo
   setContactAttributeData(amigoId: string, obj: any): Promise<void>
+
+  // disconnect contact
+  removeContactConnection(amigoId: string): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -691,7 +694,7 @@ console.log("REVISION CHANGE");
     // remove old pending requests
     asyncForEach(localReqMap, async (value, key) => {
       if(!remoteReqMap.has(key)) {
-        await this.storage.removePendingAmigo(this.amigoId, key);
+        await this.storage.removePendingAmigo(this.session.amigoId, key);
         notify = true;
       }
     });
@@ -1107,6 +1110,12 @@ console.log("REVISION CHANGE");
   public async setContactAttributeData(amigoId: string, obj: any): Promise<void> {
     return await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
   }
+
+  public async removeContactConnection(amigoId) {
+    let shareId = await this.storage.getContactShareId(this.session.amigoId, amigoId);
+    await DiatumApi.removeConnection(this.session.amigoNode, this.session.amigoToken, shareId);
+    await this.syncShare();
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1239,7 +1248,12 @@ async function setContactAttributeData(amigoId: string, obj: any): Promise<void>
   return await diatum.setContactAttributeData(amigoId, obj);
 }
 
+async function removeContactConnection(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeContactConnection(amigoId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
-    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData };
+    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, removeContactConnection };
 

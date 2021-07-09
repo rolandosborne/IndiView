@@ -301,4 +301,11 @@ export class DiatumApi {
     let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
   }
+
+
+  public static async removeConnection(node: string, token: string, shareId: string): Promsie<void> {
+    let response = await fetchWithTimeout(node + "/share/connections/" + shareId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
 }

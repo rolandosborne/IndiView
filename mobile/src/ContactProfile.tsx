@@ -105,72 +105,6 @@ export function ContactProfile({ route, navigation }) {
   const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
   const [latchColor, setLatchColor] = React.useState('#282827');
 
-  const disconnectContact = () => {
-    console.log("disconnect");
-  };
-  const deleteContact = () => {
-    console.log("delete");
-  };
-  const acceptContact = () => {
-    console.log("accept");
-  }
-  const requestContact = () => {
-    console.log("request");
-  }
-  const cancelContact = () => {
-    console.log("cancel");
-  }
-  const reportContact = () => {
-    console.log("report");
-  }
-
-  let options = [];
-  let actions = [];
-  if(contact.status == 'connected') {
-    options.push("Disconnect");
-    actions.push(disconnectContact);
-    options.push("Delete");
-    actions.push(deleteContact);
-    options.push("Report Profile");
-    actions.push(reportContact);
-  }
-  else if(contact.status == 'received') {
-    options.push("Accept");
-    actions.push(acceptContact);
-    options.push("Delete");
-    actions.push(deleteContact);
-    options.push("Report Profile");
-    actions.push(reportContact);
-  }
-  else if(contact.status == 'requested') {
-    options.push("Cancel");
-    actions.push(cancelContact);
-    options.push("Delete");
-    actions.push(deleteContact);
-    options.push("Report Profile");
-    actions.push(reportContact);
-  }
-  else {
-    options.push("Request");
-    actions.push(requestContact);
-    options.push("Delete");
-    actions.push(deleteContact);
-    options.push("Report Profile");
-    actions.push(reportContact);
-  }
-  if(Platform.OS === 'ios') {
-    options.push("Cancel");
-  }
-  const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} />);
-
-  // setup screen header
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      title: contact.handle,
-      headerRight: () => (<OptionsMenu customButton={dots} options={options} actions={actions} />)
-    });
-  }, [navigation]);
-
  let latch: Latch = useLatch();
   
   const onLatch = () => {
@@ -204,7 +138,7 @@ export function ContactProfile({ route, navigation }) {
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <ContactProfilePage entry={contact} />
+              <ContactProfilePage entry={contact} navigation={navigation} />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -213,14 +147,99 @@ export function ContactProfile({ route, navigation }) {
   )
 }
 
-export function ContactProfilePage({ entry }) {
+export function ContactProfilePage({ entry, navigation }) {
 
   const [contact, setContact] = React.useState(entry);
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
 
+  let diatum = useDiatum();
+
+  const disconnectContact = async () => {
+    const title = 'Are you sure you want to disconnect?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Disconnect', onPress: async () => {
+          try {
+            await diatum.removeContactConnection(contact.amigoId);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to disconnect contact");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
+  };
+  const deleteContact = () => {
+    console.log("delete");
+  };
+  const acceptContact = () => {
+    console.log("accept");
+  }
+  const requestContact = () => {
+    console.log("request");
+  }
+  const cancelContact = () => {
+    console.log("cancel");
+  }
+  const reportContact = () => {
+    console.log("report");
+  }
+
+  const setHeader = (c: Contact) => {
+    let options = [];
+    let actions = [];
+    if(c.status == 'connected') {
+      options.push("Disconnect");
+      actions.push(disconnectContact);
+      options.push("Delete");
+      actions.push(deleteContact);
+      options.push("Report Profile");
+      actions.push(reportContact);
+    }
+    else if(c.status == 'received') {
+      options.push("Accept");
+      actions.push(acceptContact);
+      options.push("Delete");
+      actions.push(deleteContact);
+      options.push("Report Profile");
+      actions.push(reportContact);
+    }
+    else if(c.status == 'requested') {
+      options.push("Cancel");
+      actions.push(cancelContact);
+      options.push("Delete");
+      actions.push(deleteContact);
+      options.push("Report Profile");
+      actions.push(reportContact);
+    }
+    else {
+      options.push("Request");
+      actions.push(requestContact);
+      options.push("Delete");
+      actions.push(deleteContact);
+      options.push("Report Profile");
+      actions.push(reportContact);
+    }
+    if(Platform.OS === 'ios') {
+      options.push("Cancel");
+    }
+    const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} />);
+
+    navigation.setOptions({
+      title: c.handle,
+      headerRight: () => (<OptionsMenu customButton={dots} options={options} actions={actions} />)
+    });
+  }
+
+  // setup screen header
+  React.useLayoutEffect(() => {
+    setHeader(contact);
+  }, [navigation]);
+
   // retrieve attributes
-  let diatum: Diatum = useDiatum();
   const updateContact = async (amigoId: string) => {
     try {
       let a: Attribute[] = await diatum.getContactAttributes(contact.amigoId);
@@ -235,6 +254,7 @@ export function ContactProfilePage({ entry }) {
     try {
       let c: ContactEntry = await diatum.getContact(contact.amigoId);
       setContact(c);
+      setHeader(c);
     }
     catch(err) {
       console.log(err);
@@ -254,9 +274,11 @@ export function ContactProfilePage({ entry }) {
   // register event to update attributes
   useEffect(() => {
     diatum.setListener(DiatumEvent.Contact, updateContact);
+    diatum.setListener(DiatumEvent.Share, updateAmigo);
     diatum.setListener(DiatumEvent.Amigos, updateAmigo);
     return async () => {
-      await diatum.clearListener(DiatumEvent.Contact, updateContact);
+      await diatum.clearListener(DiatumEvent.Share, updateContact);
+      await diatum.clearListener(DiatumEvent.Contact, updateAmigo);
       await diatum.clearListener(DiatumEvent.Amigos, updateAmigo);
     }
   }, []);
@@ -318,7 +340,7 @@ export function ContactProfilePage({ entry }) {
   }
 
   const ContactAttributes = () => {
-    if(attributes.length > 0) { 
+    if(attributes.length > 0 && contact.status == 'connected') { 
       return (
         <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Contact Info</Text></View>
