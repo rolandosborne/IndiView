@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Animated, Dimensions, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -105,13 +105,69 @@ export function ContactProfile({ route, navigation }) {
   const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
   const [latchColor, setLatchColor] = React.useState('#282827');
 
+  const disconnectContact = () => {
+    console.log("disconnect");
+  };
+  const deleteContact = () => {
+    console.log("delete");
+  };
+  const acceptContact = () => {
+    console.log("accept");
+  }
+  const requestContact = () => {
+    console.log("request");
+  }
+  const cancelContact = () => {
+    console.log("cancel");
+  }
+  const reportContact = () => {
+    console.log("report");
+  }
+
+  let options = [];
+  let actions = [];
+  if(contact.status == 'connected') {
+    options.push("Disconnect");
+    actions.push(disconnectContact);
+    options.push("Delete");
+    actions.push(deleteContact);
+    options.push("Report Profile");
+    actions.push(reportContact);
+  }
+  else if(contact.status == 'received') {
+    options.push("Accept");
+    actions.push(acceptContact);
+    options.push("Delete");
+    actions.push(deleteContact);
+    options.push("Report Profile");
+    actions.push(reportContact);
+  }
+  else if(contact.status == 'requested') {
+    options.push("Cancel");
+    actions.push(cancelContact);
+    options.push("Delete");
+    actions.push(deleteContact);
+    options.push("Report Profile");
+    actions.push(reportContact);
+  }
+  else {
+    options.push("Request");
+    actions.push(requestContact);
+    options.push("Delete");
+    actions.push(deleteContact);
+    options.push("Report Profile");
+    actions.push(reportContact);
+  }
+  if(Platform.OS === 'ios') {
+    options.push("Cancel");
+  }
+  const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} />);
+
   // setup screen header
   React.useLayoutEffect(() => {
     navigation.setOptions({
       title: contact.handle,
-      headerRight: () => (
-        <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} onPress={() => console.log("TAPPED")} />
-      ),
+      headerRight: () => (<OptionsMenu customButton={dots} options={options} actions={actions} />)
     });
   }, [navigation]);
 
@@ -225,30 +281,22 @@ export function ContactProfilePage({ entry }) {
   const ContactStatus = () => {
     if(contact.status == 'connected') {
       return (
-        <Text style={{ fontSize: 12 }}>
-          <Text style={{ color: "#0077CC" }}>[Connected]</Text>
-        </Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Connected</Text>
       ); 
     }
     else if(contact.status == 'received') {
       return (
-        <Text style={{ fontSize: 12 }}>
-          <Text style={{ color: "#FF8000" }}>(Request Received)</Text>
-        </Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Request Received</Text>
       ); 
     }
     else if(contact.status == 'requested') {
       return (
-        <Text style={{ fontSize: 12 }}>
-          <Text style={{ color: "#FF8000" }}>(Request Sent)</Text>
-        </Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Request Sent</Text>
       ); 
     }
     else {
       return (
-        <Text style={{ fontSize: 12 }}>
-          <Text style={{ color: "#444444" }}>(Profile Saved)</Text>
-        </Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Saved</Text>
       ); 
     }
   }
@@ -296,14 +344,13 @@ export function ContactProfilePage({ entry }) {
   
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
-
-      <View style={{ flexDirection: 'row', padding: 12, marginTop: 16, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: profileColor }}>
+      <ContactStatus style={{ marginTop: 16 }} />
+      <View style={{ flexDirection: 'row', padding: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: profileColor }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
             <Image style={{ flex: 2, maxWidth: 256, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <ContactName />
-              <ContactStatus />
               <Text style={{ color: '#222222', marginTop: 8 }}>{ entry.location }</Text>
               <ProfileDescription />
             </View>
@@ -330,6 +377,52 @@ function AttributeEntry({item}) {
     }
   }, []);
 
+  const onPhone = (data: string) => {
+    if(data != null) {
+      Linking.openURL("tel:" + data.replace(/\D/g,''));
+    }
+  }
+  const onText = (data: string) => {
+    if(data != null) {
+      Linking.openURL("sms:" + data.replace(/\D/g,''));
+    }
+  }
+  const onWebsite = (data: string) => {
+    if(data != null) {
+      Linking.openURL(data);
+    }
+  } 
+  const onEmail = (data: string) => {
+    if(data != null) {
+      Linking.openURL("mailto:" + data);
+    }
+  }
+  const onSocial = (data: string) => {
+    if(data != null) {
+      Clipboard.setString(data);
+    }
+  } 
+  const onLocation = (loc) => {
+    if(loc != null) {
+      let location: string = "";
+      if(loc.streetPo != null) {
+        location += loc.streetPo + " ";
+      }
+      if(loc.cityTown != null) {
+        location += loc.cityTown + " ";
+      }
+      if(loc.provinceState != null) {
+        location += loc.provinceState + " ";
+      }
+      if(loc.postalCode != null) {
+        location += loc.postalCode + " ";
+      }
+      if(loc.country != null) {
+        location += loc.country + " ";
+      }
+      Linking.openURL("https://www.google.com/maps/search/?api=1&query=" + location.replace(/ /g, "+"));
+    }
+  }
   const CardCompanyName = () => {
     if(data.companyName != null) {
       return (<Text>{data.companyName}</Text>);
@@ -356,7 +449,7 @@ function AttributeEntry({item}) {
             <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
           </View>
           <Text style={{ flexGrow: 1 }}>{ data.website }</Text>
-          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onWebsite(data.website)} />
         </View>
       );
     }
@@ -375,7 +468,7 @@ function AttributeEntry({item}) {
             <Text>{ data.country }</Text>
           </View>
           <View style={{ justifyContent: 'center' }}>
-            <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onLocation(data)} />
           </View>
         </View>
       );
@@ -390,7 +483,7 @@ function AttributeEntry({item}) {
             <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
           </View>
           <Text style={{ flexGrow: 1 }}>{ data.email }</Text>
-          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onEmail(data.email)} />
         </View>
       );
     }
@@ -399,7 +492,7 @@ function AttributeEntry({item}) {
   const CardDirectPhoneSms = () => {
     if(data.directPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => onText(data.directPhone)} />
       );
     }
     return (<></>);
@@ -416,7 +509,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.directPhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onPhone(data.directPhone)} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -427,7 +520,7 @@ function AttributeEntry({item}) {
   const CardMainPhoneSms = () => {
     if(data.mainPhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => onText(data.mainPhone)} />
       );
     }
     return (<></>);
@@ -444,7 +537,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.mainPhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onPhone(data.mainPhone)} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -455,7 +548,7 @@ function AttributeEntry({item}) {
   const CardMobilePhoneSms = () => {
     if(data.mobilePhoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => onText(data.mobilePhone)} />
       );
     }
     return (<></>);
@@ -472,7 +565,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.mobilePhone }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onPhone(data.mobilePhone)} />
             <CardDirectPhoneSms />
           </View>
         </View>
@@ -483,7 +576,7 @@ function AttributeEntry({item}) {
   const HomePhoneSms = () => {
     if(data.phoneNumberSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => onText(data.phoneNumber)} />
       );
     }
     return (<></>);
@@ -497,7 +590,7 @@ function AttributeEntry({item}) {
             <Text style={{ color: '#444444' }}>{ data.phoneNumber }</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+            <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onPhone(data.phoneNumber)} />
             <HomePhoneSms />
           </View>
         </View>
@@ -517,7 +610,7 @@ function AttributeEntry({item}) {
               <Text>{ a.country }</Text>
             </View>
             <View style={{ justifyContent: 'center' }}>
-              <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+              <Icon name="map-marker" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onLocation(a)} />
             </View>
           </View>
         );
@@ -528,7 +621,7 @@ function AttributeEntry({item}) {
   const PhoneSms = () => {
     if(data.phoneSms == true) {
       return (
-        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => console.log("TAPPED")} />
+        <Icon name="tty" style={{ color: '#0077CC', fontSize: 20, marginLeft: 32 }} onPress={() => onText(data.phone)} />
       );
     }
     return (<></>);
@@ -565,7 +658,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.link}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="copy" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="copy" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onSocial(data.link)} />
         </View>
       </View>
     );
@@ -578,7 +671,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.email}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="envelope-o" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onEmail(data.email)} />
         </View>
       </View>
     );
@@ -606,7 +699,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.phone}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="phone" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onPhone(data.phone)} />
           <PhoneSms />
         </View>
       </View>
@@ -620,7 +713,7 @@ function AttributeEntry({item}) {
           <Text style={{ color: '#444444' }}>{data.url}</Text>
         </View>
         <View style={{ justifyContent: 'center' }}>
-          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => console.log("TAPPED")} />
+          <Icon name="external-link" style={{ color: '#0077CC', fontSize: 20 }} onPress={() => onWebsite(data.url)} />
         </View>
       </View>
     );
