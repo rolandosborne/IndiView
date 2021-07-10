@@ -240,7 +240,7 @@ function MainScreen() {
   return (
     <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
-      <MainStack.Screen name="Search" component={SearchScreen} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Search" component={ContactSearch} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Label" component={LabelScreen} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
@@ -411,14 +411,6 @@ function HomeContactScreen() {
     </ContactStack.Navigator>
   );
 }  
-
-function SearchScreen({ navigation }) {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>SearchScreen</Text>
-    </View>
-  );
-}
 
 function LabelScreen({ navigation }) {
   return (
