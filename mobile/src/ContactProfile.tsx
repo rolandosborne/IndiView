@@ -111,15 +111,16 @@ export function ContactProfile({ route, navigation }) {
     contactNav.toggleDrawer();
   };
   
-  useEffect(() => { 
+  useEffect(() => {
     const unfocus = navigation.addListener('focus', () => {
+      contactNav.closeDrawer();
       latch.setToggleListener(onLatch, latchColor);
     });
     return (() => {
       latch.clearToggleListener(onLatch);
       unfocus();
     }) 
-  }, [navigation]);
+  }, []);
  
   const onLabel = (labels: string[]) => {
     if(labels == null || labels.length == 0) {

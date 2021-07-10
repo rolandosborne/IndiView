@@ -22,6 +22,8 @@ import { ContactProfile } from "./src/ContactProfile";
 import { Feed } from "./src/Feed";
 import { Conversation } from "./src/Conversation";
 
+import { ContactSearch } from "./src/ContactSearch";
+
 // schema identifiers
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
 const PHOTO: string = '6cf626f1b2222b128dc39dceabdfce7073ea961d97f34fe20fd30ef02b7bf8dd';
@@ -43,8 +45,6 @@ const ConversationDrawer = createDrawerNavigator();
 
 let logoutNav = null;
 let homeNav = null;
-let feedNav = null;
-let conversationNav = null;
 
 function RootScreen({ navigation }) {
   logoutNav = navigation;
@@ -246,33 +246,6 @@ function MainScreen() {
   );
 }
 
-function FeedDrawerContent(props) {
-  feedNav = props.navigation; 
-  const [labels, setLabels] = React.useState([]);
-  let diatum: Diatum = useDiatum();
-  const update = () => {
-    diatum.getLabels().then(l => {
-      setLabels(l);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
- 
-  useEffect(() => {
-        diatum.setListener(DiatumEvent.Labels, update);
-        return () => {
-          diatum.clearListener(DiatumEvent.Labels, update);
-        }
-    }, []);
-
-  return (
-    <View>
-      <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
-      <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => <DrawerItem labelStyle={{ fontSize: 18 }} label={item.name} onPress={() => {props.navigation.closeDrawer(); props.onLabel(item.labelId);} } />} />
-    </View>
-  );
-}
-
 function HomeFeedScreen() {
   const forFade = ({ current }) => ({
     cardStyle: {
@@ -393,13 +366,8 @@ function HomeNavScreen({ navigation }) {
 
 function HomeScreen({ navigation }) {
 
+  let latch: Latch = useLatch();
   const tabbed = () => {
-    if(feedNav != null) {
-      feedNav.closeDrawer();
-    }
-    if(conversationNav != null) {
-      conversationNav.closeDrawer();
-    }
   };
 
   return (

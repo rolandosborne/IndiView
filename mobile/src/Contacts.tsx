@@ -44,10 +44,10 @@ function ContactDrawerContent(props) {
   }
 
   useEffect(() => {
-        diatum.setListener(DiatumEvent.Labels, update);
-        return () => {
-          diatum.clearListener(DiatumEvent.Labels, update);
-        }
+    diatum.setListener(DiatumEvent.Labels, update);
+    return () => {
+      diatum.clearListener(DiatumEvent.Labels, update);
+    }
     }, []);
 
   return (
@@ -83,13 +83,14 @@ export function Contacts({ navigation }) {
   useEffect(() => {
     _setLatchColor(latchColor);
     const unfocus = navigation.addListener('focus', () => {
+      contactNav.closeDrawer();
       latch.setToggleListener(onLatch, latchColorRef.current);
     });
     return (() => {
       latch.clearToggleListener(onLatch);
       unfocus();
     }) 
-  }, [navigation]);
+  }, []);
 
   let callack: (id: string) => {} = null;
   const selected = (id: string) => {
@@ -133,6 +134,12 @@ function ContactList(props) {
   const [identity, setIdentity] = React.useState([]);
   const [contacts, setContacts] = React.useState([]);
 
+  const labelIdRef = useRef(labelId);
+  const _setLabelId = id => {
+    labelIdRef.current = id;
+    setLabelId(id);
+  }
+
   let diatum: Diatum = useDiatum();
   const updateIdentity = () => {
     diatum.getIdentity().then(i => {
@@ -146,7 +153,7 @@ function ContactList(props) {
     });
   };
   const updateContacts = () => {
-    updateLabelContacts(labelId);
+    updateLabelContacts(labelIdRef.current);
   };
 
   const updateLabelContacts = (id: string) => {
@@ -162,7 +169,7 @@ function ContactList(props) {
   }
 
   const setLabel = (id: string) => {
-    setLabelId(id);
+    _setLabelId(id);
     updateLabelContacts(id);
   };
 
