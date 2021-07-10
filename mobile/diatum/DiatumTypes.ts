@@ -39,6 +39,13 @@ export interface AmigoMessage {
   data: string;
 }
 
+export interface ShareMessage { 
+    amigo: AmigoMessage;
+    signature: string;
+    open?: string;
+    close?: string;
+}
+
 export interface Amigo {
   amigoId: string;
   name?: string;
@@ -249,6 +256,29 @@ export namespace ShareEntry {
         Connected: 'connected' as StatusEnum,
         Closing: 'closing' as StatusEnum,
         Closed: 'closed' as StatusEnum
+    };
+}
+
+export interface SharePrompt { 
+    token: string;
+    image?: string;
+    text?: string;
+}
+
+export interface ShareStatus { 
+    shareStatus: ShareStatus.ShareStatusEnum;
+    pending?: SharePrompt;
+    connected?: string;
+}
+
+export namespace ShareStatus {
+    export type ShareStatusEnum = 'pending' | 'failed' | 'received' | 'connected' | 'closed';
+    export const ShareStatusEnum = {
+        Pending: 'pending' as ShareStatusEnum,
+        Failed: 'failed' as ShareStatusEnum,
+        Received: 'received' as ShareStatusEnum,
+        Connected: 'connected' as ShareStatusEnum,
+        Closed: 'closed' as ShareStatusEnum
     };
 }
 

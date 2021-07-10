@@ -1,4 +1,4 @@
-import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareEntry, ShareView, InsightView, DialogueView, Dialogue, TopicView, Topic } from './DiatumTypes';
+import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareMessage, ShareStatus, ShareEntry, ShareView, InsightView, DialogueView, Dialogue, TopicView, Topic } from './DiatumTypes';
 
 const FETCH_TIMEOUT = 5000;
 
@@ -74,6 +74,11 @@ export class DiatumApi {
     let amigoResponse = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "?token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
     checkResponse(amigoResponse);
     return await amigoResponse.json();
+  }
+
+  public static async removeAmigo(node: string, token: string, amigoId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
   }
 
   public static async getAmigoIdentity(node: string, token: string, amigoId: string): Promise<Amigo> {
@@ -306,6 +311,36 @@ export class DiatumApi {
   public static async removeConnection(node: string, token: string, shareId: string): Promsie<void> {
     let response = await fetchWithTimeout(node + "/share/connections/" + shareId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
+  }
+
+  public static async addConnection(node: string, token: string, amigoId: string): Promsie<ShareEntry> {
+    let response = await fetchWithTimeout(node + "/share/connections?token=" + encodeURIComponent(token) + "&amigoId=" + amigoId, { method: 'POST', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async getConnectionMessage(node: string, token: string, shareId: string): Promsie<ShareMessage> {
+    let response = await fetchWithTimeout(node + "/share/" + shareId + "/message?token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setConnectionMessage(node: string, amigoId: string, message: ShareMessage): Promise<ShareStatus> {
+    let response = await fetchWithTimeout(node + "/share/messages?amigoId=" + amigoId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message), timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setConnectionStatus(node: string, token: string, shareId: string, status: string, access: string): Promise<ShareEntry> {
+    let response;
+    if(status == 'connected') {
+      response = await fetchWithTimeout(node + "/share/connections/" + shareId + "/status?token=" + encodeURIComponent(token) + "&status=" + encodeURIComponent(status) + "&shareToken=" + encodeURIComponent(access), { method: 'PUT', timeout: FETCH_TIMEOUT});
+    }
+    else {
+      response = await fetchWithTimeout(node + "/share/connections/" + shareId + "/status?token=" + encodeURIComponent(token) + "&status=" + encodeURIComponent(status), { method: 'PUT', timeout: FETCH_TIMEOUT });
+    }
+    checkResponse(response);
+    return await response.json();
   }
 
 }

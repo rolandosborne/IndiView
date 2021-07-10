@@ -567,5 +567,23 @@ export class Storage {
     }
     return null;
   }
+
+  public async getContactNode(id: string, amigoId: string): Promsie<string> {
+    let res = await this.db.executeSql("SELECT node from index_" + id + " WHERE amigo_id=?;", [amigoId]);
+    if(hasResult(res)) {
+      return res[0].rows.item(0).node;
+    }
+    return null;
+  }
+
+  public async getAmigoConnection(id: string, amigoId: string): Promise<AmigoConnection> {
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, node, registry, index_" + id + ".identity_revision, attribute_revision, subject_revision, connection_error, token from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where status=? and index_" + id + ".amigo_id=?;", ['connected', amigoId]);
+    if(hasResult(res)) {
+      let a = res[0].rows.item(0);
+      return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision, connectionError: a.connection_error!=0 };
+    }
+    return null;
+  }
+
 }
 

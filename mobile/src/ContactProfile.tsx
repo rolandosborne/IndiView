@@ -161,7 +161,7 @@ export function ContactProfilePage({ entry, navigation }) {
     const buttons = [
         { text: 'Yes, Disconnect', onPress: async () => {
           try {
-            await diatum.removeContactConnection(contact.amigoId);
+            await diatum.closeContactConnection(contact.amigoId);
           }
           catch(err) {
             console.log(err);
@@ -172,17 +172,17 @@ export function ContactProfilePage({ entry, navigation }) {
     ];
     Alert.alert(title, message, buttons);
   };
-  const deleteContact = () => {
-    console.log("delete");
+  const deleteContact = async () => {
+    await diatum.removeContact(contact.amigoId);
   };
-  const acceptContact = () => {
-    console.log("accept");
+  const acceptContact = async () => {
+    await diatum.openContactConnection(contact.amigoId);
   }
-  const requestContact = () => {
-    console.log("request");
+  const requestContact = async () => {
+    await diatum.openContactConnection(contact.amigoId);
   }
-  const cancelContact = () => {
-    console.log("cancel");
+  const cancelContact = async () => {
+    await diatum.closeContactConnection(contact.amigoId);
   }
   const reportContact = () => {
     console.log("report");
@@ -226,7 +226,7 @@ export function ContactProfilePage({ entry, navigation }) {
     if(Platform.OS === 'ios') {
       options.push("Cancel");
     }
-    const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16 }} />);
+    const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
 
     navigation.setOptions({
       title: c.handle,
@@ -303,22 +303,22 @@ export function ContactProfilePage({ entry, navigation }) {
   const ContactStatus = () => {
     if(contact.status == 'connected') {
       return (
-        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Connected</Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Connected</Text>
       ); 
     }
     else if(contact.status == 'received') {
       return (
-        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Request Received</Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Received</Text>
       ); 
     }
     else if(contact.status == 'requested') {
       return (
-        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Request Sent</Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Sent</Text>
       ); 
     }
     else {
       return (
-        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Status: Saved</Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Saved</Text>
       ); 
     }
   }

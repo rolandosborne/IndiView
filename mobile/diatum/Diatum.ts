@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareEntry, InsightView, DialogueView } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -94,8 +94,14 @@ export interface Diatum {
   // set app data for amigo
   setContactAttributeData(amigoId: string, obj: any): Promise<void>
 
+  // add contact
+  removeContact(amigoId: string): Promise<void>
+
+  // request contact connection
+  openContactConnection(amigoId: string): Promise<void>
+
   // disconnect contact
-  removeContactConnection(amigoId: string): Promise<void>
+  closeContactConnection(amigoId: string): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -351,6 +357,11 @@ class _Diatum {
 
   private async syncAmigoConnection(connection: AmigoConnection): Promise<void> {
 
+    // validate connection
+    if(connection == null) {
+      throw new Error("invalid empty connection");
+    }
+
     // pull revisions with agent auth
     let revisions = await DiatumApi.getConnectionRevisions(connection.node, connection.token, this.authToken, this.authMessage);
 
@@ -371,7 +382,6 @@ class _Diatum {
 
     // if subject revision is different, update view
     if(revisions.viewRevision != connection.subjectRevision) {
-console.log("REVISION CHANGE");
       await this.syncConnectionView(connection.amigoId, connection.node, connection.token);
       await this.storage.updateConnectionSubjectRevision(this.session.amigoId, connection.amigoId, revisions.viewRevision);
     }
@@ -1085,6 +1095,9 @@ console.log("REVISION CHANGE");
 
   public async getContact(amigoId: string): Promise<ContactEntry> {
     let c: Contact =  await this.storage.getContact(this.session.amigoId, amigoId);
+    if(c == null) {
+      return null;
+    }
     let url: string = c.logoSet ? this.session.amigoNode + "/index/amigos/" + c.amigoId + "/logo?token=" + this.session.amigoToken : null;
     return { amigoId: c.amigoId, name: c.name, handle: c.handle, location: c.location, description: c.description, notes: c.notes, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
   }
@@ -1111,8 +1124,72 @@ console.log("REVISION CHANGE");
     return await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
   }
 
-  public async removeContactConnection(amigoId) {
+  public async removeContact(amigoId: string) {
     let shareId = await this.storage.getContactShareId(this.session.amigoId, amigoId);
+    try {
+      if(shareId != null) {
+        // if this block fails contact can be left thinking connection still on, that's ok-ish
+        let node = await this.storage.getContactNode(this.session.amigoId, amigoId);
+        await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, shareId, ShareEntry.StatusEnum.Closing);
+        let message = await DiatumApi.getConnectionMessage(this.session.amigoNode, this.session.amigoToken, shareId);
+        let status = await DiatumApi.setConnectionMessage(node, amigoId, message);
+        await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, shareId, ShareEntry.StatusEnum.Closed);
+        await DiatumApi.removeConnection(this.session.amigoNode, this.session.amigoToken, shareId);
+      }
+    }
+    catch(err) {
+      console.log(err);
+    }
+    await DiatumApi.removeAmigo(this.session.amigoNode, this.session.amigoToken, amigoId);
+    await this.syncIndex();
+    await this.syncShare();
+  }
+
+  public async openContactConnection(amigoId: string) {
+    let node = await this.storage.getContactNode(this.session.amigoId, amigoId);
+    let entry = await DiatumApi.addConnection(this.session.amigoNode, this.session.amigoToken, amigoId);
+    await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, entry.shareId, ShareEntry.StatusEnum.Requesting);
+    let message = await DiatumApi.getConnectionMessage(this.session.amigoNode, this.session.amigoToken, entry.shareId);
+    let status = await DiatumApi.setConnectionMessage(node, amigoId, message);
+    if(status.shareStatus == ShareEntry.StatusEnum.Connected) {
+      await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, entry.shareId, ShareEntry.StatusEnum.Connected, status.connected);
+    }
+    else if(status.shareStatus == ShareEntry.StatusEnum.Received) {
+      await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, entry.shareId, ShareEntry.StatusEnum.Requested);
+    }
+    else {
+      throw new Error("failed to deliver request");
+    }
+    await this.syncShare();
+
+    // sync amigo now that we're connected
+    if(status.shareStatus == ShareEntry.StatusEnum.Connected) {
+      try {
+        await this.syncShare();
+        let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+        await this.syncAmigoConnection(connection);
+      }
+      catch(err) {
+        console.log(err);
+      } 
+    }
+  }
+
+  public async closeContactConnection(amigoId: string) {
+    let shareId = await this.storage.getContactShareId(this.session.amigoId, amigoId);
+    try {
+      if(shareId != null) {
+        // if this block fails contact can be left thinking connection still on, that's ok-ish
+        let node = await this.storage.getContactNode(this.session.amigoId, amigoId);
+        await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, shareId, ShareEntry.StatusEnum.Closing);
+        let message = await DiatumApi.getConnectionMessage(this.session.amigoNode, this.session.amigoToken, shareId);
+        let status = await DiatumApi.setConnectionMessage(node, amigoId, message);
+        await DiatumApi.setConnectionStatus(this.session.amigoNode, this.session.amigoToken, shareId, ShareEntry.StatusEnum.Closed);
+      }
+    }
+    catch(err) {
+      console.log(err);
+    }
     await DiatumApi.removeConnection(this.session.amigoNode, this.session.amigoToken, shareId);
     await this.syncShare();
   }
@@ -1248,12 +1325,23 @@ async function setContactAttributeData(amigoId: string, obj: any): Promise<void>
   return await diatum.setContactAttributeData(amigoId, obj);
 }
 
-async function removeContactConnection(amigoId: string): Promise<void> {
+async function removeContact(amigoId: string): Promise<void> {
   let diatum = await getInstance();
-  return await diatum.removeContactConnection(amigoId);
+  return await diatum.removeContact(amigoId);
+}
+
+async function openContactConnection(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.openContactConnection(amigoId);
+}
+
+async function closeContactConnection(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.closeContactConnection(amigoId);
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
-    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, removeContactConnection };
+    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
+    removeContact, openContactConnection, closeContactConnection };
 
