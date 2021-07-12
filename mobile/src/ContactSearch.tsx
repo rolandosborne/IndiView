@@ -37,9 +37,12 @@ function Prompt({ callback }) {
         <View style={{ width: '90%', backgroundColor: '#ffffff', borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
           <TextInput style={{ backgroundColor: '#555555', color: '#ffffff', borderRadius: 8, textAlign: 'center', fontSize: 18, width: '80%', height: 40, margin: 16 }} autoCapitalize="none" placeholder="Profile Name or Handle" placeholderTextColor='#ffffff' onSubmitEditing={onSearch} onChangeText={onSearchText}/>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Button title="Search" onPress={onSearch} />
-            <View style={{ width: 32 }} />
-            <Button title="Cancel" onPress={onCancel} />
+            <TouchableOpacity onPress={onSearch}>
+              <Text style={{ color: '#0077CC', margin: 16, fontSize: 20 }}>Search</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onCancel}>
+              <Text style={{ color: '#0077CC', margin: 16, fontSize: 20 }}>Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
