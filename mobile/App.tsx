@@ -13,6 +13,7 @@ import { DiatumSession, LabelEntry, Attribute } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+import { AppSupport, AppSupportProvider, useApp } from './src/AppSupport';
 import { Latch, LatchProvider, useLatch } from './src/LatchContext';
 import { AttributeUtil } from "./src/AttributeUtil";
 
@@ -111,6 +112,7 @@ function RootScreen({ navigation }) {
   let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
+  let support: AppSupport = useApp();
   diatum.init("indiview_v99.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
@@ -120,6 +122,7 @@ function RootScreen({ navigation }) {
       console.log("APP TOKEN: " + l.appToken);
       try {
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        support.setToken(l.appToken);
         navigation.replace('Main');
       }
       catch(err) {
@@ -175,9 +178,11 @@ function LoginScreen({ navigation }) {
 
 function AgreeScreen({ route, navigation }) {
 
-  let diatum: Diatum = useDiatum();
   const { code, otherParam } = route.params;
   const [busy, onBusy] = React.useState(false);
+
+  let diatum: Diatum = useDiatum();
+  let support: AppSupport = useApp();
 
   const agree = (async () => {
     if(!busy) {
@@ -185,6 +190,7 @@ function AgreeScreen({ route, navigation }) {
       try {
         let l = await IndiViewCom.attach(code);
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        support.setToken(l.appToken);
         await diatum.setAppContext(l);
         onBusy(false);
         navigation.replace("Main");
@@ -240,7 +246,7 @@ function MainScreen() {
   return (
     <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
-      <MainStack.Screen name="Search" component={ContactSearch} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Contact Search" component={ContactSearch} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Label" component={LabelScreen} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
@@ -306,7 +312,7 @@ function HomeDrawerContent(props) {
     <SafeAreaView style={{ flex: 1 }}>
       <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
-        props.navigate('Search');
+        props.navigate('Contact Search');
       }} />
       <DrawerItem label={'Update Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
@@ -425,18 +431,20 @@ const App = () => {
   return (
     <DiatumProvider>
       <LatchProvider> 
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <View style={{ flex: 1, backgroundColor: '#282827' }}>
-              <Stack.Navigator initialRouteName="Root">
-                <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
-                <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
-              </Stack.Navigator>
-            </View>
-          </NavigationContainer>
-        </SafeAreaProvider>
+        <AppSupportProvider> 
+          <SafeAreaProvider>
+            <NavigationContainer>
+              <View style={{ flex: 1, backgroundColor: '#282827' }}>
+                <Stack.Navigator initialRouteName="Root">
+                  <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
+                  <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+                  <Stack.Screen name="Agree" component={AgreeScreen} options={{headerShown: false}} />
+                  <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}} />
+                </Stack.Navigator>
+              </View>
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </AppSupportProvider>
       </LatchProvider>
     </DiatumProvider>
   );
