@@ -13,10 +13,12 @@ export interface Login {
 }
 
 export interface Contact { 
-    amigoId: string;
-    registry: string;
-    name: string;
-    handle?: string;
+  amigoId: string;
+  registry: string;
+  name: string;
+  handle?: string;
+  location?: string;
+  description?: string;
 }
 
 function checkResponse(response) {

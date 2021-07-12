@@ -270,7 +270,8 @@ function ContactEntry({item}) {
   const navigation = useNavigation();
   const onProfile = () => {
     console.log(item);
-    navigation.navigate("ContactProfile", { ...item });
+    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, location: item.location, description: item.description, showFooter: false, saved: { status: item.status, imageUrl: item.imageUrl, notes: item.notes, errorFlag: item.errorFlag }};
+    navigation.navigate("ContactProfile", { ...view });
   };
 
   let nameColor = '#aaaaaa';

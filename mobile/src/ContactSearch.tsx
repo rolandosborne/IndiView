@@ -101,8 +101,14 @@ function SearchEntry({item, index}) {
     imgSrc = { uri: item.registry + "/amigo/messages/logo?amigoId=" + item.amigoId, cache: 'force-cache' };
   }
 
+  let navigation = useNavigation();
+  let onProfile = () => {
+    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, location: item.location, description: item.description, showFooter: true, saved: null };
+    navigation.navigate("Search Profile", {...view});
+  }
+
   return (
-    <TouchableOpacity activeOpacity={1} style={{ height: 64, marginTop: pad, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
+    <TouchableOpacity activeOpacity={1} style={{ height: 64, marginTop: pad, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#444444' }} source={imgSrc}/>
       </View>

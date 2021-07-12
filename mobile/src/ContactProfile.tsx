@@ -19,6 +19,23 @@ import { AttributeUtil } from './AttributeUtil';
 const ProfileDrawer = createDrawerNavigator();
 let contactNav = null;
 
+export class ProfileSavedView {
+  imageUrl: string;
+  notes: string;
+  status: string;
+  errorFlag: boolean;
+}
+
+export class ProfileView {
+  amigoId: string;
+  name: string;
+  handle: string;
+  location: string;
+  description: string;
+  showFooter: boolean;
+  saved: ProfileSavedView;
+}
+
 function ProfileDrawerContent(props) {
 
   contactNav = props.navigation;
@@ -192,7 +209,11 @@ export function ContactProfilePage({ entry, navigation }) {
   const setHeader = (c: Contact) => {
     let options = [];
     let actions = [];
-    if(c.status == 'connected') {
+    if(c.saved == null) {
+      options.push("Report Profile");
+      actions.push(reportContact);
+    }
+    else if(c.saved.status == 'connected') {
       options.push("Disconnect");
       actions.push(disconnectContact);
       options.push("Delete");
@@ -200,7 +221,7 @@ export function ContactProfilePage({ entry, navigation }) {
       options.push("Report Profile");
       actions.push(reportContact);
     }
-    else if(c.status == 'received') {
+    else if(c.saved.status == 'received') {
       options.push("Accept");
       actions.push(acceptContact);
       options.push("Delete");
@@ -208,7 +229,7 @@ export function ContactProfilePage({ entry, navigation }) {
       options.push("Report Profile");
       actions.push(reportContact);
     }
-    else if(c.status == 'requested') {
+    else if(c.saved.status == 'requested') {
       options.push("Cancel");
       actions.push(cancelContact);
       options.push("Delete");
@@ -254,8 +275,9 @@ export function ContactProfilePage({ entry, navigation }) {
   const updateAmigo = async () => {
     try {
       let c: ContactEntry = await diatum.getContact(contact.amigoId);
-      setContact(c);
-      setHeader(c);
+      let view = { amigoId: c.amigoId, name: c.name, handle: c.handle, location: c.location, description: c.description, showFooter: false, saved: { status: c.status, imageUrl: c.imageUrl, notes: c.notes, errorFlag: c.errorFlag }};
+      setContact(view);
+      setHeader(view);
     }
     catch(err) {
       console.log(err);
@@ -264,7 +286,7 @@ export function ContactProfilePage({ entry, navigation }) {
 
   // update border color on error
   useEffect(() => {
-    if(contact.errorFlag && contact.status == 'connected') {
+    if(contact.saved != null && contact.saved.errorFlag && contact.saved.status == 'connected') {
       setProfileColor('#dd8888');
     }
     else {
@@ -285,11 +307,11 @@ export function ContactProfilePage({ entry, navigation }) {
   }, []);
 
   let imgSrc = {};
-  if(contact.imageUrl == null) {
+  if(contact.saved == null || contact.saved.imageUrl == null) {
     imgSrc = require('../assets/avatar.png');
   }
   else {
-    imgSrc = { uri: contact.imageUrl, cache: 'force-cache' };
+    imgSrc = { uri: contact.saved.imageUrl, cache: 'force-cache' };
   }
 
   const ContactName = () => {
@@ -302,17 +324,23 @@ export function ContactProfilePage({ entry, navigation }) {
   }
 
   const ContactStatus = () => {
-    if(contact.status == 'connected') {
+console.log("STATUS: ", contact.saved);
+    if(contact.saved == null) {
+      return (
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}></Text>
+      ); 
+    }
+    else if(contact.saved.status == 'connected') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Connected</Text>
       ); 
     }
-    else if(contact.status == 'received') {
+    else if(contact.saved.status == 'received') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Received</Text>
       ); 
     }
-    else if(contact.status == 'requested') {
+    else if(contact.saved.status == 'requested') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Sent</Text>
       ); 
@@ -325,12 +353,12 @@ export function ContactProfilePage({ entry, navigation }) {
   }
 
   const ContactNotes = () => {
-    if(contact.notes != null) {
+    if(contact.saved != null && contact.saved.notes != null) {
       return (
         <View style={{ marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Notes</Text></View>
           <View style={{ marginLeft: 32, marginRight: 32, marginTop: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
-            <Text style={{ color: '#222222' }}>{contact.notes}</Text>
+            <Text style={{ color: '#222222' }}>{contact.saved.notes}</Text>
           </View>
         </View>
       ); 
@@ -341,7 +369,7 @@ export function ContactProfilePage({ entry, navigation }) {
   }
 
   const ContactAttributes = () => {
-    if(attributes.length > 0 && contact.status == 'connected') { 
+    if(attributes.length > 0 && contact.saved != null && contact.saved.status == 'connected') { 
       return (
         <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Contact Info</Text></View>
