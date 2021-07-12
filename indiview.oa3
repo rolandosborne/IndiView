@@ -379,6 +379,8 @@ components:
           type: string
         name:
           type: string
+        handle:
+          type: string
           
     Amigo:
       type: object

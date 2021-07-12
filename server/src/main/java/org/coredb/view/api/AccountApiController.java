@@ -95,17 +95,16 @@ public class AccountApiController implements AccountApi {
     }
 
     public ResponseEntity<List<Contact>> getMatching(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "text to search on" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "match", required = true) String match) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<List<Contact>>(objectMapper.readValue("[ {\n  \"registry\" : \"registry\",\n  \"amigoId\" : \"amigoId\"\n}, {\n  \"registry\" : \"registry\",\n  \"amigoId\" : \"amigoId\"\n} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<List<Contact>>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<List<Contact>>(HttpStatus.NOT_IMPLEMENTED);
+      try {
+        List<Contact> contacts = accountService.getMatching(token, match);
+        return new ResponseEntity<List<Contact>>(contacts, HttpStatus.OK);
+      }
+      catch(IllegalArgumentException e) {
+        return new ResponseEntity<List<Contact>>(HttpStatus.UNAUTHORIZED);
+      }
+      catch(Exception e) {
+        return new ResponseEntity<List<Contact>>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 
     public ResponseEntity<List<Contact>> getNearby(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody GpsLocation body,@Parameter(in = ParameterIn.QUERY, description = "range of matching values" ,schema=@Schema()) @Valid @RequestParam(value = "longitudeDelta", required = false) Integer longitudeDelta,@Parameter(in = ParameterIn.QUERY, description = "range of matching values" ,schema=@Schema()) @Valid @RequestParam(value = "latitudeDelta", required = false) Integer latitudeDelta,@Parameter(in = ParameterIn.QUERY, description = "range of matching values" ,schema=@Schema()) @Valid @RequestParam(value = "altitudeDelta", required = false) Integer altitudeDelta) {

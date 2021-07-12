@@ -27,6 +27,8 @@ import org.coredb.view.jpa.entity.Config;
 import org.coredb.view.jpa.repository.AccountRepository;
 import org.coredb.view.jpa.repository.ConfigRepository;
 
+import org.coredb.view.service.specification.AccountSpecificationMatch;
+
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
 import org.coredb.view.api.NotFoundException;
@@ -58,6 +60,7 @@ import org.coredb.view.model.AmigoToken;
 import org.coredb.view.model.LinkMessage;
 import org.coredb.view.model.UserEntry;
 import org.coredb.view.model.ServiceAccess;
+import org.coredb.view.model.Contact;
 
 import org.coredb.view.model.Login;
 
@@ -90,6 +93,32 @@ public class AccountService {
     System.out.println(appToken.getStrValue());
 
     return "OK";
+  }
+
+  public List<Contact> getMatching(String token, String match) throws IllegalArgumentException {
+  
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new IllegalArgumentException("login token not found");
+    }
+
+    // get list of matching accounts
+    Pageable limit = new PageRequest(0,32);
+    Specifications<Account> spec = Specifications.where(new AccountSpecificationMatch(account.getAmigoId(), match));
+    Page<Account> page = accountRepository.findAll(spec, limit);
+
+    // extract contact attributes
+    List<Contact> contacts = new ArrayList<Contact>();
+    for(Account a: page.getContent()) {
+      Contact contact = new Contact();
+      contact.setAmigoId(a.getAmigoId());
+      contact.setRegistry(a.getRegistry());
+      contact.setName(a.getName());
+      contact.setHandle(a.getHandle());
+      contacts.add(contact);
+    }
+    return contacts;
   }
 
   public Login attach(AmigoMessage msg, String code) throws NotAcceptableException, IllegalArgumentException, Exception {

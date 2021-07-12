@@ -3,8 +3,7 @@ package org.coredb.view.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -49,6 +48,9 @@ public class ServiceAccess   {
   @JsonProperty("enableAccount")
   private Boolean enableAccount = null;
 
+  @JsonProperty("enableConversation")
+  private Boolean enableConversation = null;
+
   public ServiceAccess enableShow(Boolean enableShow) {
     this.enableShow = enableShow;
     return this;
@@ -57,9 +59,9 @@ public class ServiceAccess   {
   /**
    * Get enableShow
    * @return enableShow
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableShow() {
     return enableShow;
   }
@@ -76,9 +78,9 @@ public class ServiceAccess   {
   /**
    * Get enableIdentity
    * @return enableIdentity
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableIdentity() {
     return enableIdentity;
   }
@@ -95,9 +97,9 @@ public class ServiceAccess   {
   /**
    * Get enableProfile
    * @return enableProfile
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableProfile() {
     return enableProfile;
   }
@@ -114,9 +116,9 @@ public class ServiceAccess   {
   /**
    * Get enableGroup
    * @return enableGroup
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableGroup() {
     return enableGroup;
   }
@@ -133,9 +135,9 @@ public class ServiceAccess   {
   /**
    * Get enableShare
    * @return enableShare
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableShare() {
     return enableShare;
   }
@@ -152,9 +154,9 @@ public class ServiceAccess   {
   /**
    * Get enablePrompt
    * @return enablePrompt
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnablePrompt() {
     return enablePrompt;
   }
@@ -171,9 +173,9 @@ public class ServiceAccess   {
   /**
    * Get enableService
    * @return enableService
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableService() {
     return enableService;
   }
@@ -190,9 +192,9 @@ public class ServiceAccess   {
   /**
    * Get enableIndex
    * @return enableIndex
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableIndex() {
     return enableIndex;
   }
@@ -209,9 +211,9 @@ public class ServiceAccess   {
   /**
    * Get enableUser
    * @return enableUser
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableUser() {
     return enableUser;
   }
@@ -228,9 +230,9 @@ public class ServiceAccess   {
   /**
    * Get enableAccess
    * @return enableAccess
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableAccess() {
     return enableAccess;
   }
@@ -247,15 +249,34 @@ public class ServiceAccess   {
   /**
    * Get enableAccount
    * @return enableAccount
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @Schema(description = "")
+  
     public Boolean isEnableAccount() {
     return enableAccount;
   }
 
   public void setEnableAccount(Boolean enableAccount) {
     this.enableAccount = enableAccount;
+  }
+
+  public ServiceAccess enableConversation(Boolean enableConversation) {
+    this.enableConversation = enableConversation;
+    return this;
+  }
+
+  /**
+   * Get enableConversation
+   * @return enableConversation
+   **/
+  @Schema(description = "")
+  
+    public Boolean isEnableConversation() {
+    return enableConversation;
+  }
+
+  public void setEnableConversation(Boolean enableConversation) {
+    this.enableConversation = enableConversation;
   }
 
 
@@ -278,19 +299,20 @@ public class ServiceAccess   {
         Objects.equals(this.enableIndex, serviceAccess.enableIndex) &&
         Objects.equals(this.enableUser, serviceAccess.enableUser) &&
         Objects.equals(this.enableAccess, serviceAccess.enableAccess) &&
-        Objects.equals(this.enableAccount, serviceAccess.enableAccount);
+        Objects.equals(this.enableAccount, serviceAccess.enableAccount) &&
+        Objects.equals(this.enableConversation, serviceAccess.enableConversation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(enableShow, enableIdentity, enableProfile, enableGroup, enableShare, enablePrompt, enableService, enableIndex, enableUser, enableAccess, enableAccount);
+    return Objects.hash(enableShow, enableIdentity, enableProfile, enableGroup, enableShare, enablePrompt, enableService, enableIndex, enableUser, enableAccess, enableAccount, enableConversation);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class ServiceAccess {\n");
-
+    
     sb.append("    enableShow: ").append(toIndentedString(enableShow)).append("\n");
     sb.append("    enableIdentity: ").append(toIndentedString(enableIdentity)).append("\n");
     sb.append("    enableProfile: ").append(toIndentedString(enableProfile)).append("\n");
@@ -302,6 +324,7 @@ public class ServiceAccess   {
     sb.append("    enableUser: ").append(toIndentedString(enableUser)).append("\n");
     sb.append("    enableAccess: ").append(toIndentedString(enableAccess)).append("\n");
     sb.append("    enableAccount: ").append(toIndentedString(enableAccount)).append("\n");
+    sb.append("    enableConversation: ").append(toIndentedString(enableConversation)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -317,5 +340,3 @@ public class ServiceAccess   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-
-
