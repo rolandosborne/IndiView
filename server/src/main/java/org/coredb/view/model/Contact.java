@@ -27,6 +27,12 @@ public class Contact   {
   @JsonProperty("handle")
   private String handle = null;
 
+  @JsonProperty("location")
+  private String location = null;
+
+  @JsonProperty("description")
+  private String description = null;
+
   public Contact amigoId(String amigoId) {
     this.amigoId = amigoId;
     return this;
@@ -106,6 +112,44 @@ public class Contact   {
     this.handle = handle;
   }
 
+  public Contact location(String location) {
+    this.location = location;
+    return this;
+  }
+
+  /**
+   * Get location
+   * @return location
+   **/
+  @Schema(description = "")
+  
+    public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public Contact description(String description) {
+    this.description = description;
+    return this;
+  }
+
+  /**
+   * Get description
+   * @return description
+   **/
+  @Schema(description = "")
+  
+    public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -119,12 +163,14 @@ public class Contact   {
     return Objects.equals(this.amigoId, contact.amigoId) &&
         Objects.equals(this.registry, contact.registry) &&
         Objects.equals(this.name, contact.name) &&
-        Objects.equals(this.handle, contact.handle);
+        Objects.equals(this.handle, contact.handle) &&
+        Objects.equals(this.location, contact.location) &&
+        Objects.equals(this.description, contact.description);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(amigoId, registry, name, handle);
+    return Objects.hash(amigoId, registry, name, handle, location, description);
   }
 
   @Override
@@ -136,6 +182,8 @@ public class Contact   {
     sb.append("    registry: ").append(toIndentedString(registry)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    handle: ").append(toIndentedString(handle)).append("\n");
+    sb.append("    location: ").append(toIndentedString(location)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();
   }

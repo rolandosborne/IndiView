@@ -116,6 +116,8 @@ public class AccountService {
       contact.setRegistry(a.getRegistry());
       contact.setName(a.getName());
       contact.setHandle(a.getHandle());
+      contact.setLocation(a.getLocation());
+      contact.setDescription(a.getDescription());
       contacts.add(contact);
     }
     return contacts;
@@ -192,6 +194,8 @@ public class AccountService {
     account.setNode(amigo.getNode());
     account.setVersion(amigo.getVersion());
     account.setHandle(amigo.getHandle());
+    account.setLocation(amigo.getLocation());
+    account.setDescription(amigo.getDescription());
     account.setName(amigo.getName());
     account.setEnabled(true);
     account.setSearchable(true);
