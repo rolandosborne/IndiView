@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS `account` (
   `handle` VARCHAR(128) NULL,
   `version` VARCHAR(64) NULL,
   `name` VARCHAR(128) NULL,
+  `location` VARCHAR(1024) NULL,
+  `description` VARCHAR(8192) NULL,
   `node` VARCHAR(1024) NULL,
   `registry` VARCHAR(1024) NULL,
   `enabled` TINYINT NOT NULL DEFAULT 1,
