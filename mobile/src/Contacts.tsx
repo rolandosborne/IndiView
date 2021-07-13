@@ -270,7 +270,7 @@ function ContactEntry({item}) {
   const navigation = useNavigation();
   const onProfile = () => {
     console.log(item);
-    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, location: item.location, description: item.description, showFooter: false, saved: { status: item.status, imageUrl: item.imageUrl, notes: item.notes, errorFlag: item.errorFlag }};
+    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: item.imageUrl, registry: item.registry, location: item.location, description: item.description, showFooter: false };
     navigation.navigate("ContactProfile", { ...view });
   };
 

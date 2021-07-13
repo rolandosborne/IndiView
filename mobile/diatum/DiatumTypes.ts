@@ -25,6 +25,7 @@ export interface ContactEntry {
   name?: string;
   imageUrl?: string;
   handle?: string;
+  registry?: string;
   location?: string;
   description?: string;
   status?: string;

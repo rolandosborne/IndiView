@@ -67,6 +67,9 @@ export interface Diatum {
   // remove added listener
   clearListener(callback: () => void): Promise<void>;
 
+  // get registry profile image
+  getRegistryImage(amigoId: string, registry: string): string;
+
   // get public profile
   getIdentity(): Promsie<IdentityProfile>
 
@@ -95,6 +98,9 @@ export interface Diatum {
   setContactAttributeData(amigoId: string, obj: any): Promise<void>
 
   // add contact
+  addContact(amigoId: string, registry: string): Promise<void>
+
+  // remove contact
   removeContact(amigoId: string): Promise<void>
 
   // request contact connection
@@ -292,7 +298,7 @@ class _Diatum {
         }
         catch(err) {
           console.log(err);
-          if(!connection.connectionError) {
+          if(!connections[i].connectionError) {
             await this.storage.updateAmigoConnectionError(this.session.amigoId, connections[i].amigoId, true);
             this.notifyListeners(DiatumEvent.Contact, amigoId);
           }
@@ -1088,7 +1094,7 @@ class _Diatum {
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, location: c[i].location, description: c[i].description, notes: c[i].notes, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
     }
     return entries;
   }
@@ -1099,7 +1105,7 @@ class _Diatum {
       return null;
     }
     let url: string = c.logoSet ? this.session.amigoNode + "/index/amigos/" + c.amigoId + "/logo?token=" + this.session.amigoToken : null;
-    return { amigoId: c.amigoId, name: c.name, handle: c.handle, location: c.location, description: c.description, notes: c.notes, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
+    return { amigoId: c.amigoId, name: c.name, handle: c.handle, registry: c.registry, location: c.location, description: c.description, notes: c.notes, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
   }
 
   public async getContactAttributes(amigoId: string): Promise<Attribute[]> {
@@ -1122,6 +1128,12 @@ class _Diatum {
 
   public async setContactAttributeData(amigoId: string, obj: any): Promise<void> {
     return await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
+  }
+
+  public async addContact(amigoId: string, registry: string) {
+    let message: AmigoMessage = await DiatumApi.getRegistryMessage(registry, amigoId);
+    await DiatumApi.addAmigo(this.session.amigoNode, this.session.amigoToken, message);
+    await this.syncIndex(); 
   }
 
   public async removeContact(amigoId: string) {
@@ -1280,6 +1292,10 @@ async function clearListener(event: DiatumEvent, callback: () => void): Promise<
   return diatum.clearListener(event, callback);
 }
 
+function getRegistryImage(amigoId: string, registry: string): string {
+  return registry + "/amigo/messages/logo?amigoId=" + amigoId;
+}
+
 async function getIdentity(): Promise<IdentityProfile> {
   let diatum = await getInstance();
   return await diatum.getIdentity();
@@ -1325,6 +1341,11 @@ async function setContactAttributeData(amigoId: string, obj: any): Promise<void>
   return await diatum.setContactAttributeData(amigoId, obj);
 }
 
+async function addContact(amigoId: string, registry: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.addContact(amigoId, registry);
+}
+
 async function removeContact(amigoId: string): Promise<void> {
   let diatum = await getInstance();
   return await diatum.removeContact(amigoId);
@@ -1341,7 +1362,7 @@ async function closeContactConnection(amigoId: string): Promise<void> {
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
+    setListener, clearListener, getRegistryImage, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
-    removeContact, openContactConnection, closeContactConnection };
+    addContact, removeContact, openContactConnection, closeContactConnection };
 

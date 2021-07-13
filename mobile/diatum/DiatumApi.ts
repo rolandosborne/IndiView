@@ -76,6 +76,12 @@ export class DiatumApi {
     return await amigoResponse.json();
   }
 
+  public static async addAmigo(node: string, token: string, message: AmigoMessage): Promise<AmigoEntry> {
+    let response = await fetchWithTimeout(node + "/index/amigos?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(message), timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
   public static async removeAmigo(node: string, token: string, amigoId: string): Promise<void> {
     let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);

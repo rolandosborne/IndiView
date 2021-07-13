@@ -7,6 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
+import { useNavigation } from '@react-navigation/native';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -19,8 +20,7 @@ import { AttributeUtil } from './AttributeUtil';
 const ProfileDrawer = createDrawerNavigator();
 let contactNav = null;
 
-export class ProfileSavedView {
-  imageUrl: string;
+export class EntryView {
   notes: string;
   status: string;
   errorFlag: boolean;
@@ -30,6 +30,7 @@ export class ProfileView {
   amigoId: string;
   name: string;
   handle: string;
+  imageUrl: string;
   location: string;
   description: string;
   showFooter: boolean;
@@ -119,11 +120,9 @@ export function ContactProfile({ route, navigation }) {
   const [contact, setContact] = React.useState(route.params);
   const [amigoLabels, setAmigoLabels] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
-  const [amigoId, setAmigoId] = React.useState(route.params.amigoId);
   const [latchColor, setLatchColor] = React.useState('#282827');
 
- let latch: Latch = useLatch();
-  
+  let latch: Latch = useLatch();
   const onLatch = () => {
     contactNav.toggleDrawer();
   };
@@ -152,11 +151,11 @@ export function ContactProfile({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }} >
-      <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: amigoId, callback: onLabel}} />}>
+      <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{amigoId: contact.amigoId, callback: onLabel}} />}>
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <ContactProfilePage entry={contact} navigation={navigation} />
+              <ContactProfilePage contact={contact} navigation={navigation} />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -165,14 +164,13 @@ export function ContactProfile({ route, navigation }) {
   )
 }
 
-export function ContactProfilePage({ entry, navigation }) {
-
-  const [contact, setContact] = React.useState(entry);
+export function ContactProfilePage({ contact, navigation }) {
+  
+  const [entry, setEntry] = React.useState(null);
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
 
   let diatum = useDiatum();
-
   const disconnectContact = async () => {
     const title = 'Are you sure you want to disconnect?';
     const message = '';
@@ -190,57 +188,92 @@ export function ContactProfilePage({ entry, navigation }) {
     ];
     Alert.alert(title, message, buttons);
   };
+  const saveContact = async () => {
+    try {
+      await diatum.addContact(contact.amigoId, contact.registry);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to save contact");
+    }
+  }
   const deleteContact = async () => {
-    await diatum.removeContact(contact.amigoId);
+    try {
+      await diatum.removeContact(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to delete contact");
+    }
   };
   const acceptContact = async () => {
-    await diatum.openContactConnection(contact.amigoId);
+    try {
+      await diatum.openContactConnection(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to accept connection");
+    }
   }
   const requestContact = async () => {
-    await diatum.openContactConnection(contact.amigoId);
+    try {
+      await diatum.openContactConnection(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to request connection");
+    }
   }
   const cancelContact = async () => {
-    await diatum.closeContactConnection(contact.amigoId);
+    try {
+      await diatum.closeContactConnection(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to cancel request");
+    }
   }
   const reportContact = () => {
     console.log("report");
   }
 
-  const setHeader = (c: Contact) => {
+  const setHeader = (e: EntryView) => {
     let options = [];
     let actions = [];
-    if(c.saved == null) {
+    if(e == null) {
+      options.push("Save Contact");
+      actions.push(saveContact);
       options.push("Report Profile");
       actions.push(reportContact);
     }
-    else if(c.saved.status == 'connected') {
+    else if(e.status == 'connected') {
       options.push("Disconnect");
       actions.push(disconnectContact);
-      options.push("Delete");
+      options.push("Delete Contact");
       actions.push(deleteContact);
       options.push("Report Profile");
       actions.push(reportContact);
     }
-    else if(c.saved.status == 'received') {
-      options.push("Accept");
+    else if(e.status == 'received') {
+      options.push("Accept Connection");
       actions.push(acceptContact);
-      options.push("Delete");
+      options.push("Delete Contact");
       actions.push(deleteContact);
       options.push("Report Profile");
       actions.push(reportContact);
     }
-    else if(c.saved.status == 'requested') {
-      options.push("Cancel");
+    else if(e.status == 'requested') {
+      options.push("Cancel Request");
       actions.push(cancelContact);
-      options.push("Delete");
+      options.push("Delete Contact");
       actions.push(deleteContact);
       options.push("Report Profile");
       actions.push(reportContact);
     }
     else {
-      options.push("Request");
+      options.push("Request Connection");
       actions.push(requestContact);
-      options.push("Delete");
+      options.push("Delete Contact");
       actions.push(deleteContact);
       options.push("Report Profile");
       actions.push(reportContact);
@@ -251,14 +284,14 @@ export function ContactProfilePage({ entry, navigation }) {
     const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
 
     navigation.setOptions({
-      title: c.handle,
+      title: contact.handle,
       headerRight: () => (<OptionsMenu customButton={dots} options={options} actions={actions} />)
     });
   }
 
   // setup screen header
   React.useLayoutEffect(() => {
-    setHeader(contact);
+    setHeader(entry);
   }, [navigation]);
 
   // retrieve attributes
@@ -275,9 +308,14 @@ export function ContactProfilePage({ entry, navigation }) {
   const updateAmigo = async () => {
     try {
       let c: ContactEntry = await diatum.getContact(contact.amigoId);
-      let view = { amigoId: c.amigoId, name: c.name, handle: c.handle, location: c.location, description: c.description, showFooter: false, saved: { status: c.status, imageUrl: c.imageUrl, notes: c.notes, errorFlag: c.errorFlag }};
-      setContact(view);
-      setHeader(view);
+      if(c != null) {
+        setEntry({ status: c.status, notes: c.notes, errorFlag: c.errorFlag });
+        setHeader({ status: c.status, notes: c.notes, errorFlag: c.errorFlag });
+      }
+      else {
+        setEntry(null);
+        setHeader(null);
+      }
     }
     catch(err) {
       console.log(err);
@@ -286,7 +324,7 @@ export function ContactProfilePage({ entry, navigation }) {
 
   // update border color on error
   useEffect(() => {
-    if(contact.saved != null && contact.saved.errorFlag && contact.saved.status == 'connected') {
+    if(entry != null && entry.errorFlag && entry.status == 'connected') {
       setProfileColor('#dd8888');
     }
     else {
@@ -300,18 +338,18 @@ export function ContactProfilePage({ entry, navigation }) {
     diatum.setListener(DiatumEvent.Share, updateAmigo);
     diatum.setListener(DiatumEvent.Amigos, updateAmigo);
     return async () => {
-      await diatum.clearListener(DiatumEvent.Share, updateContact);
-      await diatum.clearListener(DiatumEvent.Contact, updateAmigo);
+      await diatum.clearListener(DiatumEvent.Contact, updateContact);
+      await diatum.clearListener(DiatumEvent.Share, updateAmigo);
       await diatum.clearListener(DiatumEvent.Amigos, updateAmigo);
     }
   }, []);
 
   let imgSrc = {};
-  if(contact.saved == null || contact.saved.imageUrl == null) {
+  if(contact.imageUrl == null) {
     imgSrc = require('../assets/avatar.png');
   }
   else {
-    imgSrc = { uri: contact.saved.imageUrl, cache: 'force-cache' };
+    imgSrc = { uri: contact.imageUrl, cache: 'force-cache' };
   }
 
   const ContactName = () => {
@@ -323,24 +361,32 @@ export function ContactProfilePage({ entry, navigation }) {
     }
   }
 
+  const ContactLocation = () => {
+    if(contact.name != null) {
+      return (<Text style={{ marginTop: 8, color: '#222222' }}>{ contact.location }</Text>);
+    }
+    else {
+      return (<></>);
+    }
+  }
+
   const ContactStatus = () => {
-console.log("STATUS: ", contact.saved);
-    if(contact.saved == null) {
+    if(entry == null) {
       return (
-        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}></Text>
+        <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Contact Profile</Text>
       ); 
     }
-    else if(contact.saved.status == 'connected') {
+    else if(entry.status == 'connected') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Connected</Text>
       ); 
     }
-    else if(contact.saved.status == 'received') {
+    else if(entry.status == 'received') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Received</Text>
       ); 
     }
-    else if(contact.saved.status == 'requested') {
+    else if(entry.status == 'requested') {
       return (
         <Text style={{ marginTop: 16, color: "#ffffff", fontWeight: 'bold' }}>Request Sent</Text>
       ); 
@@ -353,12 +399,12 @@ console.log("STATUS: ", contact.saved);
   }
 
   const ContactNotes = () => {
-    if(contact.saved != null && contact.saved.notes != null) {
+    if(entry != null && entry.notes != null) {
       return (
         <View style={{ marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Notes</Text></View>
           <View style={{ marginLeft: 32, marginRight: 32, marginTop: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
-            <Text style={{ color: '#222222' }}>{contact.saved.notes}</Text>
+            <Text style={{ color: '#222222' }}>{entry.notes}</Text>
           </View>
         </View>
       ); 
@@ -369,7 +415,7 @@ console.log("STATUS: ", contact.saved);
   }
 
   const ContactAttributes = () => {
-    if(attributes.length > 0 && contact.saved != null && contact.saved.status == 'connected') { 
+    if(attributes.length > 0 && entry != null && entry.status == 'connected') { 
       return (
         <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Contact Info</Text></View>
@@ -384,8 +430,8 @@ console.log("STATUS: ", contact.saved);
     }
   }
 
-  const ProfileDescription = () => {
-    if(entry.description == null) {
+  const ContactDescription = () => {
+    if(contact.description == null) {
       return (<></>);
     }
     return (
@@ -402,8 +448,8 @@ console.log("STATUS: ", contact.saved);
             <Image style={{ flex: 2, maxWidth: 256, borderRadius: 4, aspectRatio: 1 }} source={imgSrc}/>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <ContactName />
-              <Text style={{ color: '#222222', marginTop: 8 }}>{ entry.location }</Text>
-              <ProfileDescription />
+              <ContactLocation />
+              <ContactDescription />
             </View>
           </View>
         </View>

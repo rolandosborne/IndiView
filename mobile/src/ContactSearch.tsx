@@ -84,6 +84,7 @@ function Results({ match }) {
 
 function SearchEntry({item, index}) {
 
+  let diatum = useDiatum();
   let pad: number = 0;
   if(index == 0) {
     pad = 8;
@@ -98,12 +99,13 @@ function SearchEntry({item, index}) {
     imgSrc = require('../assets/avatar.png');
   }
   else {
-    imgSrc = { uri: item.registry + "/amigo/messages/logo?amigoId=" + item.amigoId, cache: 'force-cache' };
+    imgSrc = { uri: diatum.getRegistryImage(item.amigoId, item.registry), cache: 'force-cache' };
   }
 
   let navigation = useNavigation();
-  let onProfile = () => {
-    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, location: item.location, description: item.description, showFooter: true, saved: null };
+  let onProfile = async () => {
+    let imgUrl = await diatum.getRegistryImage(item.amigoId, item.registry);
+    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: imgUrl, registry: item.registry, location: item.location, description: item.description, showFooter: true, saved: null };
     navigation.navigate("Search Profile", {...view});
   }
 
