@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Dimensions, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { SafeAreaView, Alert, Dimensions, Platform, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -51,7 +50,7 @@ function ContactDrawerContent(props) {
     }, []);
 
   return (
-      <View>
+      <SafeAreaView style={{ flex: 1 }}>
         <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
         <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => { 
           if(labelId == item.labelId) {
@@ -61,7 +60,7 @@ function ContactDrawerContent(props) {
             return <DrawerItem labelStyle={{ fontSize: 18, color: '#282827' }} label={item.name} onPress={() => {props.navigation.closeDrawer(); setLabel(item.labelId);} } />
           }
         }} />
-      </View>
+      </SafeAreaView>
   );
 }
 
@@ -114,7 +113,7 @@ export function Contacts({ navigation }) {
   };
 
   return (
-    <View style={{ paddingTop: Platform.OS === 'ios' ? 48 : 0, flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ContactDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ContactDrawerContent {...props} {...{onLabel: selected}} />}>
         <ContactDrawer.Screen name="Contacts">{(props) => { 
           return (
@@ -193,7 +192,9 @@ function ContactList(props) {
   }, []);
 
   return (
+    <SafeAreaView style={{ flex: 1}} forceInset={{ bottom: 'never'}} >
       <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={({item}) => <ContactEntry item={item} /> } />
+    </SafeAreaView>
   )
 }
 

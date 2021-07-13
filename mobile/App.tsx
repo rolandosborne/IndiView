@@ -435,6 +435,10 @@ const App = () => {
         <AppSupportProvider> 
           <SafeAreaProvider>
             <NavigationContainer>
+<StatusBar
+ backgroundColor='transparent'
+ barStyle="dark-content" // Here is where you change the font-color
+/>
               <View style={{ flex: 1, backgroundColor: '#282827' }}>
                 <Stack.Navigator initialRouteName="Root">
                   <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
