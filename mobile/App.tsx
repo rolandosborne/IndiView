@@ -19,6 +19,7 @@ import { AttributeUtil } from "./src/AttributeUtil";
 
 import { Contacts } from "./src/Contacts";
 import { ContactProfile } from "./src/ContactProfile";
+import { MyProfile } from "./src/MyProfile";
 
 import { Feed } from "./src/Feed";
 import { Conversation } from "./src/Conversation";
@@ -415,6 +416,7 @@ function HomeContactScreen() {
     <ContactStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <ContactStack.Screen name="Contacts" component={Contacts} options={{headerShown: false}} />
       <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{ headerBackTitle: null, headerShow: true }} />
+      <ContactStack.Screen name="MyProfile" component={MyProfile} options={{ headerBackTitle: null, headerShow: true }} />
     </ContactStack.Navigator>
   );
 }  

@@ -274,6 +274,11 @@ function ContactEntry({item}) {
     let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: item.imageUrl, registry: item.registry, location: item.location, description: item.description, showFooter: false };
     navigation.navigate("ContactProfile", { ...view });
   };
+  const onIdentity = () => {
+    console.log(item);
+    let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: item.imageUrl, registry: item.registry, location: item.location, description: item.description, showFooter: false };
+    navigation.navigate("MyProfile", { ...view });
+  }
 
   let nameColor = '#aaaaaa';
   let borderColor = '#888888';
@@ -335,7 +340,7 @@ function ContactEntry({item}) {
 
   if(item.type == 'identity') {
     return (
-      <View style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }}>
+      <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, flexDirection: 'row' }} onPress={onIdentity}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
           <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>
@@ -343,7 +348,7 @@ function ContactEntry({item}) {
           <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>
           <Text>{item.handle}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     )
   }
 
