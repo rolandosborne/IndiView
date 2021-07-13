@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { SafeAreaView, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -430,6 +429,28 @@ export function ContactProfilePage({ contact, navigation }) {
     }
   }
 
+  const onAssign = () => {
+    contactNav.toggleDrawer();
+  };
+
+  const ContactFooter = () => {
+    if(contact.showFooter && entry != null) {
+      return (
+        <SafeAreaView style={{ marginTop: 16, width: '100%', flex: 1 }} forceInset={{ top: 'never' }}>
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Labels</Text>
+          </View>
+          <View style={{ marginTop: 4, paddingLeft: 16, paddingRight: 16 }}>
+            <TouchableOpacity style={{ width: '100%', borderRadius: 8, height: 32, padding: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }} onPress={onAssign}>
+              <Text style={{ color: '#0077CC' }}>None</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      )
+    }
+    return (<></>);
+  }
+
   const ContactDescription = () => {
     if(contact.description == null) {
       return (<></>);
@@ -458,6 +479,8 @@ export function ContactProfilePage({ contact, navigation }) {
       <ContactNotes />
 
       <ContactAttributes />
+
+      <ContactFooter />
     </View>
   )
 }
