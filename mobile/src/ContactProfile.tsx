@@ -118,13 +118,33 @@ function ProfileDrawerContent(props) {
 export function ContactProfile({ route, navigation }) {
   const [contact, setContact] = React.useState(route.params);
   const [amigoLabels, setAmigoLabels] = React.useState([]);
-  const [labels, setLabels] = React.useState([]);
   const [latchColor, setLatchColor] = React.useState('#282827');
+  const [names, setNames] = React.useState("None");
+
+  const labels = useRef([]);
+  const ids = useRef([]);
 
   let latch: Latch = useLatch();
   const onLatch = () => {
     contactNav.toggleDrawer();
   };
+
+  let diatum: Diatum = useDiatum();
+  const updateList = () => {
+    diatum.getLabels().then(l => {
+      labels.current = l;
+      updateNames();
+    }).catch(err => {
+      console.log(err);
+    });
+  };
+
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Labels, updateList);
+    return () => {
+      diatum.clearListener(DiatumEvent.Labels, updateList);
+    }
+  }, []);
   
   useEffect(() => {
     const unfocus = navigation.addListener('focus', () => {
@@ -136,9 +156,33 @@ export function ContactProfile({ route, navigation }) {
       unfocus();
     }) 
   }, []);
+
+  const updateNames = () => {
+    console.log("SET NAMES", labels, ids);
+    if(ids.current.length == 0 || labels.current.length == 0) {
+      setNames("None");
+    }
+    else {
+      let name: string = "";
+      for(let j = 0; j < labels.current.length; j++) {
+        for(let i = 0; i < ids.current.length; i++) {
+          let id = ids.current[i];
+          let label = labels.current[j];
+          if(id == label.labelId) {
+            if(name != "") {
+              name += ", ";
+            }
+            name += label.name;
+          }
+        }
+      }
+      setNames(name);
+    }
+  };
  
-  const onLabel = (labels: string[]) => {
-    if(labels == null || labels.length == 0) {
+  const onLabel = (l: string[]) => {
+    ids.current = l;
+    if(l == null || l.length == 0) {
       setLatchColor('#282827');
       latch.setColor('#282827');
     }
@@ -146,6 +190,7 @@ export function ContactProfile({ route, navigation }) {
       setLatchColor('#0077CC');
       latch.setColor('#0077CC');
     }
+    updateNames();
   };
 
   return (
@@ -154,7 +199,7 @@ export function ContactProfile({ route, navigation }) {
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <ContactProfilePage contact={contact} navigation={navigation} />
+              <ContactProfilePage contact={contact} navigation={navigation} names={names} />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -163,7 +208,7 @@ export function ContactProfile({ route, navigation }) {
   )
 }
 
-export function ContactProfilePage({ contact, navigation }) {
+export function ContactProfilePage({ contact, navigation, names }) {
   
   const [entry, setEntry] = React.useState(null);
   const [attributes, setAttributes] = React.useState([]);
@@ -442,7 +487,7 @@ export function ContactProfilePage({ contact, navigation }) {
           </View>
           <View style={{ marginTop: 4, paddingLeft: 16, paddingRight: 16 }}>
             <TouchableOpacity style={{ width: '100%', borderRadius: 8, height: 32, padding: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }} onPress={onAssign}>
-              <Text style={{ color: '#0077CC' }}>None</Text>
+              <Text style={{ color: '#0077CC' }}>{ names }</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

@@ -282,10 +282,11 @@ function ContactEntry({item}) {
 
   let nameColor = '#aaaaaa';
   let borderColor = '#888888';
-  
+  let opacity = 1; 
   if(item.type == 'contact') {
     if(item.status != 'connected') {
       borderColor = '#444444';
+      opacity = 0.5;
     }
     else if(item.errorFlag) {
       borderColor = '#ff8888';
@@ -326,7 +327,7 @@ function ContactEntry({item}) {
     return (
       <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
         <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
-          <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
+          <Image opacity={opacity} style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>
         <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
           <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
