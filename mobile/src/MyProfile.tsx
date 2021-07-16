@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { Modal, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -125,6 +125,8 @@ export function MyProfile({ route, navigation }) {
 function MyProfilePage({ navigation }) {
 
   const [identity, setIdentity] = React.useState({});
+  const [mode, setMode] = React.useState(null);
+  const [text, setText] = React.useState(null);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({ title: identity.handle });
@@ -233,6 +235,7 @@ function MyProfilePage({ navigation }) {
   };
 
   const onName = () => {
+    setMode('name');
     console.log("ON NAME");
   }
 
@@ -242,6 +245,16 @@ function MyProfilePage({ navigation }) {
 
   const onDescription = () => {
     console.log("ON DESCRIPTION");
+  }
+
+  const onSave = () => {
+    console.log("save");
+    setMode(null);
+  }
+
+  const onClosed = () => {
+    console.log("closed");
+    setMode(null);
   }
 
   return (
@@ -259,9 +272,64 @@ function MyProfilePage({ navigation }) {
           </View>
         </View>
       </View>
+
+      <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
   );
 }
+
+function PromptText({ mode, value, saved, closed }) {
+  const [text, setText] = React.useState(null);
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  useEffect(() => {
+    if(mode != null) {
+      console.log("MODE: ", mode);
+      setModalVisible(true);
+    }
+    setText(value);
+  }, [mode, value]);
+
+  const onSave = () => {
+    setModalVisible(false);
+    saved(text);
+  };
+
+  const onCancel = () => {
+    setModalVisible(false);
+    closed();
+  };
+
+  return (
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={onCancel}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: 'rgba(52, 52, 52, 0.8)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ padding: 16, width: '80%', borderRadius: 4, backgroundColor: '#ffffff' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#444444' }}>Contact Notes</Text>
+            <TextInput multiline={true} style={{ padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: 96, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 1 }} />
+              <View style={{ flex: 1 }}>
+                <TouchableOpacity style={{ alignItems: 'center' }} onPress={onSave}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0077CC' }}>Save</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ flex: 1 }}>
+                <TouchableOpacity style={{ alignItems: 'center' }} onPress={onCancel}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#888888' }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+  );
+}
+
 
 
 
