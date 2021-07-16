@@ -277,7 +277,7 @@ function ContactEntry({item}) {
   const onIdentity = () => {
     console.log(item);
     let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: item.imageUrl, registry: item.registry, location: item.location, description: item.description, showFooter: false };
-    navigation.navigate("MyProfile", { ...view });
+    navigation.navigate("MyProfile");
   }
 
   let nameColor = '#aaaaaa';
