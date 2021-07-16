@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
-import { SafeAreaView, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { SafeAreaView, Modal, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -209,7 +209,8 @@ export function ContactProfile({ route, navigation }) {
 }
 
 export function ContactProfilePage({ contact, navigation, names }) {
-  
+
+  const [prompt, setPrompt] = React.useState(false);
   const [entry, setEntry] = React.useState(null);
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
@@ -281,10 +282,10 @@ export function ContactProfilePage({ contact, navigation, names }) {
     console.log("report");
   }
   const addNotes = () => {
-    console.log("add notes");
+    setPrompt(true);
   }
   const editNotes = () => {
-    console.log("edit notes");
+    setPrompt(true);
   }
   const deleteNotes = async () => {
     try {
@@ -469,6 +470,13 @@ export function ContactProfilePage({ contact, navigation, names }) {
     }
   }
 
+  const getNotes = () => {
+    if(entry == null || entry.notes == null) {
+      return "";
+    }
+    return entry.notes;
+  }
+
   const ContactNotes = () => {
     if(entry != null && entry.notes != null) {
       return (
@@ -531,7 +539,22 @@ export function ContactProfilePage({ contact, navigation, names }) {
       <Text style={{ marginTop: 16, marginLeft: 8, marginRight: 8, textAlign: 'center' }}>{ contact.description }</Text>
     );
   };
-  
+
+  const onSaveNotes = async (notes: string) => {
+    setPrompt(false);
+    try {
+      await diatum.setContactNotes(contact.amigoId, notes);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to save notes");
+    }
+  } 
+
+  const onCloseNotes = () => {
+    setPrompt(false);
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
       <ContactStatus style={{ marginTop: 16 }} />
@@ -553,8 +576,61 @@ export function ContactProfilePage({ contact, navigation, names }) {
       <ContactAttributes />
 
       <ContactFooter />
+
+      <PromptNotes prompt={prompt} notes={getNotes()} saved={onSaveNotes} closed={onCloseNotes} />
     </View>
   )
+}
+
+function PromptNotes({ prompt, notes, saved, closed }) {
+  const [text, setText] = React.useState(null); 
+  const [modalVisible, setModalVisible] = React.useState(false); 
+  
+  useEffect(() => {
+    if(prompt == true) {
+      setModalVisible(prompt);
+    }
+    setText(notes);
+  }, [notes, prompt]);
+
+  const onSave = () => {
+    setModalVisible(false);
+    saved(text);
+  };
+
+  const onCancel = () => {
+    setModalVisible(false);
+    closed();
+  };
+
+  return (
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={onCancel}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: 'rgba(52, 52, 52, 0.8)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ padding: 16, width: '80%', borderRadius: 4, backgroundColor: '#ffffff' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#444444' }}>Contact Notes</Text>
+            <TextInput multiline={true} style={{ padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: 96, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 1 }} />
+              <View style={{ flex: 1 }}>
+                <TouchableOpacity style={{ alignItems: 'center' }} onPress={onSave}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#0077CC' }}>Save</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ flex: 1 }}>
+                <TouchableOpacity style={{ alignItems: 'center' }} onPress={onCancel}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#888888' }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+  );
 }
 
 function AttributeEntry({item}) {
