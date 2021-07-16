@@ -280,6 +280,15 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const reportContact = () => {
     console.log("report");
   }
+  const addNotes = () => {
+    console.log("add notes");
+  }
+  const editNotes = () => {
+    console.log("edit notes");
+  }
+  const deleteNotes = () => {
+    console.log("delete notes");
+  }
 
   const setHeader = (e: EntryView) => {
     let options = [];
@@ -321,6 +330,18 @@ export function ContactProfilePage({ contact, navigation, names }) {
       actions.push(deleteContact);
       options.push("Report Profile");
       actions.push(reportContact);
+    }
+    if(e != null) {
+      if(e.notes == null) {
+        options.push("Add Notes");
+        actions.push(addNotes);
+      }
+      else {
+        options.push("Edit Notes");
+        actions.push(editNotes);
+        options.push("Delete Notes");
+        actions.push(deleteNotes);
+      }
     }
     if(Platform.OS === 'ios') {
       options.push("Cancel");
