@@ -108,6 +108,12 @@ export interface Diatum {
 
   // disconnect contact
   closeContactConnection(amigoId: string): Promise<void>
+
+  // add or update contact notes
+  setContactNotes(amigoId: string, notes: string): Promise<void>
+
+  // clear contact notes
+  clearContactNotes(amigoId: string): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -1205,6 +1211,17 @@ class _Diatum {
     await DiatumApi.removeConnection(this.session.amigoNode, this.session.amigoToken, shareId);
     await this.syncShare();
   }
+
+  public async setContactNotes(amigoId: string, notes: string): Promise<void> {
+    await DiatumApi.setAmigoNotes(this.session.amigoNode, this.session.amigoToken, amigoId, notes);
+    await this.syncIndex();
+  }
+
+  public async clearContactNotes(amigoId: string): Promise<void> {
+    await DiatumApi.clearAmigoNotes(this.session.amigoNode, this.session.amigoToken, amigoId);
+    await this.syncIndex();
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -1361,8 +1378,18 @@ async function closeContactConnection(amigoId: string): Promise<void> {
   return await diatum.closeContactConnection(amigoId);
 }
 
+async function setContactNotes(amigoId: string, notes: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setContactNotes(amigoId, notes);
+}
+
+async function clearContactNotes(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.clearContactNotes(amigoId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getRegistryImage, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
-    addContact, removeContact, openContactConnection, closeContactConnection };
+    addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };
 

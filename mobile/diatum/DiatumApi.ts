@@ -349,4 +349,15 @@ export class DiatumApi {
     return await response.json();
   }
 
+  public static async setAmigoNotes(node: string, token: string, amigoId: string, notes: string): Promise<AmigoEntry> {
+    let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "/notes?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: notes, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async clearAmigoNotes(node: string, token: string, amigoId: string): Promise<AmigoEntry> {
+    let response = await fetchWithTimeout(node + "/index/amigos/" + amigoId + "/notes?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
 }

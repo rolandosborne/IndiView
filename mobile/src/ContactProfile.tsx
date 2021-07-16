@@ -286,8 +286,14 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const editNotes = () => {
     console.log("edit notes");
   }
-  const deleteNotes = () => {
-    console.log("delete notes");
+  const deleteNotes = async () => {
+    try {
+      await diatum.clearContactNotes(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to delete notes");
+    }
   }
 
   const setHeader = (e: EntryView) => {
