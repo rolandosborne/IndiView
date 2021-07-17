@@ -53,6 +53,7 @@ export class Contact {
   name: string;
   handle: string;
   registry: string;
+  revision: number;
   logoSet: boolean;
   location: string;
   description: string;
@@ -512,26 +513,26 @@ export class Storage {
   public async getContacts(id: string, labelId: string): Promise<Contact[]> {
     let res;
     if(labelId == null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
     }
     else {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
+      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
     }
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, registry: item.registry, location: item.location, description: item.description, notes: item.notes, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) });
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) });
       }
     }
     return contacts;
   }
   public async getContact(id: string, amigoId: string): Promise<Contact> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE index_" + id + ".amigo_id=?;", [amigoId]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE index_" + id + ".amigo_id=?;", [amigoId]);
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        return { amigoId: item.amigo_id, name: item.name, handle: item.handle, registry: item.registry, location: item.location, description: item.description, notes: item.notes, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) };
+        return { amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) };
       }
     }
     return null; 

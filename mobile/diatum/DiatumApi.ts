@@ -365,20 +365,26 @@ export class DiatumApi {
     return await response.json();
   }
 
-  public static async setProfileName(node: string, token: string, name: string): Promise<AmigoMessage> {
-    let response = await fetchWithTimeout(node + "/identity/name?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+  public static async setProfileName(node: string, token: string, value: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/name?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: value, timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
 
-  public static async setProfileLocation(node: string, token: string, name: string): Promise<AmigoMessage> {
-    let response = await fetchWithTimeout(node + "/identity/location?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+  public static async setProfileImage(node: string, token: string, value: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/image?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: value, timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
 
-  public static async setProfileDescription(node: string, token: string, name: string): Promise<AmigoMessage> {
-    let response = await fetchWithTimeout(node + "/identity/description?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+  public static async setProfileLocation(node: string, token: string, value: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/location?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: value, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setProfileDescription(node: string, token: string, value: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/description?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: value, timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }

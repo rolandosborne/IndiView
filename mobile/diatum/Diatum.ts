@@ -73,6 +73,9 @@ export interface Diatum {
   // set profile name
   setProfileName(value: string): Promise<void>
 
+  // set profile image 
+  setProfileImage(value: string): Promise<void>
+
   // set profile location
   setProfileLocation(value: string): Promise<void>
 
@@ -1101,6 +1104,11 @@ class _Diatum {
     await this.updateProfile(message);
   }
 
+  public async setProfileImage(value: string): Promise<void> {
+    let message = await DiatumApi.setProfileImage(this.session.amigoNode, this.session.amigoToken, value);
+    await this.updateProfile(message);
+  }
+
   public async setProfileLocation(value: string): Promise<void> {
     let message = await DiatumApi.setProfileLocation(this.session.amigoNode, this.session.amigoToken, value);
     await this.updateProfile(message);
@@ -1124,7 +1132,7 @@ class _Diatum {
       return null;
     }
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
-        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken, errorFlag: this.nodeError };
+        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken + "&revision=" + amigo.revision, errorFlag: this.nodeError };
   }
 
   public async getLabels(): Promise<LabelEntry> {
@@ -1135,7 +1143,7 @@ class _Diatum {
     let c: Contact = await this.storage.getContacts(this.session.amigoId, labelId);
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
-      let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken : null;
+      let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
       entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
     }
     return entries;
@@ -1350,6 +1358,11 @@ async function setProfileName(value: string): Promise<void> {
   return diatum.setProfileName(value);
 }
 
+async function setProfileImage(value: string): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.setProfileImage(value);
+}
+
 async function setProfileLocation(value: string): Promise<void> {
   let diatum = await getInstance();
   return diatum.setProfileLocation(value);
@@ -1440,7 +1453,7 @@ async function clearContactNotes(amigoId: string): Promise<void> {
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getRegistryImage, setProfileName, setProfileLocation, setProfileDescription, 
+    setListener, clearListener, getRegistryImage, setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
     getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };

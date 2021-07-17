@@ -8,6 +8,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
+import ImagePicker from 'react-native-image-crop-picker';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -231,7 +232,22 @@ function MyProfilePage({ navigation }) {
   }
 
   const onImage = () => {
-    console.log("ON IMAGE");
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      cropperCircleOverlay: true,
+      includeBase64: true
+    }).then(async image => {
+      console.log(image);
+      try {
+        await diatum.setProfileImage(image.data);
+      }
+      catch(err) {
+        console.log(err);
+        Alert.alert("failed to set profile image");
+      }
+    });
   };
 
   const onName = () => {
