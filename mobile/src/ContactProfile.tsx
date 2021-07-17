@@ -350,9 +350,7 @@ export function ContactProfilePage({ contact, navigation, names }) {
         actions.push(deleteNotes);
       }
     }
-    if(Platform.OS === 'ios') {
-      options.push("Cancel");
-    }
+    options.push("Close Menu");
     const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
 
     navigation.setOptions({
