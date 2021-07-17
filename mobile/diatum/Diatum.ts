@@ -70,6 +70,15 @@ export interface Diatum {
   // get registry profile image
   getRegistryImage(amigoId: string, registry: string): string;
 
+  // set profile name
+  setProfileName(value: string): Promise<void>
+
+  // set profile location
+  setProfileLocation(value: string): Promise<void>
+
+  // set profile description
+  setProfileDescription(value: string): Promise<void>
+
   // get public profile
   getIdentity(): Promsie<IdentityProfile>
 
@@ -568,10 +577,15 @@ class _Diatum {
   
   private async syncIdentity(): Promsie<void> {
 
-    // retrieve current identity
-    let amigo = await DiatumApi.getIdentity(this.session.amigoNode, this.session.amigoToken);
-    await this.storage.setAccountObject(this.session.amigoId, IDENTITY_KEY, amigo);
-    this.notifyListeners(DiatumEvent.Identity);
+    let revision = await DiatumApi.getIdentityRevision(this.session.amigoNode, this.session.amigoToken);
+    let amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
+    if(revision != amigo.revision) {
+
+      // retrieve current identity
+      let amigo = await DiatumApi.getIdentity(this.session.amigoNode, this.session.amigoToken);
+      await this.storage.setAccountObject(this.session.amigoId, IDENTITY_KEY, amigo);
+      this.notifyListeners(DiatumEvent.Identity);
+    }
   }
 
   private async syncGroup(): Promsie<void> {
@@ -1082,6 +1096,28 @@ class _Diatum {
     await this.storage.updateInsight(this.session.amigoId, amigoId, dialogue);
   }
 
+  public async setProfileName(value: string): Promise<void> {
+    let message = await DiatumApi.setProfileName(this.session.amigoNode, this.session.amigoToken, value);
+    await this.updateProfile(message);
+  }
+
+  public async setProfileLocation(value: string): Promise<void> {
+    let message = await DiatumApi.setProfileLocation(this.session.amigoNode, this.session.amigoToken, value);
+    await this.updateProfile(message);
+  }
+
+  public async setProfileDescription(value: string): Promise<void> {
+    let message = await DiatumApi.setProfileDescription(this.session.amigoNode, this.session.amigoToken, value);
+    await this.updateProfile(message);
+  }
+
+  private async updateProfile(message: AmigoMessage): Promise<void> {
+    let amigo = getAmigoObject(message);
+    await DiatumApi.setRegistryMessage(amigo.registry, message);
+    await DiatumApi.clearDirtyIdentity(this.session.amigoNode, this.session.amigoToken, amigo.revision);
+    await this.syncIdentity();
+  }
+
   public async getIdentity(): Promsie<IdentityProfile> {
     amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
     if(amigo == null) {
@@ -1309,6 +1345,21 @@ async function clearListener(event: DiatumEvent, callback: () => void): Promise<
   return diatum.clearListener(event, callback);
 }
 
+async function setProfileName(value: string): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.setProfileName(value);
+}
+
+async function setProfileLocation(value: string): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.setProfileLocation(value);
+}
+
+async function setProfileDescription(value: string): Promise<void> {
+  let diatum = await getInstance();
+  return diatum.setProfileDescription(value);
+}
+
 function getRegistryImage(amigoId: string, registry: string): string {
   return registry + "/amigo/messages/logo?amigoId=" + amigoId;
 }
@@ -1389,7 +1440,8 @@ async function clearContactNotes(amigoId: string): Promise<void> {
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getRegistryImage, getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
+    setListener, clearListener, getRegistryImage, setProfileName, setProfileLocation, setProfileDescription, 
+    getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };
 

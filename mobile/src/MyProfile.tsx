@@ -171,7 +171,7 @@ function MyProfilePage({ navigation }) {
     if(identity.name != null) {
       return (
         <Text>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#222222' }}>{ identity.name }</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#222222' }}>{ identity.name }</Text>
           &nbsp;&nbsp;
           <Icon name="edit" style={{ color: '#0077CC', fontSize: 18 }} />
         </Text>
@@ -180,7 +180,7 @@ function MyProfilePage({ navigation }) {
     else {
       return (
         <Text>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#aaaaaa' }}>Name</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#aaaaaa' }}>Name</Text>
           &nbsp;&nbsp;
           <Icon name="edit" style={{ color: '#0077CC', fontSize: 18 }} />
         </Text>
@@ -191,7 +191,7 @@ function MyProfilePage({ navigation }) {
   const MyLocation = () => {
     if(identity.location != null) {
       return (
-        <Text style={{ marginTop: 16 }}>
+        <Text style={{ marginTop: 15 }}>
           <Text style={{ color: '#222222' }}>{ identity.location }</Text>
           &nbsp;&nbsp;
           <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
@@ -200,7 +200,7 @@ function MyProfilePage({ navigation }) {
     }
     else {
       return (
-        <Text style={{ marginTop: 16 }}>
+        <Text style={{ marginTop: 15 }}>
           <Text style={{ color: '#aaaaaa' }}>Location</Text>
           &nbsp;&nbsp;
           <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
@@ -212,19 +212,19 @@ function MyProfilePage({ navigation }) {
   const MyDescription = () => {
     if(identity.description != null) {
       return (
-        <Text style={{ marginTop: 16 }}>
-          <Text style={{ textAlign: 'center', fontSize: 16, marginLeft: 8, marginRight: 8, color: '#222222' }}>{ identity.description }</Text>
+        <Text style={{ marginTop: 14 }}>
+          <Text style={{ textAlign: 'center', fontSize: 12, marginLeft: 8, marginRight: 8, color: '#222222' }}>{ identity.description }</Text>
           &nbsp;&nbsp;
-          <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
+          <Icon name="edit" style={{ color: '#0077CC', fontSize: 12 }} />
         </Text>
       );
     }
     else {
       return (
-        <Text style={{ marginTop: 16 }}>
-          <Text style={{ color: '#aaaaaa', fontSize: 16 }}>Description</Text>
+        <Text style={{ marginTop: 14 }}>
+          <Text style={{ color: '#aaaaaa', fontSize: 12 }}>Description</Text>
           &nbsp;&nbsp;
-          <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
+          <Icon name="edit" style={{ color: '#0077CC', fontSize: 12 }} />
         </Text>
       );
     }
@@ -236,31 +236,49 @@ function MyProfilePage({ navigation }) {
 
   const onName = () => {
     setMode('name');
-    console.log("ON NAME");
+    setText(identity.name);
   }
 
   const onLocation = () => {
-    console.log("ON LOCATION");
+    setMode('location');
+    setText(identity.location);
   }
 
   const onDescription = () => {
-    console.log("ON DESCRIPTION");
+    setMode('description');
+    setText(identity.description);
   }
 
-  const onSave = () => {
-    console.log("save");
+  const onSave = async (value: string) => {
+    try {
+      if(mode == 'name') {
+        await diatum.setProfileName(value);
+      }
+      else if(mode == 'location') {
+        await diatum.setProfileLocation(value);
+      }
+      else if(mode == 'description') {
+        await diatum.setProfileDescription(value);
+      }
+      else {
+        throw new Error("unknown profile mode");
+      }
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to set profile " + mode);
+    }
     setMode(null);
   }
 
   const onClosed = () => {
-    console.log("closed");
     setMode(null);
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
       <Text style={{ marginTop: 16, color: '#ffffff', fontWeight: 'bold' }}>My Profile</Text>
-      <View style={{ flexDirection: 'row', padding: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#00bb88' }}>
+      <View style={{ flexDirection: 'row', paddingLeft: 12, paddingTop: 12, paddingBottom: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#00bb88' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity style={{ flex: 2, maxWidth: 256 }} onPress={onImage}><MyImage /></TouchableOpacity>
@@ -281,10 +299,31 @@ function MyProfilePage({ navigation }) {
 function PromptText({ mode, value, saved, closed }) {
   const [text, setText] = React.useState(null);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [header, setHeader] = React.useState('');
+  const [align, setAlign] = React.useState('center');
+  const [height, setHeight] = React.useState(0);
+  const [multiline, setMultiline] = React.useState(false);
 
   useEffect(() => {
     if(mode != null) {
-      console.log("MODE: ", mode);
+      if(mode == 'name') {
+        setHeader('Profile Name');
+        setAlign('center');
+        setHeight('auto');
+        setMultiline(false);
+      }
+      if(mode == 'location') {
+        setHeader('Profile Location');
+        setAlign('center');
+        setHeight('auto');
+        setMultiline(false);
+      }
+      if(mode == 'description') {
+        setHeader('Profile Description');
+        setAlign('left');
+        setHeight(96);
+        setMultiline(true);
+      }
       setModalVisible(true);
     }
     setText(value);
@@ -300,6 +339,10 @@ function PromptText({ mode, value, saved, closed }) {
     closed();
   };
 
+  const onReset = () => {
+    setText(null);
+  }
+
   return (
       <Modal
         animationType="fade"
@@ -309,8 +352,15 @@ function PromptText({ mode, value, saved, closed }) {
       >
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: 'rgba(52, 52, 52, 0.8)', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ padding: 16, width: '80%', borderRadius: 4, backgroundColor: '#ffffff' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#444444' }}>Contact Notes</Text>
-            <TextInput multiline={true} style={{ padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: 96, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={{ flex: 2, fontSize: 15, fontWeight: 'bold', color: '#444444' }}>{ header }</Text>
+              <View style={{ flex: 1, alignItems: 'flex-end', paddingRight: 4 }}>
+                <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onReset}>
+                  <Text style={{ fontSize: 12, color: '#222222' }}>Reset</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <TextInput multiline={multiline} style={{ textAlign: align, padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: height, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 1 }} />
               <View style={{ flex: 1 }}>

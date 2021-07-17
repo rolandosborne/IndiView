@@ -204,7 +204,11 @@ export class DiatumApi {
   }
 
 
-
+  public static async getIdentityRevision(node: string, token: string): Promise<number> {
+    let response = await fetchWithTimeout(node + "/identity/revision?token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
 
   public static async getDirtyIdentity(node: string, token: string): Promise<boolean> {
     let dirtyResponse = await fetchWithTimeout(node + "/identity/dirty?token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
@@ -360,4 +364,23 @@ export class DiatumApi {
     checkResponse(response);
     return await response.json();
   }
+
+  public static async setProfileName(node: string, token: string, name: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/name?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setProfileLocation(node: string, token: string, name: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/location?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setProfileDescription(node: string, token: string, name: string): Promise<AmigoMessage> {
+    let response = await fetchWithTimeout(node + "/identity/description?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: name, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
 }
