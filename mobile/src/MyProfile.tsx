@@ -128,6 +128,7 @@ function MyProfilePage({ navigation }) {
   const [identity, setIdentity] = React.useState({});
   const [mode, setMode] = React.useState(null);
   const [text, setText] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({ title: identity.handle });
@@ -156,6 +157,9 @@ function MyProfilePage({ navigation }) {
           <View opacity={0.8} style={{ position: 'absolute', bottom: 4, right: 4, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
             <Icon name="edit" style={{ color: '#0077CC', fontSize: 22 }} />
           </View>
+          <View style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator animating={busy} size="large" color="#ffffff" />
+          </View>
         </ImageBackground>
       );
     }
@@ -163,6 +167,9 @@ function MyProfilePage({ navigation }) {
       <ImageBackground style={{ aspectRatio: 1 }} source={{ uri: identity.imageUrl, cache: 'force-cache' }}>
         <View opacity={0.8} style={{ position: 'absolute', bottom: 4, right: 4, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
           <Icon name="edit" style={{ color: '#0077CC', fontSize: 22 }} />
+        </View>
+        <View style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator animating={busy} size="large" color="#ffffff" />
         </View>
       </ImageBackground>
     );
@@ -231,15 +238,15 @@ function MyProfilePage({ navigation }) {
     }
   }
 
-  const onImage = () => {
+  const onGallery = () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 400,
+      width: 512,
+      height: 512,
       cropping: true,
       cropperCircleOverlay: true,
       includeBase64: true
     }).then(async image => {
-      console.log(image);
+      setBusy(true);
       try {
         await diatum.setProfileImage(image.data);
       }
@@ -247,6 +254,27 @@ function MyProfilePage({ navigation }) {
         console.log(err);
         Alert.alert("failed to set profile image");
       }
+      setBusy(false);
+    });
+  };
+
+  const onCamera = () => {
+    ImagePicker.openCamera({
+      width: 512,
+      height: 512,
+      cropping: true,
+      cropperCircleOverlay: true,
+      includeBase64: true
+    }).then(async image => {
+      setBusy(true);
+      try {
+        await diatum.setProfileImage(image.data);
+      }
+      catch(err) {
+        console.log(err);
+        Alert.alert("failed to set profile image");
+      }
+      setBusy(false);
     });
   };
 
@@ -291,13 +319,18 @@ function MyProfilePage({ navigation }) {
     setMode(null);
   }
 
+  let options = ['Open Camera', 'Open Gallery', 'Close Menu' ];
+  let actions = [onCamera, onGallery];
+
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
       <Text style={{ marginTop: 16, color: '#ffffff', fontWeight: 'bold' }}>My Profile</Text>
       <View style={{ flexDirection: 'row', paddingLeft: 12, paddingTop: 12, paddingBottom: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#00bb88' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{ flex: 2, maxWidth: 256 }} onPress={onImage}><MyImage /></TouchableOpacity>
+            <View style={{ flex: 2, maxWidth: 256 }}>
+              <OptionsMenu customButton={MyImage()} options={options} actions={actions} />
+            </View>
             <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
               <TouchableOpacity onPress={onName}><MyName /></TouchableOpacity>
               <TouchableOpacity onPress={onLocation}><MyLocation /></TouchableOpacity>
