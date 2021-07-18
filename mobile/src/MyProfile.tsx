@@ -255,6 +255,8 @@ function MyProfilePage({ navigation }) {
         Alert.alert("failed to set profile image");
       }
       setBusy(false);
+    }).catch(err => {
+      console.log(err);
     });
   };
 
@@ -275,6 +277,8 @@ function MyProfilePage({ navigation }) {
         Alert.alert("failed to set profile image");
       }
       setBusy(false);
+    }).catch(err => {
+      console.log(err);
     });
   };
 
