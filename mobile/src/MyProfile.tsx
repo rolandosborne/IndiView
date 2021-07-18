@@ -79,6 +79,7 @@ function ProfileDrawerContent(props) {
 
 export function MyProfile({ route, navigation }) {
 
+  const [labelId, setLabelId] = React.useState(null);
   const latchColor = useRef('#282827');
 
   let latch: Latch = useLatch();
@@ -106,6 +107,8 @@ export function MyProfile({ route, navigation }) {
       latchColor.current = '#0077CC';
       latch.setColor(latchColor.current);
     }
+    setLabelId(label);
+    profileNav.closeDrawer();
   };
 
   return (
@@ -114,7 +117,7 @@ export function MyProfile({ route, navigation }) {
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <MyProfilePage navigation={navigation} />
+              <MyProfilePage navigation={navigation} labelId={labelId} />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -123,18 +126,53 @@ export function MyProfile({ route, navigation }) {
   )
 }
 
-function MyProfilePage({ navigation }) {
+function MyProfilePage({ navigation, labelId }) {
 
   const [identity, setIdentity] = React.useState({});
   const [mode, setMode] = React.useState(null);
   const [text, setText] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
+  const [attributes, setAttributes] = React.useState([]);
+  let options = ['Open Camera', 'Open Gallery', 'Close Menu' ];
+  let actions = [onCamera, onGallery];
+
+
+  onPhone = () => {
+    console.log("ON PHONE");
+  }
+
+  onEmail = () => {
+    console.log("ON EMAIL");
+  }
+
+  onAddress = () => {
+    console.log("ON ADDRESS");
+  }
+
+  onBusiness = () => {
+    console.log("ON BUSINESS");
+  }
+
+  onWebsite = () => {
+    console.log("ON WEBSITE");
+  }
+
+  onSocial = () => {
+    console.log("ON SOCIAL");
+  }
 
   React.useLayoutEffect(() => {
-    navigation.setOptions({ title: identity.handle });
+    let opt = [ "Phone Number", "Email Address", "Home Address", "Business Card", "Website", "Social & Messaging", "Close Menu" ];
+    let act = [ onPhone, onEmail, onAddress, onBusiness, onWebsite, onSocial ];
+    const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, marginRight: 16, paddingLeft: 24, width: 48 }} />);
+    navigation.setOptions({ 
+      title: identity.handle,
+      headerRight: () => (<OptionsMenu customButton={plus} options={opt} actions={act} />)
+    });
   }, [navigation, identity]);
 
   let diatum: Diatum = useDiatum();
+
   const updateIdentity = () => {
     diatum.getIdentity().then(i => {
       setIdentity(i);
@@ -142,6 +180,35 @@ function MyProfilePage({ navigation }) {
       console.log(err);
     });
   };
+
+  useEffect(() => {
+    console.log("LABEL ID: " + labelId);
+    diatum.getAttributes(labelId).then(a => {
+      let attr = [ [], [], [], [], [], [] ];
+      for(let i = 0; i < a.length; i++) {
+        if(AttributeUtil.isPhone(a[i])) {
+          attr[0].push(a[i]);
+        }
+        else if(AttributeUtil.isEmail(a[i])) {
+          attr[1].push(a[i]);
+        }
+        else if(AttributeUtil.isHome(a[i])) {
+          attr[2].push(a[i]);
+        }
+        else if(AttributeUtil.isCard(a[i])) {
+          attr[3].push(a[i]);
+        }
+        else if(AttributeUtil.isWebsite(a[i])) {
+          attr[4].push(a[i]);
+        }
+        else if(AttributeUtil.isSocial(a[i])) {
+          attr[5].push(a[i]);
+        }
+      }
+      let sorted = [];
+      setAttributes(sorted.concat(attr[0], attr[1], attr[2], attr[3], attr[4], attr[5]));
+    });
+  }, [labelId]);
 
   useEffect(() => {
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
@@ -221,21 +288,29 @@ function MyProfilePage({ navigation }) {
     if(identity.description != null) {
       return (
         <Text style={{ marginTop: 14 }}>
-          <Text style={{ textAlign: 'center', fontSize: 12, marginLeft: 8, marginRight: 8, color: '#222222' }}>{ identity.description }</Text>
+          <Text style={{ textAlign: 'center', fontSize: 16, marginLeft: 8, marginRight: 8, color: '#222222' }}>{ identity.description }</Text>
           &nbsp;&nbsp;
-          <Icon name="edit" style={{ color: '#0077CC', fontSize: 12 }} />
+          <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
         </Text>
       );
     }
     else {
       return (
         <Text style={{ marginTop: 14 }}>
-          <Text style={{ color: '#aaaaaa', fontSize: 12 }}>Description</Text>
+          <Text style={{ color: '#aaaaaa', fontSize: 16 }}>Description</Text>
           &nbsp;&nbsp;
-          <Icon name="edit" style={{ color: '#0077CC', fontSize: 12 }} />
+          <Icon name="edit" style={{ color: '#0077CC', fontSize: 16 }} />
         </Text>
       );
     }
+  }
+
+  const MyAttributes = () => {
+    return (
+      <View style={{ flex: 1, width: '100%' }}>
+        <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0 }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+      </View>
+    )
   }
 
   const onGallery = () => {
@@ -323,9 +398,6 @@ function MyProfilePage({ navigation }) {
     setMode(null);
   }
 
-  let options = ['Open Camera', 'Open Gallery', 'Close Menu' ];
-  let actions = [onCamera, onGallery];
-
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
       <Text style={{ marginTop: 16, color: '#ffffff', fontWeight: 'bold' }}>My Profile</Text>
@@ -343,6 +415,8 @@ function MyProfilePage({ navigation }) {
           </View>
         </View>
       </View>
+
+      <MyAttributes />
 
       <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
@@ -433,6 +507,11 @@ function PromptText({ mode, value, saved, closed }) {
   );
 }
 
+function AttributeEntry({item}) {
+  return (
+    <View style={{ width: '100%', height: 32, marginTop: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#0077CC', borderRadius: 4 }}></View>
+  );
+}
 
 
 

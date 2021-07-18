@@ -510,6 +510,23 @@ export class Storage {
     }
     return labels;
   }
+  public async getAttributes(id: string, labelId: string): Promise<Attribute[]> {
+    let res;
+    if(labelId == null) {
+      res = await this.db.executeSql("SELECT attribute_id, revision, schema, data FROM profile_" + id);
+    }
+    else {
+      res = await this.db.executeSql("SELECT profile_" + id + ".attribute_id, revision, schema, data FROM profile_" + id + " LEFT OUTER JOIN profilegroup_" + id + " ON profile_" + id + ".attribute_id = profilegroup_" + id + ".attribute_id WHERE profilegroup_" + id + ".label_id=?;", [labelId]);
+    }
+    let attributes: Attribute[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let a = res[0].rows.item(i);
+        attributes.push({ attributeId: a.attribute_id, revision: a.revision, schema: a.schema, data: a.data });
+      }
+    }
+    return attributes;
+  }
   public async getContacts(id: string, labelId: string): Promise<Contact[]> {
     let res;
     if(labelId == null) {

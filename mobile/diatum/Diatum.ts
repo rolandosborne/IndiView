@@ -88,6 +88,9 @@ export interface Diatum {
   // get account labels
   getLabels(): Promise<LabelEntry[]>
 
+  // get account attributes
+  getAttributes(labelId: string): Promise<Attribute[]>
+
   // get contacts
   getContacts(labelId: string): Promise<ContactEntry[]>
 
@@ -1135,8 +1138,12 @@ class _Diatum {
         amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken + "&revision=" + amigo.revision, errorFlag: this.nodeError };
   }
 
-  public async getLabels(): Promise<LabelEntry> {
+  public async getLabels(): Promise<LabelEntry[]> {
     return await this.storage.getLabels(this.session.amigoId);
+  }
+
+  public async getAttributes(labelId: string): Promise<Attribute[]> {
+    return await this.storage.getAttributes(this.session.amigoId, labelId);
   }
 
   public async getContacts(labelId: string): Promise<ContactEntry[]> {
@@ -1387,6 +1394,11 @@ async function getLabels(): Promise<LabelEntry[]> {
   return await diatum.getLabels();
 }
 
+async function getAttributes(labelId: string): Promise<Attribute[]> {
+  let diatum = await getInstance();
+  return await diatum.getAttributes(labelId);
+}
+
 async function getContacts(labelId: string): Promise<ContactEntry[]> {
   let diatum = await getInstance();
   return await diatum.getContacts(labelId);
@@ -1454,7 +1466,7 @@ async function clearContactNotes(amigoId: string): Promise<void> {
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getRegistryImage, setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
-    getIdentity, getLabels, getContacts, getContact, getContactAttributes, 
+    getIdentity, getLabels, getAttributes, getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };
 
