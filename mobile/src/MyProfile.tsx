@@ -223,7 +223,6 @@ function MyProfilePage({ navigation, labelId }) {
   };
 
   useEffect(() => {
-    console.log("LABEL ID: " + labelId);
     diatum.getAttributes(labelId).then(a => {
       let attr = [ [], [], [], [], [], [] ];
       for(let i = 0; i < a.length; i++) {
@@ -349,7 +348,7 @@ function MyProfilePage({ navigation, labelId }) {
   const MyAttributes = () => {
     return (
       <View style={{ flex: 1, width: '100%' }}>
-        <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+        <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} showsVerticalScrollIndicator={false} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item,index}) => <AttributeEntry item={item} index={index}  last={attributes.length==(index+1)}/> } />
       </View>
     )
   }
@@ -506,7 +505,7 @@ function PromptText({ mode, value, saved, closed }) {
   );
 }
 
-function AttributeEntry({item}) {
+function AttributeEntry({item,index,last}) {
   const [data, setData] = React.useState({});
 
   useEffect(() => {
@@ -517,6 +516,17 @@ function AttributeEntry({item}) {
       setData({});
     }
   }, []);
+
+  const MyHeader = () => {
+    if(index != 0) {
+      return (<></>);
+    }
+    return (
+      <View style={{ width: '100%' }}>
+        <Text style={{ color: '#ffffff', fontWeight: 'bold', textAlign: 'center' }}>My Attributes</Text>
+      </View>
+    )
+  } 
 
   const CardCompanyName = () => {
     if(data.companyName != null) {
@@ -670,7 +680,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isSocial(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:0 }}>
         <View style={{ flexDirection: 'row', padding: 12 }}>
           <View style={{ flexGrow: 1 }}>
             <Text>{data.category}</Text>
@@ -711,11 +721,14 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isPhone(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
-        <View style={{ flexDirection: 'row', padding: 12 }}>
-          <View style={{ flexGrow: 1 }}>
-            <Text>{data.type} Phone</Text>
-            <Text style={{ color: '#444444' }}>{data.phone}</Text>
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+          <View style={{ flexDirection: 'row', padding: 12 }}>
+            <View style={{ flexGrow: 1 }}>
+              <Text>{data.type} Phone</Text>
+              <Text style={{ color: '#444444' }}>{data.phone}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -723,14 +736,17 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isWebsite(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
-        <View style={{ flexDirection: 'row', padding: 12 }}>
-          <View style={{ flexGrow: 1 }}>
-            <Text>{data.name}</Text>
-            <Text style={{ color: '#444444' }}>{data.url}</Text>
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+          <View style={{ flexDirection: 'row', padding: 12 }}>
+            <View style={{ flexGrow: 1 }}>
+              <Text>{data.name}</Text>
+              <Text style={{ color: '#444444' }}>{data.url}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      </View> 
     );
   }
   else {

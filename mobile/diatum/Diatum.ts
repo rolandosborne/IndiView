@@ -1134,8 +1134,9 @@ class _Diatum {
     if(amigo == null) {
       return null;
     }
+    let url = amigo.logo==null ? null : amigo.node + "/identity/image?token=" + this.session.amigoToken + "&revision=" + amigo.revision;
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
-        amigoId: amigo.amigoId, imageUrl: amigo.node + "/identity/image?token=" + this.session.amigoToken + "&revision=" + amigo.revision, errorFlag: this.nodeError };
+        amigoId: amigo.amigoId, imageUrl: url, errorFlag: this.nodeError };
   }
 
   public async getLabels(): Promise<LabelEntry[]> {

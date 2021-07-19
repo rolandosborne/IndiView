@@ -95,16 +95,21 @@ function SearchEntry({item, index}) {
     nameColor = '#222222';
   }
   let imgSrc = {};
-  if(item.registry == null) {
+  if(item.registry == null || !item.logoSet) {
     imgSrc = require('../assets/avatar.png');
   }
   else {
     imgSrc = { uri: diatum.getRegistryImage(item.amigoId, item.registry), cache: 'force-cache' };
   }
 
+console.log(item);
+
   let navigation = useNavigation();
   let onProfile = async () => {
-    let imgUrl = await diatum.getRegistryImage(item.amigoId, item.registry);
+    let imgUrl = null;
+    if(item.registry != null && item.logoSet) {
+      imgUrl = await diatum.getRegistryImage(item.amigoId, item.registry);
+    }
     let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: imgUrl, registry: item.registry, location: item.location, description: item.description, showFooter: true, saved: null };
     navigation.navigate("Search Profile", {...view});
   }

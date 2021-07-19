@@ -346,7 +346,7 @@ function ContactEntry({item}) {
           <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: borderColor }} source={imgSrc}/>
         </View>
         <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
-          <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{name}</Text>
+          <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{item.name}</Text>
           <Text>{item.handle}</Text>
         </View>
       </TouchableOpacity>
