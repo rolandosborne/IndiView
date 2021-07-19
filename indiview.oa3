@@ -384,6 +384,8 @@ components:
           type: string
         description:
           type: string
+        logoSet:
+          type: boolean
           
     Amigo:
       type: object
