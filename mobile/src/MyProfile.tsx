@@ -308,7 +308,7 @@ function MyProfilePage({ navigation, labelId }) {
   const MyAttributes = () => {
     return (
       <View style={{ flex: 1, width: '100%' }}>
-        <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0 }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+        <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
       </View>
     )
   }
@@ -373,6 +373,7 @@ function MyProfilePage({ navigation, labelId }) {
   }
 
   const onSave = async (value: string) => {
+    setBusy(true);
     try {
       if(mode == 'name') {
         await diatum.setProfileName(value);
@@ -391,6 +392,7 @@ function MyProfilePage({ navigation, labelId }) {
       console.log(err);
       Alert.alert("failed to set profile " + mode);
     }
+    setBusy(false);
     setMode(null);
   }
 
@@ -401,7 +403,7 @@ function MyProfilePage({ navigation, labelId }) {
   return (
     <View style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center' }}>
       <Text style={{ marginTop: 16, color: '#ffffff', fontWeight: 'bold' }}>My Profile</Text>
-      <View style={{ flexDirection: 'row', paddingLeft: 12, paddingTop: 12, paddingBottom: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#00bb88' }}>
+      <View style={{ flexDirection: 'row', paddingLeft: 12, paddingTop: 12, paddingBottom: 12, marginLeft: 16, marginRight: 16, borderRadius: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#aaaaaa' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
             <View style={{ flex: 2, maxWidth: 256 }}>
@@ -487,7 +489,7 @@ function PromptText({ mode, value, saved, closed }) {
                 </TouchableOpacity>
               </View>
             </View>
-            <TextInput multiline={multiline} style={{ textAlign: align, padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: height, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
+            <TextInput multiline={multiline} style={{ textAlign: align, padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: height, backgroundColor: '#eeeeee', textAlignVertical: 'top' }} value={text} onChangeText={setText} />
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 1 }} />
               <View style={{ flex: 1 }}>
@@ -508,9 +510,235 @@ function PromptText({ mode, value, saved, closed }) {
 }
 
 function AttributeEntry({item}) {
-  return (
-    <View style={{ width: '100%', height: 32, marginTop: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#0077CC', borderRadius: 4 }}></View>
-  );
+  const [data, setData] = React.useState({});
+
+  useEffect(() => {
+    if(item.data != null) {
+      setData(JSON.parse(item.data));
+    }
+    else {
+      setData({});
+    }
+  }, []);
+
+  const CardCompanyName = () => {
+    if(data.companyName != null) {
+      return (<Text>{data.companyName}</Text>);
+    }
+    return (<></>);
+  }
+  const CardProfessionName = () => {
+    if(data.professionName != null) {
+      return (<Text>{data.professionName}</Text>);
+    }
+    return (<></>);
+  }
+  const CardTitle = () => {
+    if(data.title != null) {
+      return (<Text>{data.title}</Text>);
+    }
+    return (<></>);
+  }
+  const CardWebsite = () => {
+    if(data.website != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <Text style={{ flexGrow: 1 }}>{ data.website }</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardAddress = () => {
+    if(data.streetPo != null || data.cityTown != null || data.provinceStateCounty != null || data.postalCode != null || data.country != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{ data.streetPo }</Text>
+            <Text>{ data.cityTown }&nbsp;{ data.provinceStateCounty}&nbsp;&nbsp;{data.postalCode}</Text>
+            <Text>{ data.country }</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  } 
+  const CardEmail = () => {
+    if(data.email != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <Text style={{ flexGrow: 1 }}>{ data.email }</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardDirectPhone = () => {
+    if(data.directPhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Direct Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.directPhone }</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardMainPhone = () => {
+    if(data.mainPhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Main Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.mainPhone }</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const CardMobilePhone = () => {
+    if(data.mobilePhone != null) {
+      return (
+        <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="circle" style={{ color: '#888888', fontSize: 8, marginRight: 16 }} />
+          </View>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Mobile Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.mobilePhone }</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const HomePhone = () => {
+    if(data.phoneNumber != null) {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>Home Phone</Text>
+            <Text style={{ color: '#444444' }}>{ data.phoneNumber }</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  const HomeAddress = () => {
+    if(data.homeAddress != null) {
+      let a = data.homeAddress;
+      if(a.streetPo != null || a.cityTown != null || a.provinceStateCounty != null || a.postalCode != null || a.country != null) {
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexGrow: 1 }}>
+              <Text>{ a.streetPo }</Text>
+              <Text>{ a.cityTown }{ a.provinceStateCounty}&nbsp{a.postalCode}</Text>
+              <Text>{ a.country }</Text>
+            </View>
+          </View>
+        );
+      }
+    }
+    return (<></>);
+  } 
+
+  if(AttributeUtil.isHome(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ padding: 12 }}>
+          <HomePhone />
+          <HomeAddress />
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isSocial(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ flexDirection: 'row', padding: 12 }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{data.category}</Text>
+            <Text style={{ color: '#444444' }}>{data.link}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isEmail(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ flexDirection: 'row', padding: 12 }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{data.category} Email</Text>
+            <Text style={{ color: '#444444' }}>{data.email}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isCard(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ padding: 12 }}>
+          <CardCompanyName />
+          <CardProfessionName />
+          <CardTitle />
+          <CardWebsite />
+          <CardAddress />
+          <CardEmail />
+          <CardMainPhone />
+          <CardDirectPhone />
+          <CardMobilePhone />
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isPhone(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ flexDirection: 'row', padding: 12 }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{data.type} Phone</Text>
+            <Text style={{ color: '#444444' }}>{data.phone}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+  else if(AttributeUtil.isWebsite(item)) {
+    return (
+      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ flexDirection: 'row', padding: 12 }}>
+          <View style={{ flexGrow: 1 }}>
+            <Text>{data.name}</Text>
+            <Text style={{ color: '#444444' }}>{data.url}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+  else {
+    return (<Text>TEXT</Text>);
+  }
 }
 
 

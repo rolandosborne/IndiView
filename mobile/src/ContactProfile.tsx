@@ -893,21 +893,6 @@ function AttributeEntry({item}) {
     return (<></>);
   }
 
-  const onAttribute = () => {
-    return (
-      <View style={{ padding: 12 }}>
-        <CardProfessionName />
-        <CardTitle />
-        <CardWebsite />
-        <CardAddress />
-        <CardEmail />
-        <CardMainPhone />
-        <CardDirectPhone />
-        <CardMobilePhone />
-      </View>
-    );
-  };
-
   if(AttributeUtil.isHome(item)) {
     return (
       <View style={{ padding: 12 }}>
