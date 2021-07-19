@@ -611,7 +611,7 @@ function PromptNotes({ prompt, notes, saved, closed }) {
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: 'rgba(52, 52, 52, 0.8)', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ padding: 16, width: '80%', borderRadius: 4, backgroundColor: '#ffffff' }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#444444' }}>Contact Notes</Text>
-            <TextInput multiline={true} style={{ padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: 96, backgroundColor: '#eeeeee' }} value={text} onChangeText={setText} />
+            <TextInput multiline={true} style={{ padding: 8, marginTop: 8, marginBottom: 8, borderRadius: 8, width: '100%', minHeight: 96, backgroundColor: '#eeeeee', textAlignVertical: 'top' }} value={text} onChangeText={setText} />
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 1 }} />
               <View style={{ flex: 1 }}>

@@ -585,7 +585,7 @@ class _Diatum {
 
     let revision = await DiatumApi.getIdentityRevision(this.session.amigoNode, this.session.amigoToken);
     let amigo = await this.storage.getAccountObject(this.session.amigoId, IDENTITY_KEY);
-    if(revision != amigo.revision) {
+    if(amigo == null || revision != amigo.revision) {
 
       // retrieve current identity
       let amigo = await DiatumApi.getIdentity(this.session.amigoNode, this.session.amigoToken);
