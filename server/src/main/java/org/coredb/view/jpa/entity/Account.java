@@ -13,6 +13,7 @@ public class Account implements Serializable {
   private Integer revision;
   private String handle;
   private String name;
+  private Boolean logoSet;
   private String location;
   private String description;
   private String node;
@@ -91,6 +92,14 @@ public class Account implements Serializable {
   }
   public void setName(String value) {
     this.name = value;
+  }
+
+  @JsonIgnore
+  public Boolean getLogoSet() {
+    return this.logoSet;
+  }
+  public void setLogoSet(Boolean value) {
+    this.logoSet = value;
   }
 
   @JsonIgnore

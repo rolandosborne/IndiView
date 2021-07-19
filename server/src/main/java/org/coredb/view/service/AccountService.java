@@ -115,9 +115,11 @@ public class AccountService {
       contact.setAmigoId(a.getAmigoId());
       contact.setRegistry(a.getRegistry());
       contact.setName(a.getName());
+      contact.setLogoSet(a.getLogoSet());
       contact.setHandle(a.getHandle());
       contact.setLocation(a.getLocation());
       contact.setDescription(a.getDescription());
+      contact.setLogoSet(a.getLogoSet());
       contacts.add(contact);
     }
     return contacts;
@@ -197,6 +199,7 @@ public class AccountService {
     account.setLocation(amigo.getLocation());
     account.setDescription(amigo.getDescription());
     account.setName(amigo.getName());
+    account.setLogoSet(amigo.getLogo() != null);
     account.setEnabled(true);
     account.setSearchable(true);
     account.setAudioMute(false);

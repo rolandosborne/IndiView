@@ -33,6 +33,9 @@ public class Contact   {
   @JsonProperty("description")
   private String description = null;
 
+  @JsonProperty("logoSet")
+  private Boolean logoSet = null;
+
   public Contact amigoId(String amigoId) {
     this.amigoId = amigoId;
     return this;
@@ -150,6 +153,25 @@ public class Contact   {
     this.description = description;
   }
 
+  public Contact logoSet(Boolean logoSet) {
+    this.logoSet = logoSet;
+    return this;
+  }
+
+  /**
+   * Get logoSet
+   * @return logoSet
+   **/
+  @Schema(description = "")
+  
+    public Boolean isLogoSet() {
+    return logoSet;
+  }
+
+  public void setLogoSet(Boolean logoSet) {
+    this.logoSet = logoSet;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -165,12 +187,13 @@ public class Contact   {
         Objects.equals(this.name, contact.name) &&
         Objects.equals(this.handle, contact.handle) &&
         Objects.equals(this.location, contact.location) &&
-        Objects.equals(this.description, contact.description);
+        Objects.equals(this.description, contact.description) &&
+        Objects.equals(this.logoSet, contact.logoSet);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(amigoId, registry, name, handle, location, description);
+    return Objects.hash(amigoId, registry, name, handle, location, description, logoSet);
   }
 
   @Override
@@ -184,6 +207,7 @@ public class Contact   {
     sb.append("    handle: ").append(toIndentedString(handle)).append("\n");
     sb.append("    location: ").append(toIndentedString(location)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    logoSet: ").append(toIndentedString(logoSet)).append("\n");
     sb.append("}");
     return sb.toString();
   }
