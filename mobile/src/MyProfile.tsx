@@ -133,9 +133,50 @@ function MyProfilePage({ navigation, labelId }) {
   const [text, setText] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
   const [attributes, setAttributes] = React.useState([]);
-  let options = ['Open Camera', 'Open Gallery', 'Close Menu' ];
-  let actions = [onCamera, onGallery, ()=>{}];
-
+  const [options, setOptions] = React.useState(['Open Gallery', 'Open Camera', 'Close Menu' ]);
+  const [actions, setActions] = React.useState([
+    () => {
+      ImagePicker.openPicker({
+        width: 512,
+        height: 512,
+        cropping: true,
+        cropperCircleOverlay: true,
+        includeBase64: true
+      }).then(async image => {
+        setBusy(true);
+        try {
+          await diatum.setProfileImage(image.data);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to set profile image");
+        }
+        setBusy(false);
+      }).catch(err => {
+        console.log(err);
+      });
+    }, () => {
+      ImagePicker.openCamera({
+        width: 512,
+        height: 512,
+        cropping: true,
+        cropperCircleOverlay: true,
+        includeBase64: true
+      }).then(async image => {
+        setBusy(true);
+        try {
+          await diatum.setProfileImage(image.data);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to set profile image");
+        }
+        setBusy(false);
+      }).catch(err => {
+        console.log(err);
+      });
+    }
+  ]);
 
   onPhone = () => {
     console.log("ON PHONE");
@@ -314,6 +355,7 @@ function MyProfilePage({ navigation, labelId }) {
   }
 
   const onGallery = () => {
+console.log("ON GALLERY CALLED");
     ImagePicker.openPicker({
       width: 512,
       height: 512,
