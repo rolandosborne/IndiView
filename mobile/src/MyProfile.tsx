@@ -354,51 +354,6 @@ function MyProfilePage({ navigation, labelId }) {
     )
   }
 
-  const onGallery = () => {
-console.log("ON GALLERY CALLED");
-    ImagePicker.openPicker({
-      width: 512,
-      height: 512,
-      cropping: true,
-      cropperCircleOverlay: true,
-      includeBase64: true
-    }).then(async image => {
-      setBusy(true);
-      try {
-        await diatum.setProfileImage(image.data);
-      }
-      catch(err) {
-        console.log(err);
-        Alert.alert("failed to set profile image");
-      }
-      setBusy(false);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
-
-  const onCamera = () => {
-    ImagePicker.openCamera({
-      width: 512,
-      height: 512,
-      cropping: true,
-      cropperCircleOverlay: true,
-      includeBase64: true
-    }).then(async image => {
-      setBusy(true);
-      try {
-        await diatum.setProfileImage(image.data);
-      }
-      catch(err) {
-        console.log(err);
-        Alert.alert("failed to set profile image");
-      }
-      setBusy(false);
-    }).catch(err => {
-      console.log(err);
-    });
-  };
-
   const onName = () => {
     setMode('name');
     setText(identity.name);
