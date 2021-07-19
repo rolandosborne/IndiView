@@ -1,7 +1,7 @@
 import { AttachCode } from '../sdk/DiatumTypes'
 
 const INDIVIEW_SERVER: string = "https://indiview.coredb.org/app/"
-const FETCH_TIMEOUT = 5000;
+const FETCH_TIMEOUT = 15000;
 
 export interface Login {
   amigoId: string; 

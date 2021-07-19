@@ -99,8 +99,6 @@ function RootScreen({ navigation }) {
           }
             let obj = AttributeUtil.getDataObject(a[i]);
         }
-        console.log("SETTING APP DATA: " + amigoId);
-        //0ee5be507d9226313bb1e2746eb79954e5e3f8f55b105f3d528fa9ea900524c9
         await diatum.setContactAttributeData(amigoId, { phone: phoneNumbers, text: textNumbers });
       }
     }
@@ -193,13 +191,13 @@ function AgreeScreen({ route, navigation }) {
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
         await diatum.setAppContext(l);
-        onBusy(false);
         navigation.replace("Main");
       }
       catch(err) {
         console.log(err);
         Alert.alert("failed to attach app");
       }
+      onBusy(false);
     }
   });
 

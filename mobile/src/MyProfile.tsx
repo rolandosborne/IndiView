@@ -134,7 +134,7 @@ function MyProfilePage({ navigation, labelId }) {
   const [busy, setBusy] = React.useState(false);
   const [attributes, setAttributes] = React.useState([]);
   let options = ['Open Camera', 'Open Gallery', 'Close Menu' ];
-  let actions = [onCamera, onGallery];
+  let actions = [onCamera, onGallery, ()=>{}];
 
 
   onPhone = () => {
@@ -163,7 +163,7 @@ function MyProfilePage({ navigation, labelId }) {
 
   React.useLayoutEffect(() => {
     let opt = [ "Phone Number", "Email Address", "Home Address", "Business Card", "Website", "Social & Messaging", "Close Menu" ];
-    let act = [ onPhone, onEmail, onAddress, onBusiness, onWebsite, onSocial ];
+    let act = [ onPhone, onEmail, onAddress, onBusiness, onWebsite, onSocial, ()=>{} ];
     const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, marginRight: 16, paddingLeft: 24, width: 48 }} />);
     navigation.setOptions({ 
       title: identity.handle,
@@ -663,7 +663,7 @@ function AttributeEntry({item}) {
 
   if(AttributeUtil.isHome(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ padding: 12 }}>
           <HomePhone />
           <HomeAddress />
@@ -673,7 +673,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isSocial(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ flexDirection: 'row', padding: 12 }}>
           <View style={{ flexGrow: 1 }}>
             <Text>{data.category}</Text>
@@ -685,7 +685,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isEmail(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ flexDirection: 'row', padding: 12 }}>
           <View style={{ flexGrow: 1 }}>
             <Text>{data.category} Email</Text>
@@ -697,7 +697,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isCard(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ padding: 12 }}>
           <CardCompanyName />
           <CardProfessionName />
@@ -714,7 +714,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isPhone(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ flexDirection: 'row', padding: 12 }}>
           <View style={{ flexGrow: 1 }}>
             <Text>{data.type} Phone</Text>
@@ -726,7 +726,7 @@ function AttributeEntry({item}) {
   }
   else if(AttributeUtil.isWebsite(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 16, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
         <View style={{ flexDirection: 'row', padding: 12 }}>
           <View style={{ flexGrow: 1 }}>
             <Text>{data.name}</Text>
