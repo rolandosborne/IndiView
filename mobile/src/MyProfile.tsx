@@ -350,14 +350,6 @@ function MyProfilePage({ navigation, labelId }) {
     console.log(arg);
   };
 
-  const MyAttributes = () => {
-    return (
-      <View style={{ flex: 1, width: '100%' }}>
-        <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} showsVerticalScrollIndicator={false} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item,index}) => <AttributeEntry item={item} index={index}  last={attributes.length==(index+1)}/> } />
-      </View>
-    )
-  }
-
   const onName = () => {
     setMode('name');
     setText(identity.name);
@@ -419,7 +411,9 @@ function MyProfilePage({ navigation, labelId }) {
         </View>
       </View>
 
-      <MyAttributes />
+      <View style={{ flex: 1, width: '100%' }}>
+        <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} showsVerticalScrollIndicator={false} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item,index}) => <AttributeEntry item={item} index={index}  last={attributes.length==(index+1)}/> } />
+      </View>
 
         <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
 
