@@ -345,6 +345,10 @@ function MyProfilePage({ navigation, labelId }) {
     }
   }
 
+  const scroll = (arg) => {
+    console.log(arg);
+  };
+
   const MyAttributes = () => {
     return (
       <View style={{ flex: 1, width: '100%' }}>
@@ -415,6 +419,8 @@ function MyProfilePage({ navigation, labelId }) {
       </View>
 
       <MyAttributes />
+
+      <View opacity={0.4} style={{ position: 'absolute', width: '100%', height: 64, left: 0, bottom: 0, backgroundColor: '#000000' }} />
 
       <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
@@ -670,21 +676,27 @@ function AttributeEntry({item,index,last}) {
 
   if(AttributeUtil.isHome(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
-        <View style={{ padding: 12 }}>
-          <HomePhone />
-          <HomeAddress />
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+          <View style={{ padding: 12 }}>
+            <HomePhone />
+            <HomeAddress />
+          </View>
         </View>
       </View>
     );
   }
   else if(AttributeUtil.isSocial(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:0 }}>
-        <View style={{ flexDirection: 'row', padding: 12 }}>
-          <View style={{ flexGrow: 1 }}>
-            <Text>{data.category}</Text>
-            <Text style={{ color: '#444444' }}>{data.link}</Text>
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+          <View style={{ flexDirection: 'row', padding: 12 }}>
+            <View style={{ flexGrow: 1 }}>
+              <Text>{data.category}</Text>
+              <Text style={{ color: '#444444' }}>{data.link}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -692,11 +704,14 @@ function AttributeEntry({item,index,last}) {
   }
   else if(AttributeUtil.isEmail(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
-        <View style={{ flexDirection: 'row', padding: 12 }}>
-          <View style={{ flexGrow: 1 }}>
-            <Text>{data.category} Email</Text>
-            <Text style={{ color: '#444444' }}>{data.email}</Text>
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+          <View style={{ flexDirection: 'row', padding: 12 }}>
+            <View style={{ flexGrow: 1 }}>
+              <Text>{data.category} Email</Text>
+              <Text style={{ color: '#444444' }}>{data.email}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -704,17 +719,20 @@ function AttributeEntry({item,index,last}) {
   }
   else if(AttributeUtil.isCard(item)) {
     return (
-      <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
-        <View style={{ padding: 12 }}>
-          <CardCompanyName />
-          <CardProfessionName />
-          <CardTitle />
-          <CardWebsite />
-          <CardAddress />
-          <CardEmail />
-          <CardMainPhone />
-          <CardDirectPhone />
-          <CardMobilePhone />
+      <View style={{ width: '100%'}}>
+        <MyHeader />
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+          <View style={{ padding: 12 }}>
+            <CardCompanyName />
+            <CardProfessionName />
+            <CardTitle />
+            <CardWebsite />
+            <CardAddress />
+            <CardEmail />
+            <CardMainPhone />
+            <CardDirectPhone />
+            <CardMobilePhone />
+          </View>
         </View>
       </View>
     );
@@ -723,7 +741,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.type} Phone</Text>
@@ -738,7 +756,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8 }}>
+        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.name}</Text>
