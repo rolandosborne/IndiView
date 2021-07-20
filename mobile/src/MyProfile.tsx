@@ -9,6 +9,7 @@ import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
+import LinearGradient from 'react-native-linear-gradient';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -420,7 +421,7 @@ function MyProfilePage({ navigation, labelId }) {
 
       <MyAttributes />
 
-      <View opacity={0.4} style={{ position: 'absolute', width: '100%', height: 64, left: 0, bottom: 0, backgroundColor: '#000000' }} />
+        <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
 
       <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
