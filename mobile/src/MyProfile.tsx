@@ -675,16 +675,21 @@ function AttributeEntry({item,index,last}) {
     return (<></>);
   } 
 
+  let nav = useNavigation();
+  const onAttribute = () => {
+    nav.navigate('MyAttribute');
+  }
+
   if(AttributeUtil.isHome(item)) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
             <HomePhone />
             <HomeAddress />
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -692,14 +697,14 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.category}</Text>
               <Text style={{ color: '#444444' }}>{data.link}</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -707,14 +712,14 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.category} Email</Text>
               <Text style={{ color: '#444444' }}>{data.email}</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -722,7 +727,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
             <CardCompanyName />
             <CardProfessionName />
@@ -734,7 +739,7 @@ function AttributeEntry({item,index,last}) {
             <CardDirectPhone />
             <CardMobilePhone />
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -742,14 +747,14 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.type} Phone</Text>
               <Text style={{ color: '#444444' }}>{data.phone}</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -757,14 +762,14 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <View style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.name}</Text>
               <Text style={{ color: '#444444' }}>{data.url}</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View> 
     );
   }
