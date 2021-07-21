@@ -206,7 +206,11 @@ function MyWebsite({params, navigation}) {
   };
 
   React.useLayoutEffect(() => {
-    const save = (<Icon name="save" onPress={onSave} style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
     navigation.setOptions({ title: 'Website', headerRight: () => save });
   }, [navigation]);
 
@@ -239,7 +243,11 @@ function MySocial({params, navigation}) {
   };
 
   React.useLayoutEffect(() => {
-    const save = (<Icon name="save" onPress={onSave} style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
     navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
   }, [navigation]);
 
@@ -273,8 +281,33 @@ function MyPhone({params, navigation}) {
     }
   };
 
+  const PhoneSms = () => {
+    if(sms) {
+      return (
+        <TouchableOpacity onPress={() => {smsRef.current=false; setSms(false)}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity onPress={() => {smsRef.current=true; setSms(true)}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   React.useLayoutEffect(() => {
-    const save = (<Icon name="save" onPress={onSave} style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
     navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
   }, [navigation]);
 
@@ -282,8 +315,7 @@ function MyPhone({params, navigation}) {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
-
-
+      <PhoneSms />
     </KeyboardAvoidingView>
   );
 }

@@ -765,6 +765,11 @@ function AttributeEntry({item,index,last}) {
     );
   }
   else if(AttributeUtil.isPhone(item)) {
+    let sms: string = "";
+    if(data.phoneSms) {
+      sms = "[text]";
+    }
+
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
@@ -772,7 +777,7 @@ function AttributeEntry({item,index,last}) {
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.type} Phone</Text>
-              <Text style={{ color: '#444444' }}>{data.phone}</Text>
+              <Text style={{ color: '#444444' }}>{data.phone}&nbsp;&nbsp;{sms}</Text>
             </View>
           </View>
         </TouchableOpacity>
