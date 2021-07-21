@@ -176,6 +176,15 @@ export function MyAttribute({ route, navigation }) {
               </View>
             );
           }
+          else if(AttributeUtil.isEmail(params)) {
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MyEmail params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
+          }
+
           return (
             <MyAttributePage params={params} navigation={navigation} />
           )
@@ -254,10 +263,48 @@ function MySocial({params, navigation}) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {linkRef.current=value; setLink(value)}} value={link} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Handle" placeholderTextColor="#444444" onChangeText={value => {linkRef.current=value; setLink(value)}} value={link} />
     </KeyboardAvoidingView>
   );
 }
+
+function MyEmail({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
+  const [category, setCategory] = React.useState(params.data.category);
+  const [email, setEmail] = React.useState(params.data.email);
+
+  let categoryRef = useRef(params.data.category);
+  let emailRef = useRef(params.data.email);
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, email: emailRef.current }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
+  };
+
+  React.useLayoutEffect(() => {
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
+    navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
+  }, [navigation]);
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Email Address" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
+    </KeyboardAvoidingView>
+  );
+}
+
 
 function MyPhone({params, navigation}) {
   const [attributeId, setAttributeId] = React.useState(params.attributeId);
@@ -314,7 +361,7 @@ function MyPhone({params, navigation}) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
       <PhoneSms />
     </KeyboardAvoidingView>
   );
