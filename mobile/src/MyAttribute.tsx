@@ -160,6 +160,22 @@ export function MyAttribute({ route, navigation }) {
               </View>
             );
           }
+          else if(AttributeUtil.isSocial(params)) {
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MySocial params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
+          }
+          else if(AttributeUtil.isPhone(params)) {
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MyPhone params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
+          }
           return (
             <MyAttributePage params={params} navigation={navigation} />
           )
@@ -201,6 +217,77 @@ function MyWebsite({params, navigation}) {
     </KeyboardAvoidingView>
   );
 }
+
+function MySocial({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
+  const [category, setCategory] = React.useState(params.data.category);
+  const [link, setLink] = React.useState(params.data.link);
+
+  let categoryRef = useRef(params.data.category);
+  let linkRef = useRef(params.data.link);
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, link: linkRef.current }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
+  };
+
+  React.useLayoutEffect(() => {
+    const save = (<Icon name="save" onPress={onSave} style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
+    navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
+  }, [navigation]);
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {linkRef.current=value; setLink(value)}} value={link} />
+    </KeyboardAvoidingView>
+  );
+}
+
+function MyPhone({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
+  const [category, setCategory] = React.useState(params.data.category);
+  const [phone, setPhone] = React.useState(params.data.phone);
+  const [sms, setSms] = React.useState(params.data.phoneSms);
+
+  let categoryRef = useRef(params.data.category);
+  let phoneRef = useRef(params.data.phone);
+  let smsRef = useRef(params.data.phoneSms);
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, phone: phoneRef.current, phoneSms: smsRef.current }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
+  };
+
+  React.useLayoutEffect(() => {
+    const save = (<Icon name="save" onPress={onSave} style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
+    navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
+  }, [navigation]);
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
+
+
+    </KeyboardAvoidingView>
+  );
+}
+
 
 function MyAttributePage({params, navigation}) {
   const [data, setData] = React.useState(params.data);
