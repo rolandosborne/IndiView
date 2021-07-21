@@ -224,8 +224,15 @@ function MyProfilePage({ navigation, labelId }) {
     });
   };
 
+  let labelIdRef = useRef(labelId);
+
   useEffect(() => {
-    diatum.getAttributes(labelId).then(a => {
+    labelIdRef.current = labelId;
+    updateAttributes();
+  }, [labelId]);
+  
+  const updateAttributes = () => {
+    diatum.getAttributes(labelIdRef.current).then(a => {
       let attr = [ [], [], [], [], [], [] ];
       for(let i = 0; i < a.length; i++) {
         if(AttributeUtil.isPhone(a[i])) {
@@ -250,12 +257,14 @@ function MyProfilePage({ navigation, labelId }) {
       let sorted = [];
       setAttributes(sorted.concat(attr[0], attr[1], attr[2], attr[3], attr[4], attr[5]));
     });
-  }, [labelId]);
+  }
 
   useEffect(() => {
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
+    diatum.setListener(DiatumEvent.Attributes, updateAttributes);
     return () => {
       diatum.clearListener(DiatumEvent.Identity, updateIdentity);
+      diatum.clearListener(DiatumEvent.Attributes, updateAttributes);
     }
   }, []);
 
@@ -517,7 +526,7 @@ function AttributeEntry({item,index,last}) {
     else {
       setData({});
     }
-  }, []);
+  }, [item, index, last]);
 
   const MyHeader = () => {
     if(index != 0) {

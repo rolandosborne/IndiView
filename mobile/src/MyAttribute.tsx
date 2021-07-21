@@ -62,7 +62,7 @@ function AttributeDrawerContent(props) {
 
   const setLabel = async (id: string) => {
     try {
-      // set attribute label
+      await diatum.setAttributeLabel(attributeId, id);
     }
     catch(err) {
       console.log(err);
@@ -72,7 +72,7 @@ function AttributeDrawerContent(props) {
 
   const clearLabel = async (id: string) => {
     try {
-      // clear attribute label
+      await diatum.clearAttributeLabel(attributeId, id);
     }
     catch(err) {
       console.log(err);
@@ -140,12 +140,25 @@ export function MyAttribute({ route, navigation }) {
     }
   };
 
+  const AttributeFooter = () => {
+    return (
+      <View style={{ flexGrow: 1, justifyContent: 'flex-end', padding: 32 }}>
+        <Text style={{ textAlign: 'center', fontSize: 18, color: '#222222' }}>Use the right menu to set access to this attribute.</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }} >
       <AttributeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <AttributeDrawerContent {...props} {...{attributeId: route.params.attributeId, callback: onLabel}} />}>
         <AttributeDrawer.Screen name="Contacts">{(props) => {
           if(AttributeUtil.isWebsite(params)) {
-            return (<MyWebsite params={params} navigation={navigation} />)
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MyWebsite params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
           }
           return (
             <MyAttributePage params={params} navigation={navigation} />
@@ -157,11 +170,23 @@ export function MyAttribute({ route, navigation }) {
 }
 
 function MyWebsite({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
   const [name, setName] = React.useState(params.data.name);
   const [url, setUrl] = React.useState(params.data.url);
 
-  const onSave = () => {
-    console.log("SAVE WEBSITE");
+  let nameRef = useRef(params.data.name);
+  let urlRef = useRef(params.data.url);
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, url: urlRef.current }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
   };
 
   React.useLayoutEffect(() => {
@@ -170,10 +195,9 @@ function MyWebsite({params, navigation}) {
   }, [navigation]);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#aaaaaa', alignItems: 'center', padding: 16 }}>
-      <Text style={{ textAlign: 'center', fontSize: 18, color: '#222222' }}>Enter your contact data and assign lables from the right menu.</Text>
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Name" placeholderTextColor="#444444" onChangeText={setName} value={name} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={setUrl} value={url} />
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="URL" placeholderTextColor="#444444" onChangeText={value => {urlRef.current=value; setUrl(value)}} value={url} />
     </KeyboardAvoidingView>
   );
 }
