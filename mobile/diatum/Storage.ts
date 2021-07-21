@@ -527,6 +527,17 @@ export class Storage {
     }
     return attributes;
   }
+  public async getAttributeLabels(id: string, attributeId: string): Promise<string[]> {
+    let res = await this.db.executeSql("SELECT label_id FROM profilegroup_" + id + " WHERE attribute_id=?;", [attributeId]);
+    let labels: string[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        labels.push(res[0].rows.item(i).label_id);
+      }
+    }
+    return labels;
+  }
+
   public async getContacts(id: string, labelId: string): Promise<Contact[]> {
     let res;
     if(labelId == null) {

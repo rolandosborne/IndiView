@@ -51,7 +51,7 @@ function ContactDrawerContent(props) {
 
   return (
       <SafeAreaView style={{ flex: 1 }}>
-        <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Label View'} />
+        <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Filter By Label'} />
         <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => { 
           if(labelId == item.labelId) {
             return <DrawerItem labelStyle={{ fontSize: 18, color: '#0072CC' }} label={item.name} onPress={() => {props.navigation.closeDrawer(); clearLabel();} } />

@@ -18,6 +18,7 @@ import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { AttributeUtil } from './AttributeUtil';
+import { AttributeParams } from './MyAttribute';
 
 const ProfileDrawer = createDrawerNavigator();
 let profileNav = null;
@@ -206,7 +207,7 @@ function MyProfilePage({ navigation, labelId }) {
   React.useLayoutEffect(() => {
     let opt = [ "Phone Number", "Email Address", "Home Address", "Business Card", "Website", "Social & Messaging", "Close Menu" ];
     let act = [ onPhone, onEmail, onAddress, onBusiness, onWebsite, onSocial, ()=>{} ];
-    const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, marginRight: 16, paddingLeft: 24, width: 48 }} />);
+    const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, width: 48, textAlign: 'center' }} />);
     navigation.setOptions({ 
       title: identity.handle,
       headerRight: () => (<OptionsMenu customButton={plus} options={opt} actions={act} />)
@@ -671,14 +672,31 @@ function AttributeEntry({item,index,last}) {
 
   let nav = useNavigation();
   const onAttribute = () => {
-    nav.navigate('MyAttribute');
+    nav.navigate('MyAttribute', { attributeId: item.attributeId, schema: item.schema, data: data });
   }
+  
+  const onDelete = (async () => {
+    const title = 'Do you want to delete this attribute?';
+    const message = '';
+    const buttons = [
+        { text: 'Cancel', type: 'cancel' },
+        { text: 'Yes, Delete', onPress: async () => {
+          try {
+            console.log("DELETING!");
+          }
+          catch(err) {
+            console.log("clear session failed");
+          }
+        }}
+    ];
+    Alert.alert(title, message, buttons);
+  });
 
   if(AttributeUtil.isHome(item)) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
             <HomePhone />
             <HomeAddress />
@@ -691,7 +709,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.category}</Text>
@@ -706,7 +724,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.category} Email</Text>
@@ -721,7 +739,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
             <CardCompanyName />
             <CardProfessionName />
@@ -741,7 +759,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.type} Phone</Text>
@@ -756,7 +774,7 @@ function AttributeEntry({item,index,last}) {
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
-        <TouchableOpacity onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
+        <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.name}</Text>

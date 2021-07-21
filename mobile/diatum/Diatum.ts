@@ -91,6 +91,21 @@ export interface Diatum {
   // get account attributes
   getAttributes(labelId: string): Promise<Attribute[]>
 
+  // add new attribute
+  addAttribute(schema: string): Promise<void>
+
+  // set attribute data
+  setAttribute(attributeId: string, data: string): Promise<void>
+
+  // get attribute labels
+  getAttributeLabels(attributeId: string): Promise<string[]>
+
+  // set attribute label
+  setAttributeLabel(attributeId: string, labelId: string): Promise<void>
+
+  // clear attribute label
+  clearAttributeLabel(attributeId: string, labelId: string): Promise<void>
+
   // get contacts
   getContacts(labelId: string): Promise<ContactEntry[]>
 
@@ -1147,6 +1162,26 @@ class _Diatum {
     return await this.storage.getAttributes(this.session.amigoId, labelId);
   }
 
+  public async addAttribute(schema: string): Promise<void> {
+    return null;
+  }
+
+  public async setAttribute(attributeId: string, data: string): Promise<void> {
+    return null;
+  }
+
+  public async getAttributeLabels(attributeId: string): Promise<string[]> {
+    return await this.storage.getAttributeLabels(this.session.amigoId, attributeId);
+  }
+
+  public async setAttributeLabel(attributeId: string, labelId: string): Promise<void> {
+    return null;
+  }
+
+  public async clearAttributeLabel(attributeId: string, labelId: string): Promise<void> {
+    return null;
+  }
+
   public async getContacts(labelId: string): Promise<ContactEntry[]> {
     let c: Contact = await this.storage.getContacts(this.session.amigoId, labelId);
     let entries: ContactEntry[] = [];
@@ -1400,6 +1435,31 @@ async function getAttributes(labelId: string): Promise<Attribute[]> {
   return await diatum.getAttributes(labelId);
 }
 
+async function addAttribute(schema: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.addAttribute(schema);
+}
+
+async function setAttribute(attributeId: string, data: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setAttribute(attribute, data);
+}
+
+async function getAttributeLabels(attributeId: string): Promise<string[]> {
+  let diatum = await getInstance();
+  return await diatum.getAttributeLabels(attributeId);
+}
+
+async function setAttributeLabel(attributeId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setAttributeLabel(attributeId, labelId);
+}
+
+async function clearAttributeLabel(attributeId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.clearAttributeLabel(attributeId, labelId);
+}
+
 async function getContacts(labelId: string): Promise<ContactEntry[]> {
   let diatum = await getInstance();
   return await diatum.getContacts(labelId);
@@ -1467,7 +1527,9 @@ async function clearContactNotes(amigoId: string): Promise<void> {
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getRegistryImage, setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
-    getIdentity, getLabels, getAttributes, getContacts, getContact, getContactAttributes, 
+    getIdentity, getLabels, 
+    getAttributes, addAttribute, setAttribute, getAttributeLabels, setAttributeLabel, clearAttributeLabel,
+    getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };
 
