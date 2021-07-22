@@ -653,8 +653,7 @@ function AttributeEntry({item,index,last}) {
       return (
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flexGrow: 1 }}>
-            <Text>Home Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.phoneNumber }</Text>
+            <Text style={{ color: '#444444' }}>{ data.phoneNumber }&nbsp;&nbsp;{ data.phoneNumberSms?'[text]':'' }</Text>
           </View>
         </View>
       );
@@ -668,9 +667,9 @@ function AttributeEntry({item,index,last}) {
         return (
           <View style={{ flexDirection: 'row' }}>
             <View style={{ flexGrow: 1 }}>
-              <Text>{ a.streetPo }</Text>
-              <Text>{ a.cityTown }{ a.provinceStateCounty}&nbsp{a.postalCode}</Text>
-              <Text>{ a.country }</Text>
+              <Text style={{ color: '#444444' }}>{ a.streetPo }</Text>
+              <Text style={{ color: '#444444' }}>{ a.cityTown },&nbsp;{ a.provinceStateCounty}&nbsp;&nbsp;{a.postalCode}</Text>
+              <Text style={{ color: '#444444' }}>{ a.country }</Text>
             </View>
           </View>
         );
@@ -707,8 +706,9 @@ function AttributeEntry({item,index,last}) {
         <MyHeader />
         <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
-            <HomePhone />
+            <Text style={{ color: '#222222' }}>{ data.name } Home</Text>
             <HomeAddress />
+            <HomePhone />
           </View>
         </TouchableOpacity>
       </View>
@@ -745,11 +745,14 @@ function AttributeEntry({item,index,last}) {
     );
   }
   else if(AttributeUtil.isCard(item)) {
+console.log("CARD: ", data);
+
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
         <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
+            <Text style={{ color: '#222222' }}>{ data.name } Card</Text>
             <CardCompanyName />
             <CardProfessionName />
             <CardTitle />

@@ -142,7 +142,7 @@ export function MyAttribute({ route, navigation }) {
 
   const AttributeFooter = () => {
     return (
-      <View style={{ flexGrow: 1, justifyContent: 'flex-end', padding: 32 }}>
+      <View style={{ position: 'absolute', bottom: 0, padding: 32 }}>
         <Text style={{ textAlign: 'center', fontSize: 18, color: '#222222' }}>Use the right menu to set access to this attribute.</Text>
       </View>
     );
@@ -184,10 +184,23 @@ export function MyAttribute({ route, navigation }) {
               </View>
             );
           }
-
-          return (
-            <MyAttributePage params={params} navigation={navigation} />
-          )
+          else if(AttributeUtil.isHome(params)) {
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MyHome params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
+          }
+          else if(AttributeUtil.isCard(params)) {
+            return (
+              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
+                <MyCard params={params} navigation={navigation} />
+                <AttributeFooter />
+              </View>
+            );
+          }
+          return (<></>)
         }}</AttributeDrawer.Screen>
       </AttributeDrawer.Navigator>
     </View>
@@ -355,7 +368,7 @@ function MyPhone({params, navigation}) {
         <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
       </TouchableOpacity>
     );
-    navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
+    navigation.setOptions({ title: 'Phone', headerRight: () => save });
   }, [navigation]);
 
   return (
@@ -364,6 +377,221 @@ function MyPhone({params, navigation}) {
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
       <PhoneSms />
     </KeyboardAvoidingView>
+  );
+}
+
+function MyHome({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
+  const [name, setName] = React.useState(params.data.name);
+  const [phone, setPhone] = React.useState(params.data.phoneNumber);
+  const [sms, setSms] = React.useState(params.data.phoneNumberSms);
+  const [street, setStreet] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.streetPo);
+  const [city, setCity] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.cityTown);
+  const [state, setState] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.provinceStateCounty);
+  const [code, setCode] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.postalCode);
+  const [country, setCountry] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.country);
+
+  let nameRef = useRef(name);
+  let phoneRef = useRef(phone);
+  let smsRef = useRef(sms);
+  let streetRef = useRef(street); 
+  let cityRef = useRef(city); 
+  let stateRef = useRef(state); 
+  let codeRef = useRef(code); 
+  let countryRef = useRef(country); 
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, phoneNumber: phoneRef.current, phoneNumberSms: smsRef.current, homeAddress: {
+        streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current } }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
+  };
+
+  const PhoneSms = () => {
+    if(sms) {
+      return (
+        <TouchableOpacity onPress={() => {smsRef.current=false; setSms(false)}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity onPress={() => {smsRef.current=true; setSms(true)}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  React.useLayoutEffect(() => {
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
+    navigation.setOptions({ title: 'Home', headerRight: () => save });
+  }, [navigation]);
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Location Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Street or PO Box" placeholderTextColor="#444444" onChangeText={value => {streetRef.current=value; setStreet(value)}} value={street} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="City or Town" placeholderTextColor="#444444" onChangeText={value => {cityRef.current=value; setCity(value)}} value={city} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="State, Province, or County" placeholderTextColor="#444444" onChangeText={value => {stateRef.current=value; setState(value)}} value={state} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Postal Code" placeholderTextColor="#444444" onChangeText={value => {codeRef.current=value; setCode(value)}} value={code} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Country" placeholderTextColor="#444444" onChangeText={value => {countryRef.current=value; setCountry(value)}} value={country} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
+      <PhoneSms />
+    </KeyboardAvoidingView>
+  );
+}
+
+function MyCard({params, navigation}) {
+  const [attributeId, setAttributeId] = React.useState(params.attributeId);
+  const [schema, setSchema] = React.useState(params.schema);
+  const [name, setName] = React.useState(params.data.name);
+  const [direct, setDirect] = React.useState(params.data.directPhone);
+  const [directSms, setDirectSms] = React.useState(params.data.directPhoneSms);
+  const [mobile, setMobile] = React.useState(params.data.mobilePhone);
+  const [mobileSms, setMobileSms] = React.useState(params.data.mobilePhoneSms);
+  const [main, setMain] = React.useState(params.data.mainPhone);
+  const [mainSms, setMainSms] = React.useState(params.data.mainPhoneSms);
+  const [street, setStreet] = React.useState(params.data.streetPo);
+  const [city, setCity] = React.useState(params.data.cityTown);
+  const [state, setState] = React.useState(params.data.provinceStateCounty);
+  const [code, setCode] = React.useState(params.data.postalCode);
+  const [country, setCountry] = React.useState(params.data.country);
+
+  let nameRef = useRef(name);
+  let directRef = useRef(direct);
+  let directSmsRef = useRef(directSms);
+  let mainRef = useRef(main);
+  let mainSmsRef = useRef(mainSms);
+  let mobileRef = useRef(mobile);
+  let mobileSmsRef = useRef(mobileSms);
+  let streetRef = useRef(street); 
+  let cityRef = useRef(city); 
+  let stateRef = useRef(state); 
+  let codeRef = useRef(code); 
+  let countryRef = useRef(country); 
+
+  let diatum = useDiatum();
+  const onSave = async () => {
+    try {
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, mainPhone: mainRef.current, mainPhoneSms: mainSmsRef.current, mobilePhone: mobileRef.current, mobileSms: mobileSmsRef.current, directPhone: directRef.current, directPhoneSms: directSmsRef.current, streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current }));
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("Failed to save attribute");
+    }
+  };
+
+  const MainPhoneSms = () => {
+    if(mainSms) {
+      return (
+        <TouchableOpacity onPress={() => {mainSmsRef.current=false; setMainSms(false)}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity onPress={() => {mainSmsRef.current=true; setMainSms(true)}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const DirectPhoneSms = () => {
+    if(directSms) {
+      return (
+        <TouchableOpacity onPress={() => {directSmsRef.current=false; setDirectSms(false)}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity onPress={() => {directSmsRef.current=true; setDirectSms(true)}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const MobilePhoneSms = () => {
+    if(mobileSms) {
+      return (
+        <TouchableOpacity onPress={() => {mobileSmsRef.current=false; setMobileSms(false)}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity onPress={() => {mobileSmsRef.current=true; setMobileSms(true)}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  React.useLayoutEffect(() => {
+    const save = (
+      <TouchableOpacity onPress={onSave}>
+        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+      </TouchableOpacity>
+    );
+    navigation.setOptions({ title: 'Business Card', headerRight: () => save });
+  }, [navigation]);
+
+  return (
+      <ScrollView>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "position" : "height"} keyboardVerticalOffset={30} style={{ flex: 1 }}>
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Card Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Street or PO Box" placeholderTextColor="#444444" onChangeText={value => {streetRef.current=value; setStreet(value)}} value={street} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="City or Town" placeholderTextColor="#444444" onChangeText={value => {cityRef.current=value; setCity(value)}} value={city} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="State, Province, or County" placeholderTextColor="#444444" onChangeText={value => {stateRef.current=value; setState(value)}} value={state} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Postal Code" placeholderTextColor="#444444" onChangeText={value => {codeRef.current=value; setCode(value)}} value={code} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Country" placeholderTextColor="#444444" onChangeText={value => {countryRef.current=value; setCountry(value)}} value={country} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Direct Phone Number" placeholderTextColor="#444444" onChangeText={value => {directRef.current=value; setDirect(value)}} value={direct} />
+        <DirectPhoneSms />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Main Phone Number" placeholderTextColor="#444444" onChangeText={value => {mainRef.current=value; setMain(value)}} value={main} />
+        <MainPhoneSms />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Mobile Phone Number" placeholderTextColor="#444444" onChangeText={value => {mobileRef.current=value; setMobile(value)}} value={mobile} />
+        <MobilePhoneSms />
+      </View>
+    </KeyboardAvoidingView>
+      </ScrollView>
   );
 }
 
