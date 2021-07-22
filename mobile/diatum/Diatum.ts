@@ -92,7 +92,7 @@ export interface Diatum {
   getAttributes(labelId: string): Promise<Attribute[]>
 
   // add new attribute
-  addAttribute(schema: string): Promise<void>
+  addAttribute(schema: string): Promise<Attribute>
 
   // set attribute data
   setAttribute(attributeId: string, schema: string, data: string): Promise<void>
@@ -1162,11 +1162,15 @@ class _Diatum {
     return await this.storage.getAttributes(this.session.amigoId, labelId);
   }
 
-  public async addAttribute(schema: string): Promise<void> {
-    return null;
+  public async addAttribute(schema: string): Promise<Attribute> {
+    let a = await DiatumApi.addAttribute(this.session.amigoNode, this.session.amigoToken, schema);
+    await this.syncProfile();
+    return a.attribute;
   }
 
   public async removeAttribute(attributeId: string): Promise<void> {
+    await DiatumApi.removeAttribute(this.session.amigoNode, this.session.amigoToken, attributeId);
+    await this.syncProfile();
   }
 
   public async setAttribute(attributeId: string, schema: string, data: string): Promise<void> {
@@ -1441,7 +1445,7 @@ async function getAttributes(labelId: string): Promise<Attribute[]> {
   return await diatum.getAttributes(labelId);
 }
 
-async function addAttribute(schema: string): Promise<void> {
+async function addAttribute(schema: string): Promise<Attribute> {
   let diatum = await getInstance();
   return await diatum.addAttribute(schema);
 }

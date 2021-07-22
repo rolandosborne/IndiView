@@ -7,6 +7,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -185,6 +186,7 @@ export function MyAttribute({ route, navigation }) {
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={128} style={{ flex: 1 }} >
                   <MyCard params={params} navigation={navigation} />
                 </KeyboardAvoidingView>
+                <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
               </View>
             );
           }
@@ -295,7 +297,7 @@ function MyEmail({params, navigation}) {
         <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
       </TouchableOpacity>
     );
-    navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
+    navigation.setOptions({ title: 'Email Address', headerRight: () => save });
   }, [navigation]);
 
   return (
@@ -357,12 +359,12 @@ function MyPhone({params, navigation}) {
         <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
       </TouchableOpacity>
     );
-    navigation.setOptions({ title: 'Phone', headerRight: () => save });
+    navigation.setOptions({ title: 'Phone Number', headerRight: () => save });
   }, [navigation]);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category (Mobile, Personal, Work)" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
         <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginRight: 16, borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
         <PhoneSms />

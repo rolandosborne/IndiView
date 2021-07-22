@@ -123,8 +123,8 @@ export class DiatumApi {
     return await entryResponse.json();
   }
 
-  public static async addAttribute(node: string, token: string, attributeId: string, schema: string): Promise<AttributeEntry> {
-    let response = await fetchWithTimeout(node + "/profile/attributes/?token=" + encodeURIComponent(token) + "&schema=" + schema, { method: 'POST', headers: { 'Content-Type': 'application/json' }, timeout: FETCH_TIMEOUT });
+  public static async addAttribute(node: string, token: string, schema: string): Promise<AttributeEntry> {
+    let response = await fetchWithTimeout(node + "/profile/attributes/?token=" + encodeURIComponent(token) + "&schema=" + schema, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}), timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
@@ -135,9 +135,8 @@ export class DiatumApi {
   }
 
   public static async removeAttribute(node: string, token: string, attributeId: string): Promise<void> {
-    let response = await fetchWithTimeout(node + "/profile/attributes/" + attribtuteId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    let response = await fetchWithTimeout(node + "/profile/attributes/" + attributeId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
-    return await response.json();
   } 
 
   public static async setAttributeLabel(node: string, token: string, attributeId: string, labelId: string): Promise<void> {

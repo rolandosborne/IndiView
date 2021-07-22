@@ -180,28 +180,36 @@ function MyProfilePage({ navigation, labelId }) {
     }
   ]);
 
+  let nav = useNavigation();
+  const onAttribute = async (type) => {
+    setBusy(true);
+    try {
+      let a = await diatum.addAttribute(type);
+      nav.navigate('MyAttribute', { attributeId: a.attributeId, schema: a.schema, data: JSON.parse(a.data) });
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to create attribute");
+    }
+    setBusy(false);
+  }
   onPhone = () => {
-    console.log("ON PHONE");
+    onAttribute(AttributeUtil.PHONE);
   }
-
   onEmail = () => {
-    console.log("ON EMAIL");
+    onAttribute(AttributeUtil.EMAIL);
   }
-
   onAddress = () => {
-    console.log("ON ADDRESS");
+    onAttribute(AttributeUtil.HOME);
   }
-
   onBusiness = () => {
-    console.log("ON BUSINESS");
+    onAttribute(AttributeUtil.CARD);
   }
-
   onWebsite = () => {
-    console.log("ON WEBSITE");
+    onAttribute(AttributeUtil.WEBSITE);
   }
-
   onSocial = () => {
-    console.log("ON SOCIAL");
+    onAttribute(AttributeUtil.SOCIAL);
   }
 
   React.useLayoutEffect(() => {
@@ -424,9 +432,7 @@ function MyProfilePage({ navigation, labelId }) {
       <View style={{ flex: 1, width: '100%' }}>
         <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} showsVerticalScrollIndicator={false} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item,index}) => <AttributeEntry item={item} index={index}  last={attributes.length==(index+1)}/> } />
       </View>
-
-        <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
-
+      <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
       <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
   );
@@ -518,6 +524,8 @@ function PromptText({ mode, value, saved, closed }) {
 
 function AttributeEntry({item,index,last}) {
   const [data, setData] = React.useState({});
+  const [attributeId, setAttributeId] = React.useState(item.attributeId);
+  const [busy, setBusy] = React.useState(false);
 
   useEffect(() => {
     if(item.data != null) {
@@ -682,23 +690,28 @@ function AttributeEntry({item,index,last}) {
   const onAttribute = () => {
     nav.navigate('MyAttribute', { attributeId: item.attributeId, schema: item.schema, data: data });
   }
-  
-  const onDelete = (async () => {
+ 
+  let diatum = useDiatum(); 
+  const onDelete = () => {
     const title = 'Do you want to delete this attribute?';
     const message = '';
     const buttons = [
         { text: 'Cancel', type: 'cancel' },
         { text: 'Yes, Delete', onPress: async () => {
+          setBusy(true);
           try {
-            console.log("DELETING!");
+            await diatum.removeAttribute(attributeId);
           }
           catch(err) {
-            console.log("clear session failed");
+            console.log(err);
+            Alert.alert("failed to remove attribute");
           }
-        }}
+          setBusy(false);
+        }
+      }
     ];
     Alert.alert(title, message, buttons);
-  });
+  };
 
   if(AttributeUtil.isHome(item)) {
     return (
@@ -745,8 +758,6 @@ function AttributeEntry({item,index,last}) {
     );
   }
   else if(AttributeUtil.isCard(item)) {
-console.log("CARD: ", data);
-
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
@@ -778,9 +789,12 @@ console.log("CARD: ", data);
         <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
-              <Text>{data.type} Phone</Text>
+              <Text>{data.category} Phone</Text>
               <Text style={{ color: '#444444' }}>{data.phone}&nbsp;&nbsp;{sms}</Text>
             </View>
+          </View>
+          <View style={{ position: 'absolute', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator animating={busy} size="large" color="#000000" />
           </View>
         </TouchableOpacity>
       </View>
