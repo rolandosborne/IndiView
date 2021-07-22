@@ -579,7 +579,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>{ data.streetPo }</Text>
-            <Text>{ data.cityTown }&nbsp;{ data.provinceStateCounty}&nbsp;&nbsp;{data.postalCode}</Text>
+            <Text>{ data.cityTown },&nbsp;{ data.provinceStateCounty}&nbsp;&nbsp;{data.postalCode}</Text>
             <Text>{ data.country }</Text>
           </View>
         </View>
@@ -609,7 +609,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Direct Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.directPhone }</Text>
+            <Text style={{ color: '#444444' }}>{ data.directPhone }&nbsp;&nbsp;{ data.directPhoneSms?'[text]':'' }</Text>
           </View>
         </View>
       );
@@ -625,7 +625,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Main Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.mainPhone }</Text>
+            <Text style={{ color: '#444444' }}>{ data.mainPhone }&nbsp;&nbsp;{ data.mainPhoneSms?'[text]':'' }</Text>
           </View>
         </View>
       );
@@ -641,7 +641,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Mobile Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.mobilePhone }</Text>
+            <Text style={{ color: '#444444' }}>{ data.mobilePhone }&nbsp;&nbsp;{ data.mobilePhoneSms?'[text]':'' }</Text>
           </View>
         </View>
       );
@@ -752,7 +752,6 @@ console.log("CARD: ", data);
         <MyHeader />
         <TouchableOpacity onLongPress={onDelete} onPress={onAttribute} style={{ width: '100%', backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#0077CC', borderRadius: 8, marginBottom: last?64:8 }}>
           <View style={{ padding: 12 }}>
-            <Text style={{ color: '#222222' }}>{ data.name } Card</Text>
             <CardCompanyName />
             <CardProfessionName />
             <CardTitle />

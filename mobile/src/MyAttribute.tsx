@@ -140,14 +140,6 @@ export function MyAttribute({ route, navigation }) {
     }
   };
 
-  const AttributeFooter = () => {
-    return (
-      <View style={{ position: 'absolute', bottom: 0, padding: 32 }}>
-        <Text style={{ textAlign: 'center', fontSize: 18, color: '#222222' }}>Use the right menu to set access to this attribute.</Text>
-      </View>
-    );
-  };
-
   return (
     <View style={{ flex: 1 }} >
       <AttributeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <AttributeDrawerContent {...props} {...{attributeId: route.params.attributeId, callback: onLabel}} />}>
@@ -156,7 +148,6 @@ export function MyAttribute({ route, navigation }) {
             return (
               <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
                 <MyWebsite params={params} navigation={navigation} />
-                <AttributeFooter />
               </View>
             );
           }
@@ -164,7 +155,6 @@ export function MyAttribute({ route, navigation }) {
             return (
               <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
                 <MySocial params={params} navigation={navigation} />
-                <AttributeFooter />
               </View>
             );
           }
@@ -172,7 +162,6 @@ export function MyAttribute({ route, navigation }) {
             return (
               <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
                 <MyPhone params={params} navigation={navigation} />
-                <AttributeFooter />
               </View>
             );
           }
@@ -180,7 +169,6 @@ export function MyAttribute({ route, navigation }) {
             return (
               <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
                 <MyEmail params={params} navigation={navigation} />
-                <AttributeFooter />
               </View>
             );
           }
@@ -188,15 +176,15 @@ export function MyAttribute({ route, navigation }) {
             return (
               <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
                 <MyHome params={params} navigation={navigation} />
-                <AttributeFooter />
               </View>
             );
           }
           else if(AttributeUtil.isCard(params)) {
             return (
-              <View style={{ flex: 1, backgroundColor: '#aaaaaa' }}>
-                <MyCard params={params} navigation={navigation} />
-                <AttributeFooter />
+              <View style={{ flexGrow: 1, backgroundColor: '#aaaaaa', paddingTop: 16, paddingLeft: 16, paddingRight: 16 }}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={128} style={{ flex: 1 }} >
+                  <MyCard params={params} navigation={navigation} />
+                </KeyboardAvoidingView>
               </View>
             );
           }
@@ -313,7 +301,7 @@ function MyEmail({params, navigation}) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Email Address" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Email Address" autoCapitalize="none" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
     </KeyboardAvoidingView>
   );
 }
@@ -341,22 +329,23 @@ function MyPhone({params, navigation}) {
     }
   };
 
+
   const PhoneSms = () => {
     if(sms) {
       return (
         <TouchableOpacity onPress={() => {smsRef.current=false; setSms(false)}}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
-            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
-            <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
           </View>
         </TouchableOpacity>
       );
     }
     return (
       <TouchableOpacity onPress={() => {smsRef.current=true; setSms(true)}}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
-          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
-          <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
         </View>
       </TouchableOpacity>
     );
@@ -374,8 +363,10 @@ function MyPhone({params, navigation}) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
-      <PhoneSms />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginRight: 16, borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
+        <PhoneSms />
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -417,18 +408,18 @@ function MyHome({params, navigation}) {
     if(sms) {
       return (
         <TouchableOpacity onPress={() => {smsRef.current=false; setSms(false)}}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
-            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
-            <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
+            <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
           </View>
         </TouchableOpacity>
       );
     }
     return (
       <TouchableOpacity onPress={() => {smsRef.current=true; setSms(true)}}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 32 }}>
-          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
-          <Text style={{ color: '#444444', fontSize: 18 }}>SMS Supported</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
+          <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
         </View>
       </TouchableOpacity>
     );
@@ -451,8 +442,10 @@ function MyHome({params, navigation}) {
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="State, Province, or County" placeholderTextColor="#444444" onChangeText={value => {stateRef.current=value; setState(value)}} value={state} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Postal Code" placeholderTextColor="#444444" onChangeText={value => {codeRef.current=value; setCode(value)}} value={code} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Country" placeholderTextColor="#444444" onChangeText={value => {countryRef.current=value; setCountry(value)}} value={country} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
-      <PhoneSms />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginRight: 16, borderRadius: 4 }} placeholder="Phone Number" placeholderTextColor="#444444" onChangeText={value => {phoneRef.current=value; setPhone(value)}} value={phone} />
+        <PhoneSms />
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -460,7 +453,12 @@ function MyHome({params, navigation}) {
 function MyCard({params, navigation}) {
   const [attributeId, setAttributeId] = React.useState(params.attributeId);
   const [schema, setSchema] = React.useState(params.schema);
-  const [name, setName] = React.useState(params.data.name);
+  const [name, setName] = React.useState(params.data.companyName);
+  const [title, setTitle] = React.useState(params.data.title);
+  const [formal, setFormal] = React.useState(params.data.professionName);
+  const [description, setDescription] = React.useState(params.data.companyDescription);
+  const [email, setEmail] = React.useState(params.data.email);
+  const [website, setWebsite] = React.useState(params.data.website);
   const [direct, setDirect] = React.useState(params.data.directPhone);
   const [directSms, setDirectSms] = React.useState(params.data.directPhoneSms);
   const [mobile, setMobile] = React.useState(params.data.mobilePhone);
@@ -474,6 +472,11 @@ function MyCard({params, navigation}) {
   const [country, setCountry] = React.useState(params.data.country);
 
   let nameRef = useRef(name);
+  let titleRef = useRef(title);
+  let formalRef = useRef(formal);
+  let descriptionRef = useRef(description);
+  let emailRef = useRef(email);
+  let websiteRef = useRef(website);
   let directRef = useRef(direct);
   let directSmsRef = useRef(directSms);
   let mainRef = useRef(main);
@@ -489,7 +492,7 @@ function MyCard({params, navigation}) {
   let diatum = useDiatum();
   const onSave = async () => {
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, mainPhone: mainRef.current, mainPhoneSms: mainSmsRef.current, mobilePhone: mobileRef.current, mobileSms: mobileSmsRef.current, directPhone: directRef.current, directPhoneSms: directSmsRef.current, streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current }));
+      diatum.setAttribute(attributeId, schema, JSON.stringify({ companyName: nameRef.current, companyDescription: descriptionRef.current, title: titleRef.current, professionName: formalRef.current, mainPhone: mainRef.current, mainPhoneSms: mainSmsRef.current, mobilePhone: mobileRef.current, mobilePhoneSms: mobileSmsRef.current, directPhone: directRef.current, directPhoneSms: directSmsRef.current, streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current, email: emailRef.current, website: websiteRef.current }));
     }
     catch(err) {
       console.log(err);
@@ -502,7 +505,7 @@ function MyCard({params, navigation}) {
       return (
         <TouchableOpacity onPress={() => {mainSmsRef.current=false; setMainSms(false)}}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
             <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
           </View>
         </TouchableOpacity>
@@ -511,7 +514,7 @@ function MyCard({params, navigation}) {
     return (
       <TouchableOpacity onPress={() => {mainSmsRef.current=true; setMainSms(true)}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
           <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
         </View>
       </TouchableOpacity>
@@ -523,7 +526,7 @@ function MyCard({params, navigation}) {
       return (
         <TouchableOpacity onPress={() => {directSmsRef.current=false; setDirectSms(false)}}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
             <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
           </View>
         </TouchableOpacity>
@@ -532,7 +535,7 @@ function MyCard({params, navigation}) {
     return (
       <TouchableOpacity onPress={() => {directSmsRef.current=true; setDirectSms(true)}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
           <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
         </View>
       </TouchableOpacity>
@@ -544,7 +547,7 @@ function MyCard({params, navigation}) {
       return (
         <TouchableOpacity onPress={() => {mobileSmsRef.current=false; setMobileSms(false)}}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+            <Icon name="check-square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
             <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
           </View>
         </TouchableOpacity>
@@ -553,7 +556,7 @@ function MyCard({params, navigation}) {
     return (
       <TouchableOpacity onPress={() => {mobileSmsRef.current=true; setMobileSms(true)}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, color: '#0077CC' }} />
+          <Icon name="square-o" style={{ marginRight: 8, fontSize: 20, width: 16, color: '#0077CC' }} />
           <Text style={{ color: '#444444', fontSize: 14 }}>SMS</Text>
         </View>
       </TouchableOpacity>
@@ -571,8 +574,12 @@ function MyCard({params, navigation}) {
 
   return (
       <ScrollView>
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "position" : "height"} keyboardVerticalOffset={30} style={{ flex: 1 }}>
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Card Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Company Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Job Title" placeholderTextColor="#444444" onChangeText={value => {titleRef.current=value; setTitle(value)}} value={title} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Professional Name" placeholderTextColor="#444444" onChangeText={value => {formalRef.current=value; setFormal(value)}} value={formal} />
+      <TextInput multiline={true} style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Company Description" placeholderTextColor="#444444" onChangeText={value => {descriptionRef.current=value; setDescription(value)}} value={description} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} autoCapitalize="none" placeholder="Email Address" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} autoCapitalize="none" placeholder="Website" placeholderTextColor="#444444" onChangeText={value => {websiteRef.current=value; setWebsite(value)}} value={website} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Street or PO Box" placeholderTextColor="#444444" onChangeText={value => {streetRef.current=value; setStreet(value)}} value={street} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="City or Town" placeholderTextColor="#444444" onChangeText={value => {cityRef.current=value; setCity(value)}} value={city} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="State, Province, or County" placeholderTextColor="#444444" onChangeText={value => {stateRef.current=value; setState(value)}} value={state} />
@@ -590,7 +597,6 @@ function MyCard({params, navigation}) {
         <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Mobile Phone Number" placeholderTextColor="#444444" onChangeText={value => {mobileRef.current=value; setMobile(value)}} value={mobile} />
         <MobilePhoneSms />
       </View>
-    </KeyboardAvoidingView>
       </ScrollView>
   );
 }
