@@ -133,7 +133,9 @@ export function ContactProfile({ route, navigation }) {
   const updateList = () => {
     diatum.getLabels().then(l => {
       labels.current = l;
-      updateNames();
+      if(contact.showFooter) {
+        updateNames();
+      }
     }).catch(err => {
       console.log(err);
     });
@@ -158,7 +160,6 @@ export function ContactProfile({ route, navigation }) {
   }, []);
 
   const updateNames = () => {
-    console.log("SET NAMES", labels, ids);
     if(ids.current.length == 0 || labels.current.length == 0) {
       setNames("None");
     }
@@ -190,7 +191,9 @@ export function ContactProfile({ route, navigation }) {
       setLatchColor('#0077CC');
       latch.setColor('#0077CC');
     }
-    updateNames();
+    if(contact.showFooter) {
+      updateNames();
+    }
   };
 
   return (
@@ -214,6 +217,7 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const [entry, setEntry] = React.useState(null);
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
+  const [infoHeader, setInfoHeader] = React.useState(null);
 
   let diatum = useDiatum();
   const disconnectContact = async () => {
@@ -287,15 +291,24 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const editNotes = () => {
     setPrompt(true);
   }
-  const deleteNotes = async () => {
-    try {
-      await diatum.clearContactNotes(contact.amigoId);
-    }
-    catch(err) {
-      console.log(err);
-      Alert.alert("failed to delete notes");
-    }
-  }
+  const deleteNotes = () => {
+    const title = 'Do you want to delete the notes?';
+    const message = '';
+    const buttons = [
+        { text: 'Cancel', type: 'cancel' },
+        { text: 'Yes, Delete', onPress: async () => {
+          try {
+            await diatum.clearContactNotes(contact.amigoId);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete notes");
+          }
+        }
+      }
+    ];
+    Alert.alert(title, message, buttons);
+  };
 
   const setHeader = (e: EntryView) => {
     let options = [];
@@ -343,12 +356,6 @@ export function ContactProfilePage({ contact, navigation, names }) {
         options.push("Add Notes");
         actions.push(addNotes);
       }
-      else {
-        options.push("Edit Notes");
-        actions.push(editNotes);
-        options.push("Delete Notes");
-        actions.push(deleteNotes);
-      }
     }
     options.push("Close Menu");
     const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
@@ -369,10 +376,17 @@ export function ContactProfilePage({ contact, navigation, names }) {
     try {
       let a: Attribute[] = await diatum.getContactAttributes(contact.amigoId);
       setAttributes(a);
+      if(a.length > 0 && entry != null && entry.status == 'connected') {
+        setInfoHeader("Contact Info");
+      }
+      else {
+        setInfoHeader(null);
+      }
     }
     catch(err) {
       console.log(err);
       setAttributes([]);
+      setInfoHeader(null);
     }
   };
   const updateAmigo = async () => {
@@ -480,30 +494,14 @@ export function ContactProfilePage({ contact, navigation, names }) {
       return (
         <View style={{ marginTop: 16, width: '100%' }}>
           <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Notes</Text></View>
-          <View style={{ marginLeft: 32, marginRight: 32, marginTop: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }}>
+          <TouchableOpacity onLongPress={deleteNotes} onPress={editNotes} style={{ marginLeft: 32, marginRight: 32, marginTop: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#0077CC' }}>
             <Text style={{ color: '#222222' }}>{entry.notes}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       ); 
     }
     else {
       return (<></>);
-    }
-  }
-
-  const ContactAttributes = () => {
-    if(attributes.length > 0 && entry != null && entry.status == 'connected') { 
-      return (
-        <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
-          <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Contact Info</Text></View>
-          <View style={{ marginBottom: 16 }}>
-            <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
-          </View>
-        </View>
-      )
-    }
-    else {
-      return (<></>)
     }
   }
 
@@ -571,7 +569,12 @@ export function ContactProfilePage({ contact, navigation, names }) {
 
       <ContactNotes />
 
-      <ContactAttributes />
+      <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
+        <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{ infoHeader }</Text></View>
+        <View style={{ marginBottom: 16 }}>
+          <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
+        </View>
+      </View>
 
       <ContactFooter />
 
