@@ -182,7 +182,7 @@ export function MyAttribute({ route, navigation }) {
           }
           else if(AttributeUtil.isCard(params)) {
             return (
-              <View style={{ flexGrow: 1, backgroundColor: '#aaaaaa', paddingTop: 16, paddingLeft: 16, paddingRight: 16 }}>
+              <View style={{ flexGrow: 1, backgroundColor: '#aaaaaa', paddingLeft: 16, paddingRight: 16 }}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={128} style={{ flex: 1 }} >
                   <MyCard params={params} navigation={navigation} />
                 </KeyboardAvoidingView>
@@ -575,7 +575,7 @@ function MyCard({params, navigation}) {
   }, [navigation]);
 
   return (
-      <ScrollView>
+      <ScrollView style={{ paddingTop: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Company Name" placeholderTextColor="#444444" onChangeText={value => {nameRef.current=value; setName(value)}} value={name} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Job Title" placeholderTextColor="#444444" onChangeText={value => {titleRef.current=value; setTitle(value)}} value={title} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Professional Name" placeholderTextColor="#444444" onChangeText={value => {formalRef.current=value; setFormal(value)}} value={formal} />
@@ -588,17 +588,18 @@ function MyCard({params, navigation}) {
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Postal Code" placeholderTextColor="#444444" onChangeText={value => {codeRef.current=value; setCode(value)}} value={code} />
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Country" placeholderTextColor="#444444" onChangeText={value => {countryRef.current=value; setCountry(value)}} value={country} />
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
-        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Direct Phone Number" placeholderTextColor="#444444" onChangeText={value => {directRef.current=value; setDirect(value)}} value={direct} />
-        <DirectPhoneSms />
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
         <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Main Phone Number" placeholderTextColor="#444444" onChangeText={value => {mainRef.current=value; setMain(value)}} value={main} />
         <MainPhoneSms />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
+        <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Direct Phone Number" placeholderTextColor="#444444" onChangeText={value => {directRef.current=value; setDirect(value)}} value={direct} />
+        <DirectPhoneSms />
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginRight: 16 }}>
         <TextInput style={{ flexGrow: 1, backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', marginRight: 16, padding: 8, borderRadius: 4 }} placeholder="Mobile Phone Number" placeholderTextColor="#444444" onChangeText={value => {mobileRef.current=value; setMobile(value)}} value={mobile} />
         <MobilePhoneSms />
       </View>
+      <View style={{ width: '100%', height: 128 }} />
       </ScrollView>
   );
 }

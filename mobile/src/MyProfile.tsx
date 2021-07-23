@@ -609,7 +609,7 @@ function AttributeEntry({item,index,last}) {
     return (<></>);
   }
   const CardDirectPhone = () => {
-    if(data.directPhone != null) {
+    if(data.directPhone != null && data.directPhone != '') {
       return (
         <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -617,7 +617,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Direct Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.directPhone }&nbsp;&nbsp;{ data.directPhoneSms?'[text]':'' }</Text>
+            <Text style={{ color: '#444444' }}>{ data.directPhone }&nbsp;&nbsp;{ data.directPhoneSms?'[sms]':'' }</Text>
           </View>
         </View>
       );
@@ -625,7 +625,7 @@ function AttributeEntry({item,index,last}) {
     return (<></>);
   }
   const CardMainPhone = () => {
-    if(data.mainPhone != null) {
+    if(data.mainPhone != null && data.mainPhone != '') {
       return (
         <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -633,7 +633,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Main Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.mainPhone }&nbsp;&nbsp;{ data.mainPhoneSms?'[text]':'' }</Text>
+            <Text style={{ color: '#444444' }}>{ data.mainPhone }&nbsp;&nbsp;{ data.mainPhoneSms?'[sms]':'' }</Text>
           </View>
         </View>
       );
@@ -641,7 +641,7 @@ function AttributeEntry({item,index,last}) {
     return (<></>);
   }
   const CardMobilePhone = () => {
-    if(data.mobilePhone != null) {
+    if(data.mobilePhone != null && data.mobilePhone != '') {
       return (
         <View style={{ flexDirection: 'row', paddingLeft: 4, paddingTop: 8 }}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -649,7 +649,7 @@ function AttributeEntry({item,index,last}) {
           </View>
           <View style={{ flexGrow: 1 }}>
             <Text>Mobile Phone</Text>
-            <Text style={{ color: '#444444' }}>{ data.mobilePhone }&nbsp;&nbsp;{ data.mobilePhoneSms?'[text]':'' }</Text>
+            <Text style={{ color: '#444444' }}>{ data.mobilePhone }&nbsp;&nbsp;{ data.mobilePhoneSms?'[sms]':'' }</Text>
           </View>
         </View>
       );
@@ -661,7 +661,7 @@ function AttributeEntry({item,index,last}) {
       return (
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flexGrow: 1 }}>
-            <Text style={{ color: '#444444' }}>{ data.phoneNumber }&nbsp;&nbsp;{ data.phoneNumberSms?'[text]':'' }</Text>
+            <Text style={{ color: '#444444' }}>{ data.phoneNumber }&nbsp;&nbsp;{ data.phoneNumberSms?'[sms]':'' }</Text>
           </View>
         </View>
       );
@@ -778,11 +778,6 @@ function AttributeEntry({item,index,last}) {
     );
   }
   else if(AttributeUtil.isPhone(item)) {
-    let sms: string = "";
-    if(data.phoneSms) {
-      sms = "[text]";
-    }
-
     return (
       <View style={{ width: '100%'}}>
         <MyHeader />
@@ -790,7 +785,7 @@ function AttributeEntry({item,index,last}) {
           <View style={{ flexDirection: 'row', padding: 12 }}>
             <View style={{ flexGrow: 1 }}>
               <Text>{data.category} Phone</Text>
-              <Text style={{ color: '#444444' }}>{data.phone}&nbsp;&nbsp;{sms}</Text>
+              <Text style={{ color: '#444444' }}>{data.phone}&nbsp;&nbsp;{data.phoneSms?'[sms]':''}</Text>
             </View>
           </View>
           <View style={{ position: 'absolute', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -816,7 +811,7 @@ function AttributeEntry({item,index,last}) {
     );
   }
   else {
-    return (<Text>TEXT</Text>);
+    return (<></>);
   }
 }
 
