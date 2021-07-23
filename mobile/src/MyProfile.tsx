@@ -213,8 +213,8 @@ function MyProfilePage({ navigation, labelId }) {
   }
 
   React.useLayoutEffect(() => {
-    let opt = [ "Phone Number", "Email Address", "Home Address", "Business Card", "Website", "Social & Messaging", "Close Menu" ];
-    let act = [ onPhone, onEmail, onAddress, onBusiness, onWebsite, onSocial, ()=>{} ];
+    let opt = [ "Phone Number", "Email Address", "Home Location", "Business Card", "Social & Messaging", "Website", "Close Menu" ];
+    let act = [ onPhone, onEmail, onAddress, onBusiness, onSocial, onWebsite, ()=>{} ];
     const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, width: 48, textAlign: 'center' }} />);
     navigation.setOptions({ 
       title: identity.handle,
@@ -542,7 +542,7 @@ function AttributeEntry({item,index,last}) {
     }
     return (
       <View style={{ width: '100%' }}>
-        <Text style={{ color: '#ffffff', fontWeight: 'bold', textAlign: 'center' }}>My Attributes</Text>
+        <Text style={{ color: '#ffffff', fontWeight: 'bold', textAlign: 'center' }}>My Info</Text>
       </View>
     )
   } 
@@ -693,7 +693,7 @@ function AttributeEntry({item,index,last}) {
  
   let diatum = useDiatum(); 
   const onDelete = () => {
-    const title = 'Do you want to delete this attribute?';
+    const title = 'Do you want to delete this entry?';
     const message = '';
     const buttons = [
         { text: 'Cancel', type: 'cancel' },

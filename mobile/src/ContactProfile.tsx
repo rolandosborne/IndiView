@@ -119,7 +119,7 @@ export function ContactProfile({ route, navigation }) {
   const [contact, setContact] = React.useState(route.params);
   const [amigoLabels, setAmigoLabels] = React.useState([]);
   const [latchColor, setLatchColor] = React.useState('#282827');
-  const [names, setNames] = React.useState("None");
+  const [names, setNames] = React.useState(null);
 
   const labels = useRef([]);
   const ids = useRef([]);
@@ -217,7 +217,6 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const [entry, setEntry] = React.useState(null);
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
-  const [infoHeader, setInfoHeader] = React.useState(null);
 
   let diatum = useDiatum();
   const disconnectContact = async () => {
@@ -376,17 +375,10 @@ export function ContactProfilePage({ contact, navigation, names }) {
     try {
       let a: Attribute[] = await diatum.getContactAttributes(contact.amigoId);
       setAttributes(a);
-      if(a.length > 0 && entry != null && entry.status == 'connected') {
-        setInfoHeader("Contact Info");
-      }
-      else {
-        setInfoHeader(null);
-      }
     }
     catch(err) {
       console.log(err);
       setAttributes([]);
-      setInfoHeader(null);
     }
   };
   const updateAmigo = async () => {
@@ -510,15 +502,15 @@ export function ContactProfilePage({ contact, navigation, names }) {
   };
 
   const ContactFooter = () => {
-    if(contact.showFooter && entry != null) {
+    if(contact.showFooter && entry != null && names != null) {
       return (
         <SafeAreaView style={{ marginTop: 16, width: '100%', flex: 1 }} forceInset={{ top: 'never' }}>
           <View style={{ width: '100%', alignItems: 'center' }}>
             <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Labels</Text>
           </View>
           <View style={{ marginTop: 4, paddingLeft: 16, paddingRight: 16 }}>
-            <TouchableOpacity style={{ width: '100%', borderRadius: 8, height: 32, padding: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }} onPress={onAssign}>
-              <Text style={{ color: '#0077CC' }}>{ names }</Text>
+            <TouchableOpacity style={{ width: '100%', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }} onPress={onAssign}>
+              <Text style={{ margin: 8, color: '#0077CC' }}>{ names }</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -570,7 +562,7 @@ export function ContactProfilePage({ contact, navigation, names }) {
       <ContactNotes />
 
       <View style={{ flex: 1, marginBottom: 16, marginTop: 16, width: '100%' }}>
-        <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{ infoHeader }</Text></View>
+        <View style={{ width: '100%', alignItems: 'center' }}><Text style={{ color: '#ffffff', fontWeight: 'bold', height: 18 }}>{ (attributes.length>0&&entry!=null&&entry.status=='connected')?'Contact Info':'' }</Text></View>
         <View style={{ marginBottom: 16 }}>
           <FlatList style={{ marginLeft: 32, marginRight: 32, marginTop: 0, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#aaaaaa' }} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item}) => <AttributeEntry item={item} /> } />
         </View>

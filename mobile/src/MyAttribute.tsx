@@ -433,7 +433,7 @@ function MyHome({params, navigation}) {
         <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
       </TouchableOpacity>
     );
-    navigation.setOptions({ title: 'Home', headerRight: () => save });
+    navigation.setOptions({ title: 'Home Location', headerRight: () => save });
   }, [navigation]);
 
   return (
