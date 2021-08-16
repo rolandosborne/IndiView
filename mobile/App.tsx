@@ -27,6 +27,7 @@ import { Conversation } from "./src/Conversation";
 
 import { ContactSearch } from "./src/ContactSearch";
 import { ManageLabels } from "./src/ManageLabels";
+import { ContactRequests } from "./src/ContactRequests";
 
 // schema identifiers
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
@@ -250,6 +251,7 @@ function MainScreen() {
       <MainStack.Screen name="Contact Search" component={ContactSearch} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Search Profile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Manage Labels" component={ManageLabels} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Contact Requests" component={ContactRequests} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
 }
@@ -320,8 +322,9 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
         props.navigate("Manage Labels");
       }} />
-      <DrawerItem label={'Contacts Updates'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
+        props.navigate("Contact Requests");
       }} />
       <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();

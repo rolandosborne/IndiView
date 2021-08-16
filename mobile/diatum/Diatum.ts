@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView, ContactReqeust } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -67,6 +67,9 @@ export interface Diatum {
   // remove added listener
   clearListener(callback: () => void): Promise<void>;
 
+  // get registry amigo object
+  getRegistryAmigo(amigoId: string, registry: string): Promise<Amigo>;
+
   // get registry profile image
   getRegistryImage(amigoId: string, registry: string): string;
 
@@ -119,7 +122,7 @@ export interface Diatum {
   clearAttributeLabel(attributeId: string, labelId: string): Promise<void>
 
   // get contacts
-  getContacts(labelId: string): Promise<ContactEntry[]>
+  getContacts(labelId: string, status: string): Promise<ContactEntry[]>
 
   // get specified contact
   getContact(amigoId: string): Promise<ContactEntry>
@@ -156,6 +159,9 @@ export interface Diatum {
 
   // clear contact notes
   clearContactNotes(amigoId: string): Promise<void>
+
+  // get contact requests
+  getContactRequests(): Promise<ContactRequest[]>
 }
 
 async function asyncForEach(map, handler) {
@@ -1225,8 +1231,8 @@ class _Diatum {
     await this.syncProfile();
   }
 
-  public async getContacts(labelId: string): Promise<ContactEntry[]> {
-    let c: Contact = await this.storage.getContacts(this.session.amigoId, labelId);
+  public async getContacts(labelId: string, status: string): Promise<ContactEntry[]> {
+    let c: Contact = await this.storage.getContacts(this.session.amigoId, labelId, status);
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
@@ -1352,6 +1358,9 @@ class _Diatum {
     await this.syncIndex();
   }
 
+  public async getContactRequests(): Promise<ContactRequest[]> {
+    return await this.storage.getPendingAmigos(this.session.amigoId);
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1459,6 +1468,11 @@ async function setProfileDescription(value: string): Promise<void> {
   return diatum.setProfileDescription(value);
 }
 
+async function getRegistryAmigo(amigoId: string, registry: string): Promise<Amigo> {
+  let msg = await DiatumApi.getRegistryMessage(registry, amigoId);
+  return getAmigoObject(msg);
+}
+
 function getRegistryImage(amigoId: string, registry: string): string {
   return registry + "/amigo/messages/logo?amigoId=" + amigoId;
 }
@@ -1528,9 +1542,9 @@ async function clearAttributeLabel(attributeId: string, labelId: string): Promis
   return await diatum.clearAttributeLabel(attributeId, labelId);
 }
 
-async function getContacts(labelId: string): Promise<ContactEntry[]> {
+async function getContacts(labelId: string, status: string): Promise<ContactEntry[]> {
   let diatum = await getInstance();
-  return await diatum.getContacts(labelId);
+  return await diatum.getContacts(labelId, status);
 }
 
 async function getContact(amigoId: string): Promise<ContactEntry> {
@@ -1593,11 +1607,19 @@ async function clearContactNotes(amigoId: string): Promise<void> {
   return await diatum.clearContactNotes(amigoId);
 }
 
+async function getContactRequests(): Promise<ContactRequest[]> {
+  let diatum = await getInstance();
+  return await diatum.getContactRequests();
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, getRegistryImage, setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
+    setListener, clearListener, 
+    getRegistryAmigo, getRegistryImage, 
+    setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
     getIdentity, getLabels, getLabelCount, addLabel, updateLabel, removeLabel, 
     getAttributes, addAttribute, removeAttribute, setAttribute, getAttributeLabels, setAttributeLabel, clearAttributeLabel,
     getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
-    addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes };
+    addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
+    getContactRequests };
 

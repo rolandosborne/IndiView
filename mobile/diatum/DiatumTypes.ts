@@ -60,6 +60,11 @@ export interface Amigo {
   handle?: string;
 }
 
+export interface ContactRequest {
+  shareId: string;
+  amigo: Amigo;
+}
+
 export interface AuthMessage { 
   amigo: AmigoMessage;
   data: string;
