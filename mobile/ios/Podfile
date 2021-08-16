@@ -28,5 +28,4 @@ target 'IndiView' do
   end
 end
 
-pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
 

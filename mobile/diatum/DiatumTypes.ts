@@ -115,6 +115,12 @@ export interface LabelEntry {
     revision?: number;
 }
 
+export interface LabelCount {
+  attribute: number
+  story: number;
+  contact: number;
+}
+
 export interface AmigoView {
     amigoId: string;
     revision: number;

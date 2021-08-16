@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb } from './DiatumTypes';
+import { LabelEntry, LabelCount, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb } from './DiatumTypes';
 
 // helper funtions
 function decodeObject(s: string): any {
@@ -510,6 +510,17 @@ export class Storage {
     }
     return labels;
   }
+  public async getLabelCount(id: string, labelId: string): Promise<LabelCount> {
+    let res = await this.db.executeSql("select count(distinct profilegroup_" + id + ".attribute_id) as profile_count, count(distinct indexgroup_" + id + ".amigo_id) as index_count, count(distinct showgroup_" + id + ".subject_id) as show_count from group_" + id + " left outer join showgroup_" + id + " on showgroup_" + id + ".label_id = group_" + id + ".label_id left outer join indexgroup_" + id + " on indexgroup_" + id + ".label_id = group_" + id + ".label_id left outer join profilegroup_" + id + " on profilegroup_" + id + ".label_id = group_" + id + ".label_id where group_" + id + ".label_id=?", [labelId]);
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        return { contact: item.index_count, attribute: item.profile_count, story: item.show_count };
+      }
+    }
+    return { contact: 0, attribute: 0, show: 0 };
+  }
+
   public async getAttributes(id: string, labelId: string): Promise<Attribute[]> {
     let res;
     if(labelId == null) {

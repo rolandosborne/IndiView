@@ -1,6 +1,6 @@
 import { Revisions, Amigo, LabelEntry, LabelView, AmigoEntry, AmigoView, PendingAmigo, PendingAmigoView, AttributeEntry, AttributeEntryView, SubjectView, SubjectEntry, SubjectTag, ShareMessage, ShareStatus, ShareEntry, ShareView, InsightView, DialogueView, Dialogue, TopicView, Topic } from './DiatumTypes';
 
-const FETCH_TIMEOUT = 5000;
+const FETCH_TIMEOUT = 15000;
 
 function checkResponse(response) {
   if(response.status >= 400 && response.status < 600) {
@@ -47,21 +47,21 @@ export class DiatumApi {
     return await labelResponse.json();
   }
 
-  public static async  addLabel(node: string, token: string, name: string): Promise<LabelEntry> {
-    let labelResponse = await fetchWithTimeout(node + "/group/labels/?token=" + token + "&name=" + encodeURIComponent(name), { method: 'POST', timeout: FETCH_TIMEOUT });
-    checkResponse(labelResponse);
-    return await labelResponse.json();
+  public static async addLabel(node: string, token: string, name: string): Promise<LabelEntry> {
+    let response = await fetchWithTimeout(node + "/group/labels?token=" + encodeURIComponent(token) + "&name=" + encodeURIComponent(name), { method: 'POST', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
   }
 
   public static async updateLabel(node: string, token: string, labelId: string, name: string): Promise<LabelEntry> {
-    let labelResponse = await fetchWithTimeout(node + "/group/labels/" + labelId + "/name?token=" + encodeURIComponent(token) + "&name=" + encodeURIComponent(name), { method: 'PUT', timeout: FETCH_TIMEOUT });
-    checkResponse(labelResponse);
-    return await labelResponse.json();
+    let response = await fetchWithTimeout(node + "/group/labels/" + labelId + "/name?token=" + encodeURIComponent(token) + "&name=" + encodeURIComponent(name), { method: 'PUT', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
   }
 
-  public static async removeLabel(node: string, token: string, id: string): Promise<void> {
-    let removeResponse = await fetchWithTimeout(node + "/group/labels/" + id + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
-    checkResponse(removeResponse);
+  public static async removeLabel(node: string, token: string, labelId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/group/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
   }
 
   public static async getAmigoViews(node: string, token: string): Promsie<AmigoView[]> {

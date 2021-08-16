@@ -102,8 +102,6 @@ function SearchEntry({item, index}) {
     imgSrc = { uri: diatum.getRegistryImage(item.amigoId, item.registry), cache: 'force-cache' };
   }
 
-console.log(item);
-
   let navigation = useNavigation();
   let onProfile = async () => {
     let imgUrl = null;

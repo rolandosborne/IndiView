@@ -88,6 +88,18 @@ export interface Diatum {
   // get account labels
   getLabels(): Promise<LabelEntry[]>
 
+  // add account label
+  addLabel(name: string): Promise<LabelEntry>
+
+  // update account label
+  updateLabel(labelId: string, name: string): Promise<LabelEntry>
+
+  // remove account label 
+  removeLabel(labelId: string): Promise<void>
+
+  // get label usage
+  getLabelCount(labelId: string): Promise<LabelCount>
+
   // get account attributes
   getAttributes(labelId: string): Promise<Attribute[]>
 
@@ -634,7 +646,7 @@ class _Diatum {
         notify = true;
       }
       else if(localMap.get(key) != value) {
-        let entry = await this.groupService.getLabel(this.node, this.token, key);
+        let entry = await DiatumApi.getLabel(this.session.amigoNode, this.session.amigoToken, key);
         await this.storage.updateLabel(this.session.amigoId, entry);
         notify = true;
       }
@@ -1158,6 +1170,27 @@ class _Diatum {
     return await this.storage.getLabels(this.session.amigoId);
   }
 
+  public async addLabel(name: string): Promise<LabelEntry> {
+    let l = await DiatumApi.addLabel(this.session.amigoNode, this.session.amigoToken, name);
+    await this.syncGroup();
+    return l;
+  }
+
+  public async updateLabel(labelId: string, name: string): Promise<LabelEntry> {
+    let l = await DiatumApi.updateLabel(this.session.amigoNode, this.session.amigoToken, labelId, name);
+    await this.syncGroup();
+    return l;
+  }
+
+  public async removeLabel(labelId: string): Promise<void> {
+    let l = await DiatumApi.removeLabel(this.session.amigoNode, this.session.amigoToken, labelId);
+    await this.syncGroup();
+  }
+
+  public async getLabelCount(labelId: string): Promise<LabelCount> {
+    return await this.storage.getLabelCount(this.session.amigoId, labelId);
+  }
+
   public async getAttributes(labelId: string): Promise<Attribute[]> {
     return await this.storage.getAttributes(this.session.amigoId, labelId);
   }
@@ -1440,6 +1473,26 @@ async function getLabels(): Promise<LabelEntry[]> {
   return await diatum.getLabels();
 }
 
+async function addLabel(name: string): Promise<LabelEntry> {
+  let diatum = await getInstance();
+  return await diatum.addLabel(name);
+}
+
+async function updateLabel(labelId: string, name: string): Promise<LabelEntry> {
+  let diatum = await getInstance();
+  return await diatum.updateLabel(labelId, name);
+}
+
+async function removeLabel(labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeLabel(labelId);
+}
+
+async function getLabelCount(labelId: string): Promise<LabelCount> {
+  let diatum = await getInstance();
+  return await diatum.getLabelCount(labelId);
+}
+
 async function getAttributes(labelId: string): Promise<Attribute[]> {
   let diatum = await getInstance();
   return await diatum.getAttributes(labelId);
@@ -1542,7 +1595,7 @@ async function clearContactNotes(amigoId: string): Promise<void> {
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, getRegistryImage, setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
-    getIdentity, getLabels, 
+    getIdentity, getLabels, getLabelCount, addLabel, updateLabel, removeLabel, 
     getAttributes, addAttribute, removeAttribute, setAttribute, getAttributeLabels, setAttributeLabel, clearAttributeLabel,
     getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
