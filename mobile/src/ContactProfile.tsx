@@ -236,6 +236,10 @@ export function ContactProfilePage({ contact, navigation, names }) {
     ];
     Alert.alert(title, message, buttons);
   };
+  const saveAcceptContact = async () => {
+    await saveContact();
+    await acceptContact();
+  }
   const saveContact = async () => {
     try {
       await diatum.addContact(contact.amigoId, contact.registry);
@@ -313,6 +317,10 @@ export function ContactProfilePage({ contact, navigation, names }) {
     let options = [];
     let actions = [];
     if(e == null) {
+      if(contact.requested) {
+        options.push("Accept Connection");
+        actions.push(saveAcceptContact);
+      }
       options.push("Save Contact");
       actions.push(saveContact);
       options.push("Report Profile");

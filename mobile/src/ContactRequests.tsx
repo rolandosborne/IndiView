@@ -27,7 +27,7 @@ export function ContactRequests({ navigation }) {
     // retrieve saved entries
     let s = await diatum.getContacts(null, "received");
     for(let i = 0; i < s.length; i++) {
-      req.push({ pending: false, id: s[i].amigoId, entry: s[i] });
+      req.push({ pending: false, id: s[i].amigoId, name: s[i].name, entry: s[i] });
     }
 
     // retrieve unsaved entries
@@ -35,13 +35,14 @@ export function ContactRequests({ navigation }) {
     for(let i = 0; i < p.length; i++) {
       try {
         let amigo = await diatum.getRegistryAmigo(p[i].amigo.amigoId, p[i].amigo.registry);
-        req.push({ pending: true, id: p[i].shareId, amigo: amigo });
+        req.push({ pending: true, id: p[i].shareId, name: amigo.name, amigo: amigo });
       }
       catch(err) {
         console.log(err);
-        req.push({ pending: true, id: p[i].shareId, amigo: {} });
+        req.push({ pending: true, id: p[i].shareId, name: null, amigo: {} });
       }
     }
+    req.sort((a, b) => (a.name < b.name) ? -1 : 1);
     setRequests(req);
   }, []);
   return (
@@ -65,8 +66,18 @@ function SavedEntry({item}) {
     imgSrc = { uri: item.entry.imageUrl, cache: 'force-cache' };
   }
 
+  let navigation = useNavigation();
+  let onSavedProfile = async () => {
+    let imgUrl = null;
+    if(item.entry.registry != null && item.entry.logoSet) {
+      imgUrl = await diatum.getRegistryImage(item.entry.amigoId, item.entry.registry);
+    }
+    let view = { amigoId: item.entry.amigoId, name: item.entry.name, handle: item.entry.handle, imageUrl: imgUrl, registry: item.entry.registry, location: item.entry.location, description: item.entry.description, showFooter: true, saved: null, requested: true };
+    navigation.navigate("Contact Profile", {...view});
+  }
+
   return (
-    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
+    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onSavedProfile}>
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#888888' }} source={imgSrc}/>
       </View>
@@ -79,6 +90,7 @@ function SavedEntry({item}) {
 }
 
 function PendingEntry({item}) {
+  let diatum = useDiatum();
   let imgSrc = {};
   if(item.amigo == null || item.amigo.logo == null || item.amigo.amigoId == null) {
     imgSrc = require('../assets/avatar.png');
@@ -87,8 +99,18 @@ function PendingEntry({item}) {
     imgSrc = { uri: diatum.getRegistryImage(item.amigo.amigoId, item.amigo.registry), cache: 'force-cache' };
   }
 
+  let navigation = useNavigation();
+  let onPendingProfile = async () => {
+    let imgUrl = null;
+    if(item.amigo.registry != null && item.amigo.logo != null) {
+      imgUrl = await diatum.getRegistryImage(item.amigo.amigoId, item.amigo.registry);
+    }
+    let view = { amigoId: item.amigo.amigoId, name: item.amigo.name, handle: item.amigo.handle, imageUrl: imgUrl, registry: item.amigo.registry, location: item.amigo.location, description: item.amigo.description, showFooter: true, saved: null, requested: true };
+    navigation.navigate("Contact Profile", {...view});
+  }
+
   return (
-    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }}>
+    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onPendingProfile}>
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#ffff00' }} source={imgSrc}/>
       </View>

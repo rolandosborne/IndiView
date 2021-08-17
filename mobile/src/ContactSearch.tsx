@@ -109,7 +109,7 @@ function SearchEntry({item, index}) {
       imgUrl = await diatum.getRegistryImage(item.amigoId, item.registry);
     }
     let view = { amigoId: item.amigoId, name: item.name, handle: item.handle, imageUrl: imgUrl, registry: item.registry, location: item.location, description: item.description, showFooter: true, saved: null };
-    navigation.navigate("Search Profile", {...view});
+    navigation.navigate("Contact Profile", {...view});
   }
 
   return (

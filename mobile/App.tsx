@@ -249,7 +249,7 @@ function MainScreen() {
     <MainStack.Navigator initialRouteName="Home" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <MainStack.Screen name="Home" component={HomeNavScreen} options={{headerShown: false}} />
       <MainStack.Screen name="Contact Search" component={ContactSearch} options={{headerBackTitle: null, headerShown: true}} />
-      <MainStack.Screen name="Search Profile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Contact Profile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Manage Labels" component={ManageLabels} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Contact Requests" component={ContactRequests} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
