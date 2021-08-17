@@ -21,7 +21,16 @@ export function ContactRequests({ navigation }) {
   const [requests, setRequests] = React.useState([]);  
 
   let diatum = useDiatum();
-  useEffect(async () => {
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Share, updateRequests);
+    diatum.setListener(DiatumEvent.Pending, updateRequests);
+    return () => {
+      diatum.clearListener(DiatumEvent.Share, updateRequests);
+      diatum.clearListener(DiatumEvent.Pending, updateRequests);
+    }
+  }, []);
+
+  const updateRequests = async () => {
     let req: ContactRequest[] = [];
     
     // retrieve saved entries
@@ -44,7 +53,8 @@ export function ContactRequests({ navigation }) {
     }
     req.sort((a, b) => (a.name < b.name) ? -1 : 1);
     setRequests(req);
-  }, []);
+  };
+  
   return (
     <FlatList style={{ paddingTop: 16, flex: 1 }} data={requests} keyExtractor={item => item.id} renderItem={({item}) => { 
       if(item.pending) {
@@ -66,6 +76,25 @@ function SavedEntry({item}) {
     imgSrc = { uri: item.entry.imageUrl, cache: 'force-cache' };
   }
 
+  let diatum = useDiatum();
+  const onDenySaved = () => {
+    const title = "Do you want to deny the request?";
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Deny', onPress: async () => {
+          try {
+            await diatum.closeContactConnection(item.id);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete label");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
+  }
+
   let navigation = useNavigation();
   let onSavedProfile = async () => {
     let imgUrl = null;
@@ -77,7 +106,7 @@ function SavedEntry({item}) {
   }
 
   return (
-    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onSavedProfile}>
+    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onSavedProfile} onLongPress={onDenySaved}>
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#888888' }} source={imgSrc}/>
       </View>
@@ -99,6 +128,24 @@ function PendingEntry({item}) {
     imgSrc = { uri: diatum.getRegistryImage(item.amigo.amigoId, item.amigo.registry), cache: 'force-cache' };
   }
 
+  const onDenyPending = () => {
+    const title = "Do you want to deny the request?";
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Deny', onPress: async () => {
+          try {
+            await diatum.clearContactRequest(item.id);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete label");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
+  }
+
   let navigation = useNavigation();
   let onPendingProfile = async () => {
     let imgUrl = null;
@@ -110,7 +157,7 @@ function PendingEntry({item}) {
   }
 
   return (
-    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onPendingProfile}>
+    <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onPendingProfile} onLongPress={onDenyPending}>
       <View style={{ width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }}>
         <Image style={{ width: 48, height: 48, borderRadius: 32, borderWidth: 2, borderColor: '#ffff00' }} source={imgSrc}/>
       </View>

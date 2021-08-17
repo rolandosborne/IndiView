@@ -115,7 +115,7 @@ function RootScreen({ navigation }) {
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v101.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v103.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -314,13 +314,13 @@ function HomeDrawerContent(props) {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
-        props.navigation.closeDrawer();
-        props.navigate('Contact Search');
-      }} />
       <DrawerItem label={'Manage Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Manage Labels");
+      }} />
+      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
+        props.navigation.closeDrawer();
+        props.navigate('Contact Search');
       }} />
       <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();

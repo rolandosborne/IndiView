@@ -111,6 +111,11 @@ export class DiatumApi {
     return await pendingResponse.json();
   }
 
+  public static async removePendingAmigo(node: string, token: string, shareId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/index/requests/" + shareId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
   public static async getAttributeViews(node: string, token: string, filter: string[]): Promise<AttributeView[]> {
     let viewsResponse = await fetchWithTimeout(node + "/profile/attributes/view?token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filter), timeout: FETCH_TIMEOUT });
     checkResponse(viewsResponse);

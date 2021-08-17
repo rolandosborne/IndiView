@@ -162,6 +162,9 @@ export interface Diatum {
 
   // get contact requests
   getContactRequests(): Promise<ContactRequest[]>
+
+  // clear contact request
+  clearContactRequest(shareId: string): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -767,7 +770,7 @@ class _Diatum {
     });
 
     // remove old pending requests
-    asyncForEach(localReqMap, async (value, key) => {
+    await asyncForEach(localReqMap, async (value, key) => {
       if(!remoteReqMap.has(key)) {
         await this.storage.removePendingAmigo(this.session.amigoId, key);
         notify = true;
@@ -1361,6 +1364,11 @@ class _Diatum {
   public async getContactRequests(): Promise<ContactRequest[]> {
     return await this.storage.getPendingAmigos(this.session.amigoId);
   }
+
+  public async clearContactRequest(shareId: string): Promise<void> {
+    await DiatumApi.removePendingAmigo(this.session.amigoNode, this.session.amigoToken, shareId);
+    await this.syncPending();
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1612,6 +1620,11 @@ async function getContactRequests(): Promise<ContactRequest[]> {
   return await diatum.getContactRequests();
 }
 
+async function clearContactRequest(shareId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.clearContactRequest(shareId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1621,5 +1634,5 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
-    getContactRequests };
+    getContactRequests, clearContactRequest };
 
