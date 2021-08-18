@@ -82,21 +82,19 @@ export function ManageLabels({ navigation }) {
 
   return (
     <View style={{ flex: 1, width: '100%' }}>
-      <View style={{ flex: 1, width: '100%', paddingLeft: 16, paddingRight: 16 }}>
-        <View style={{ height: 48, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end', borderBottomWidth: 2, borderColor: '#dddddd', paddingBottom: 4 }}>
-          <Text style={{ color: '#999999', fontSize: 14, flexGrow: 1 }}>Name</Text>
-          <View style={{ width: 48, alignItems: 'center' }}>
-            <Icon name="user" size={14} color={'#999999'} solid />
-          </View>
-          <View style={{ width: 48, alignItems: 'center' }}>
-            <Icon name="file-text-o" size={14} color={'#999999'} solid />
-          </View>
-          <View style={{ width: 48, alignItems: 'center' }}>
-            <Icon name="file-picture-o" size={14} color={'#999999'} solid />
-          </View>
+      <View style={{ height: 48, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end', paddingLeft: 16, paddingRight: 16, borderBottomWidth: 2, borderColor: '#dddddd', paddingBottom: 4, backgroundColor: '#dddddd' }}>
+        <Text style={{ color: '#444444', fontSize: 16, flexGrow: 1 }}>Name</Text>
+        <View style={{ width: 48, alignItems: 'center' }}>
+          <Icon name="user" size={16} color={'#444444'} solid />
         </View>
-        <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item}) => <LabelName item={item} set={onEdit} clear={onDelete} /> } />
+        <View style={{ width: 48, alignItems: 'center' }}>
+          <Icon name="file-text-o" size={16} color={'#444444'} solid />
+        </View>
+        <View style={{ width: 48, alignItems: 'center' }}>
+          <Icon name="file-picture-o" size={16} color={'#444444'} solid />
+        </View>
       </View>
+      <FlatList style={{ paddingLeft: 16, paddingRight: 16 }} data={labels} keyExtractor={item => item.labelId} renderItem={({item}) => <LabelName item={item} set={onEdit} clear={onDelete} /> } />
       <PromptLabel prompt={prompt} label={label} saved={onSave} closed={onClose} />
     </View>
   )
