@@ -22,6 +22,7 @@ let contactNav = null;
 export class EntryView {
   notes: string;
   status: string;
+  blocked: string;
   errorFlag: boolean;
 }
 
@@ -33,6 +34,7 @@ export class ProfileView {
   location: string;
   description: string;
   showFooter: boolean;
+  blocked: boolean;
   saved: ProfileSavedView;
 }
 
@@ -290,8 +292,23 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const reportContact = () => {
     console.log("report");
   }
-  const blockContact = () => {
-    console.log("block");
+  const blockContact = async () => {
+    try {
+      await diatum.setBlockedContact(contact.amigoId, true);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to block contact");
+    }
+  }
+  const unblockContact = async () => {
+    try {
+      await diatum.setBlockedContact(contact.amigoId, false);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to block contact");
+    }
   }
   const addNotes = () => {
     setPrompt(true);
@@ -359,10 +376,18 @@ export function ContactProfilePage({ contact, navigation, names }) {
       options.push("Delete Contact");
       actions.push(deleteContact);
     }
+    if(e != null) {
+      if(e.blocked) {
+        options.push("Unblock Contact");
+        actions.push(unblockContact);
+      }
+      else {
+        options.push("Block Contact");
+        actions.push(blockContact);
+      }
+    }
     options.push("Report Contact");
     actions.push(reportContact);
-    options.push("Block Contact");
-    actions.push(blockContact);
     options.push("Close Menu");
     const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
 
@@ -392,8 +417,8 @@ export function ContactProfilePage({ contact, navigation, names }) {
     try {
       let c: ContactEntry = await diatum.getContact(contact.amigoId);
       if(c != null) {
-        setEntry({ status: c.status, notes: c.notes, errorFlag: c.errorFlag });
-        setHeader({ status: c.status, notes: c.notes, errorFlag: c.errorFlag });
+        setEntry({ status: c.status, notes: c.notes, errorFlag: c.errorFlag, blocked: c.blocked });
+        setHeader({ status: c.status, notes: c.notes, errorFlag: c.errorFlag, blocked: c.blocked });
       }
       else {
         setEntry(null);

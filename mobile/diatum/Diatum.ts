@@ -165,6 +165,12 @@ export interface Diatum {
 
   // clear contact request
   clearContactRequest(shareId: string): Promise<void>
+
+  // get blocked contacts
+  getBlockedContacts(): Promise<ContactEntry[]>
+
+  // set blocked state
+  setBlockedContact(amigoId: string, block: boolean): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -1239,7 +1245,7 @@ class _Diatum {
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
     }
     return entries;
   }
@@ -1250,7 +1256,7 @@ class _Diatum {
       return null;
     }
     let url: string = c.logoSet ? this.session.amigoNode + "/index/amigos/" + c.amigoId + "/logo?token=" + this.session.amigoToken : null;
-    return { amigoId: c.amigoId, name: c.name, handle: c.handle, registry: c.registry, location: c.location, description: c.description, notes: c.notes, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
+    return { amigoId: c.amigoId, name: c.name, handle: c.handle, registry: c.registry, location: c.location, description: c.description, notes: c.notes, blocked: c.blocked, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
   }
 
   public async getContactAttributes(amigoId: string): Promise<Attribute[]> {
@@ -1369,6 +1375,22 @@ class _Diatum {
     await DiatumApi.removePendingAmigo(this.session.amigoNode, this.session.amigoToken, shareId);
     await this.syncPending();
   }
+
+  public async getBlockedContacts(): Promise<ContactEntry[]> {
+    let c: Contact = await this.storage.getBlockedContacts(this.session.amigoId);
+    let entries: ContactEntry[] = [];
+    for(let i = 0; i < c.length; i++) {
+      let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+    }
+    return entries;
+  }
+
+  public async setBlockedContact(amigoId: string, block: boolean): Promise<void> {
+    await this.storage.setBlockedContact(this.session.amigoId, amigoId, block);
+    this.notifyListeners(DiatumEvent.Amigos);
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -1625,6 +1647,16 @@ async function clearContactRequest(shareId: string): Promise<void> {
   return await diatum.clearContactRequest(shareId);
 }
 
+async function getBlockedContacts(): Promise<ContactEntry[]> {
+  let diatum = await getInstance();
+  return await diatum.getBlockedContacts();
+}
+
+async function setBlockedContact(amigoId: string, block: boolean): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setBlockedContact(amigoId, block);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1634,5 +1666,5 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
-    getContactRequests, clearContactRequest };
+    getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact };
 

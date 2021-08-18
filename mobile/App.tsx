@@ -28,6 +28,7 @@ import { Conversation } from "./src/Conversation";
 import { ContactSearch } from "./src/ContactSearch";
 import { ManageLabels } from "./src/ManageLabels";
 import { ContactRequests } from "./src/ContactRequests";
+import { BlockedItems } from "./src/BlockedItems";
 
 // schema identifiers
 const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
@@ -115,7 +116,7 @@ function RootScreen({ navigation }) {
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v103.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v104.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -252,6 +253,7 @@ function MainScreen() {
       <MainStack.Screen name="Contact Profile" component={ContactProfile} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Manage Labels" component={ManageLabels} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Contact Requests" component={ContactRequests} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Blocked Items" component={BlockedItems} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
 }
@@ -330,6 +332,7 @@ function HomeDrawerContent(props) {
       }} />
       <DrawerItem label={'Blocked Items'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
+        props.navigate("Blocked Items");
       }} />
       <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();

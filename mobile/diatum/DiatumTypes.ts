@@ -31,6 +31,7 @@ export interface ContactEntry {
   status?: string;
   errorFlag?: boolean
   appAttribute?: any;
+  blocked?: boolean;
 }
 
 export interface AmigoMessage {
