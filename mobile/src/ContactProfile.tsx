@@ -293,13 +293,21 @@ export function ContactProfilePage({ contact, navigation, names }) {
     console.log("report");
   }
   const blockContact = async () => {
-    try {
-      await diatum.setBlockedContact(contact.amigoId, true);
-    }
-    catch(err) {
-      console.log(err);
-      Alert.alert("failed to block contact");
-    }
+    const title = 'Are you sure you want to block this contact?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Block', onPress: async () => {
+          try {
+            await diatum.setBlockedContact(contact.amigoId, true);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to block contact");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
   }
   const unblockContact = async () => {
     try {
