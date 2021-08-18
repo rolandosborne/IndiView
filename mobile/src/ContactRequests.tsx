@@ -78,10 +78,10 @@ function SavedEntry({item}) {
 
   let diatum = useDiatum();
   const onDenySaved = () => {
-    const title = "Do you want to deny the request?";
+    const title = "Do you want to delete the request?";
     const message = '';
     const buttons = [
-        { text: 'Yes, Deny', onPress: async () => {
+        { text: 'Yes, Delete', onPress: async () => {
           try {
             await diatum.closeContactConnection(item.id);
           }
@@ -101,7 +101,7 @@ function SavedEntry({item}) {
     if(item.entry.registry != null && item.entry.logoSet) {
       imgUrl = await diatum.getRegistryImage(item.entry.amigoId, item.entry.registry);
     }
-    let view = { amigoId: item.entry.amigoId, name: item.entry.name, handle: item.entry.handle, imageUrl: imgUrl, registry: item.entry.registry, location: item.entry.location, description: item.entry.description, showFooter: true, saved: null, requested: true };
+    let view = { amigoId: item.entry.amigoId, name: item.entry.name, handle: item.entry.handle, imageUrl: item.entry.imageUrl, registry: item.entry.registry, location: item.entry.location, description: item.entry.description, showFooter: true, saved: null, requested: true };
     navigation.navigate("Contact Profile", {...view});
   }
 
@@ -129,10 +129,10 @@ function PendingEntry({item}) {
   }
 
   const onDenyPending = () => {
-    const title = "Do you want to deny the request?";
+    const title = "Do you want to delete the request?";
     const message = '';
     const buttons = [
-        { text: 'Yes, Deny', onPress: async () => {
+        { text: 'Yes, Delete', onPress: async () => {
           try {
             await diatum.clearContactRequest(item.id);
           }

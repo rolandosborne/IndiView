@@ -102,7 +102,9 @@ function ProfileDrawerContent(props) {
 
   return (
       <View>
-        <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'Assigned Labels'} />
+        <View style={{ width: '100%', backgroundColor: '#282827' }}>
+          <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', backgroundColor: '#282827', textAlign: 'center' }} label={'Assigned Labels'} />
+        </View>
         <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => {
           if(hasLabel(item.labelId)) {
             return <DrawerItem labelStyle={{ fontSize: 18, color: '#0072CC' }} label={item.name} onPress={() => {clearLabel(item.labelId);} } />
@@ -288,6 +290,9 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const reportContact = () => {
     console.log("report");
   }
+  const blockContact = () => {
+    console.log("block");
+  }
   const addNotes = () => {
     setPrompt(true);
   }
@@ -316,6 +321,12 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const setHeader = (e: EntryView) => {
     let options = [];
     let actions = [];
+    if(e != null) {
+      if(e.notes == null) {
+        options.push("Add Notes");
+        actions.push(addNotes);
+      }
+    }
     if(e == null) {
       if(contact.requested) {
         options.push("Accept Connection");
@@ -323,47 +334,35 @@ export function ContactProfilePage({ contact, navigation, names }) {
       }
       options.push("Save Contact");
       actions.push(saveContact);
-      options.push("Report Profile");
-      actions.push(reportContact);
     }
     else if(e.status == 'connected') {
       options.push("Disconnect");
       actions.push(disconnectContact);
       options.push("Delete Contact");
       actions.push(deleteContact);
-      options.push("Report Profile");
-      actions.push(reportContact);
     }
     else if(e.status == 'received') {
       options.push("Accept Connection");
       actions.push(acceptContact);
       options.push("Delete Contact");
       actions.push(deleteContact);
-      options.push("Report Profile");
-      actions.push(reportContact);
     }
     else if(e.status == 'requested') {
       options.push("Cancel Request");
       actions.push(cancelContact);
       options.push("Delete Contact");
       actions.push(deleteContact);
-      options.push("Report Profile");
-      actions.push(reportContact);
     }
     else {
       options.push("Request Connection");
       actions.push(requestContact);
       options.push("Delete Contact");
       actions.push(deleteContact);
-      options.push("Report Profile");
-      actions.push(reportContact);
     }
-    if(e != null) {
-      if(e.notes == null) {
-        options.push("Add Notes");
-        actions.push(addNotes);
-      }
-    }
+    options.push("Report Contact");
+    actions.push(reportContact);
+    options.push("Block Contact");
+    actions.push(blockContact);
     options.push("Close Menu");
     const dots = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 24, paddingRight: 16, paddingLeft: 24, width: 48 }} />);
 

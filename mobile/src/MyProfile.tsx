@@ -66,7 +66,9 @@ function ProfileDrawerContent(props) {
 
   return (
       <View>
-        <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#000000' }} label={'View as Label'} />
+        <View style={{ width: '100%', backgroundColor: '#282827' }}>
+          <DrawerItem labelStyle={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', backgroundColor: '#282827', textAlign: 'center' }} label={'View as Label'} />
+        </View>
         <FlatList data={labels} keyExtractor={item => item.labelId} renderItem={({item,index}) => {
           if(labelId == item.labelId) {
             return <DrawerItem labelStyle={{ fontSize: 18, color: '#0072CC' }} label={item.name} onPress={() => {clearLabel(item.labelId);} } />

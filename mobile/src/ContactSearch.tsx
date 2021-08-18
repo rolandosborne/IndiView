@@ -90,6 +90,7 @@ function SearchEntry({item, index}) {
     pad = 8;
   }
   let name: string = "not set";
+  let nameColor = "#888888";
   if(item.name != null) {
     name = item.name;
     nameColor = '#222222';

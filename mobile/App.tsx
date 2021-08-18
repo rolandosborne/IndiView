@@ -313,7 +313,9 @@ function HomeDrawerContent(props) {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    
+    <View style={{ flex: 1 }}>
+      <Image source={require('./logo.png')} style={{ width: '100%', marginBottom: 16 }} />
       <DrawerItem label={'Manage Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Manage Labels");
@@ -326,14 +328,14 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
         props.navigate("Contact Requests");
       }} />
-      <DrawerItem label={'Blocked Contacts'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Blocked Items'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
       }} />
       <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
-    </SafeAreaView>
+    </View>
   );
 }
 

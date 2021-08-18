@@ -563,16 +563,16 @@ export class Storage {
   public async getContacts(id: string, labelId: string, status: string): Promise<Contact[]> {
     let res;
     if(labelId == null && status == null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY name COLLATE NOCASE ASC;");
     }
     else if(labelId != null && status == null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? ORDER BY name COLLATE NOCASE ASC;", [labelId]);
     }
     else if(labelId == null && status != null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE share_" + id + ".status=? ORDER BY name COLLATE NOCASE ASC;", [status]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE share_" + id + ".status=? ORDER BY name COLLATE NOCASE ASC;", [status]);
     }
     else if(labelId != null && status != null) {
-      res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND share_" + id + ".status=? ORDER BY name COLLATE NOCASE ASC;", [labelId, status]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND share_" + id + ".status=? ORDER BY name COLLATE NOCASE ASC;", [labelId, status]);
     }
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
