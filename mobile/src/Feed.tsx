@@ -173,7 +173,7 @@ function ContactList({ setListener, clearListener }) {
   }, []);
 
   return (
-    <SafeAreaView style={{ fle: 1}} foctor={item => item.id} forceInset={{ bottom: 'never' }}>
+    <SafeAreaView style={{ flex: 1}} foctor={item => item.id} forceInset={{ bottom: 'never' }}>
       <FlatList data={contacts} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
     </SafeAreaView>
   );
@@ -213,7 +213,7 @@ function IdentityEntry() {
 
   let navigation = useNavigation();
   const onIdentity = () => {
-    navigation.navigate("MyFeed");
+    navigation.navigate("MyFeed", identity);
   }
 
   useEffect(() => {
@@ -233,14 +233,14 @@ function IdentityEntry() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ width: 92, height: 92, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
+      <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onIdentity}>
+        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
       </TouchableOpacity>
-      <Text style={{ fontSize: 16, color: '#444444' }}>{ identity.handle }</Text>
+      <Text style={{ fontSize: 15, color: '#444444' }}>{ identity.handle }</Text>
     </View>
   );
 }
@@ -252,7 +252,7 @@ function ContactEntry({entry}) {
 
   let navigation = useNavigation();
   const onContact = () => {
-    navigation.navigate("ContactFeed");
+    navigation.navigate("ContactFeed", entry);
   }
 
   let imgSrc = {};
@@ -265,14 +265,14 @@ function ContactEntry({entry}) {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity activeOpacity={1} onPress={onContact}>
-        <Image style={{ width: 92, height: 92, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
+      <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
+        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
       </TouchableOpacity>
-      <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.handle }</Text>
+      <Text style={{ fontSize: 15, color: '#444444' }}>{ entry.handle }</Text>
     </View>
   );
 }

@@ -184,6 +184,19 @@ export interface Subject {
     data?: string;
 }
 
+export interface SubjectItem {
+    subjectId: string;
+    revision: number;
+    created: number;
+    modified: number;
+    expires: number;
+    schema: string;
+    data: string;
+    tagCount: number;
+    blocked: boolean;
+    asset?: (subjectId: string, assetId: string) => string
+}
+
 export interface SubjectEntry { 
     subject: Subject;
     share: boolean;

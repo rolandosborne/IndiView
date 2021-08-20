@@ -171,6 +171,12 @@ export interface Diatum {
 
   // set blocked state
   setBlockedContact(amigoId: string, block: boolean): Promise<void>
+
+  // get contact subjects
+  getContactSubjects(amigoId: string): Promise<Subjct[]>
+
+  // get contact subject tags
+  getContactSubjectTags(amigoId: string, subjectId: string): Promise<Tag[]>
 }
 
 async function asyncForEach(map, handler) {
@@ -1391,6 +1397,21 @@ class _Diatum {
     this.notifyListeners(DiatumEvent.Amigos);
   }
 
+  public async getContactSubjects(amigoId: string): Promise<SubjectItem[]> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    let subjects =  await this.storage.getConnectionSubjects(this.session.amigoId, amigoId);
+    for(let i = 0; i < subjects.length; i++) {
+      subjects[i].asset = (assetId: string) => { 
+        return connection.node + "/view/subjects/" + subjects[i].subjectId + "/assets/" + assetId + "?token=" + connection.token + "&agent=" + this.authToken;
+      }
+    }
+    return subjects
+  }
+
+  public async getContactSubjectTags(amigoId: string, subjectId: string): Promsie<Tag[]> {
+    return this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -1657,6 +1678,16 @@ async function setBlockedContact(amigoId: string, block: boolean): Promise<void>
   return await diatum.setBlockedContact(amigoId, block);
 }
 
+async function getContactSubjects(amigoId: string): Promise<SubjectItem[]> { 
+  let diatum = await getInstance();
+  return await diatum.getContactSubjects(amigoId);
+}
+
+async function getContactSubjectTags(amigoId: string, subjectId: string): Promsie<Tag[]> {
+  let diatum = await getInstance();
+  return await diatum.getContactSubjectTags(amigoId, subjectId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1666,5 +1697,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContacts, getContact, getContactAttributes, 
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
-    getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact };
+    getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
+    getContactSubjects, getContactSubjectTags };
 

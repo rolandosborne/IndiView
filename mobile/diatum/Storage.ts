@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelCount, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb, ContactRequest } from './DiatumTypes';
+import { LabelEntry, LabelCount, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb, ContactRequest, SubjectItem, Tag } from './DiatumTypes';
 
 // helper funtions
 function decodeObject(s: string): any {
@@ -403,7 +403,25 @@ export class Storage {
       }
     }
     return views;
-  } 
+  }
+  public async getConnectionSubjects(id: string, amigoId: string): Promise<SubjectItem[]> {
+    let res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE amigo_id=? and hide=?;", [amigoId, 0]);
+    let subjects: SubjectItem[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        subjects.push({ subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, tagCount: item.tag_count, blocked: item.hide });
+      }
+    }
+    return subjects;
+  }
+  public async getConnectionSubjectTags(id: string, amigoId: string, subjectId: string): Promise<Tag[]> {
+    let res = await this.db.executeSql("SELECT tags FROM view_" + id + " WHERE amigo_id=? AND subject_id=?;", [amigoId, subjectId]);
+    if(hasResult(res)) {
+      return decodeObject(res[0].rows.item(0));
+    }
+    return [];
+  }
   public async addConnectionSubject(id: string, amigoId: string, subject: Subject): Promise<void> {
     await this.db.executeSql("INSERT INTO view_" + id + " (amigo_id, subject_id, revision, created, modified, expires, schema, data, hide, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0);", [amigoId, subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, subject.data]);
   }

@@ -17,6 +17,57 @@ import { IndiViewCom } from "./IndiViewCom";
 import { AttributeUtil } from './AttributeUtil';
 
 export function ContactFeed({ route, navigation }) {
-  return (<View></View>);
+
+  const [contact, setContact] = React.useState(route.params);
+  const [subjects, setSubjects] = React.useState([]);
+
+  let imgSrc = {};
+  if(contact.imageUrl == null) {
+    imgSrc = require('../assets/avatar.png');
+  }
+  else {
+    imgSrc = { uri: contact.imageUrl, cache: 'force-cache' };
+  }
+
+  let diatum = useDiatum();
+  useEffect(() => {
+    diatum.getContactSubjects(contact.amigoId).then(s => {
+      setSubjects(s);
+    });
+  }, []);
+
+  let latch: Latch = useLatch();
+  const onLatch = () => { };
+  useEffect(() => {
+    const unfocus = navigation.addListener('focus', () => {
+      latch.setToggleListener(onLatch, '#aaaaaa');
+    });
+    return (() => {
+      latch.clearToggleListener(onLatch);
+      unfocus();
+    })
+  }, []);
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: contact.handle,
+      headerRight: () => (<Image style={{ flexGrow: 1, width: 32, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
+    });
+  }, [navigation, contact]);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => <ContactSubject item={item} />} />
+    </View>
+  );
+}
+
+function ContactSubject({item}) {
+  
+  console.log("ITEM:", item);
+  let assetUrl = item.asset();
+  console.log(assetUrl);
+
+  return (<Text>{ item.subjectId }</Text>);
 }
 

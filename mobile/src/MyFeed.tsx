@@ -73,8 +73,24 @@ function ProfileDrawerContent(props) {
 
 export function MyFeed({ route, navigation }) {
 
+  const [identity, setContact] = React.useState(route.params);
   const [labelId, setLabelId] = React.useState(null);
   const latchColor = useRef('#282827');
+
+  let imgSrc = {};
+  if(identity.imageUrl == null) {
+    imgSrc = require('../assets/avatar.png');
+  }
+  else {
+    imgSrc = { uri: identity.imageUrl, cache: 'force-cache' };
+  }
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: <Text><Icon name="cog" style={{ fontSize: 18, color: '#444444' }} />&nbsp;&nbsp;{ identity.handle }</Text>,
+      headerRight: () => (<Image style={{ flexGrow: 1, width: 32, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
+    });
+  }, [navigation, identity]);
 
   let latch: Latch = useLatch();
   const onLatch = () => {
