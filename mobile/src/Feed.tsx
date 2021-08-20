@@ -211,6 +211,11 @@ function IdentityEntry() {
     setIdentity(i);
   };
 
+  let navigation = useNavigation();
+  const onIdentity = () => {
+    navigation.navigate("MyFeed");
+  }
+
   useEffect(() => {
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
     return () => {
@@ -228,13 +233,13 @@ function IdentityEntry() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <View>
+      <TouchableOpacity activeOpacity={1} onPress={onIdentity}>
         <Image style={{ width: 92, height: 92, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-      </View>
+      </TouchableOpacity>
       <Text style={{ fontSize: 16, color: '#444444' }}>{ identity.handle }</Text>
     </View>
   );
@@ -243,6 +248,11 @@ function IdentityEntry() {
 function ContactEntry({entry}) {
   if(entry == null) {
     return (<View style={{ flex: 1, alignItems: 'center', padding: 16 }}></View>);
+  }
+
+  let navigation = useNavigation();
+  const onContact = () => {
+    navigation.navigate("ContactFeed");
   }
 
   let imgSrc = {};
@@ -255,13 +265,13 @@ function ContactEntry({entry}) {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <View>
+      <TouchableOpacity activeOpacity={1} onPress={onContact}>
         <Image style={{ width: 92, height: 92, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-      </View>
+      </TouchableOpacity>
       <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.handle }</Text>
     </View>
   );

@@ -23,6 +23,9 @@ import { MyProfile } from "./src/MyProfile";
 import { MyAttribute } from "./src/MyAttribute";
 
 import { Feed } from "./src/Feed";
+import { MyFeed } from "./src/MyFeed";
+import { ContactFeed } from "./src/ContactFeed";
+
 import { Conversation } from "./src/Conversation";
 
 import { ContactSearch } from "./src/ContactSearch";
@@ -268,6 +271,8 @@ function HomeFeedScreen() {
   return (
     <FeedStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
+      <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
     </FeedStack.Navigator>
   );
 }  
@@ -446,10 +451,7 @@ const App = () => {
         <AppSupportProvider> 
           <SafeAreaProvider>
             <NavigationContainer>
-<StatusBar
- backgroundColor='transparent'
- barStyle="dark-content" // Here is where you change the font-color
-/>
+              <StatusBar backgroundColor='transparent' barStyle="dark-content" />
               <View style={{ flex: 1, backgroundColor: '#282827' }}>
                 <Stack.Navigator initialRouteName="Root">
                   <Stack.Screen name="Root" component={RootScreen} options={{headerShown: false}} />
