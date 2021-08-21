@@ -14,7 +14,7 @@ import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
-import { AttributeUtil } from './AttributeUtil';
+import { SubjectUtil } from './SubjectUtil';
 
 export function ContactFeed({ route, navigation }) {
 
@@ -57,17 +57,122 @@ export function ContactFeed({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => <ContactSubject item={item} />} />
+      <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => {
+        if(SubjectUtil.isPhoto(item)) {
+          return (<PhotoEntry item={item} />);
+        }
+        if(SubjectUtil.isVideo(item)) {
+          return (<VideoEntry item={item} />);
+        }
+        return (<></>);
+      }} />
     </View>
   );
 }
 
-function ContactSubject({item}) {
-  
-  console.log("ITEM:", item);
-  let assetUrl = item.asset();
-  console.log(assetUrl);
+function getTime(epoch: number): string {
+  let d: Date = new Date();
+  let offset = d.getTime() / 1000 - epoch;
+  if(offset < 3600) {
+    return Math.ceil(offset/60) + " min";
+  }
+  if(offset < 86400) {
+    return Math.ceil(offset/3600) + " hr";
+  }
+  if(offset < 2592000) {
+    return Math.ceil(offset/86400) + " d";
+  }
+  if(offset < 31536000) {
+    return Math.ceil(offset/2592000) + " mth";
+  }
+  return Math.ceil(offset/31449600) + " y";
+}
 
-  return (<Text>{ item.subjectId }</Text>);
+function PhotoEntry({item}) {
+
+  const [data, setData] = React.useState({});
+  const [source, setSource] = React.useState(require('../assets/placeholder.png'));
+  const [index, setIndex] = React.useState(0);
+
+  useEffect(() => {
+    if(item.data != null) {
+      let d = JSON.parse(item.data);
+      setData(d);
+      if(d.images != null && d.images.length > 0) {
+        setSource({ uri: item.asset(d.images[0].thumb), cache: 'force-cache' });
+      } 
+    } 
+  }, []);
+
+  const Dots = () => {
+
+    // only dots for more than one
+    if(data.images == null || data.images.length <= 1) {
+      return (<></>);
+    }
+
+    // dot for each image
+    let dot = []
+    for(let i = 0; i < data.images.length; i++) {
+      dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+    }
+
+    return (
+      <View style={{ position: 'absolute', bottom: 0, width: '100%', justifyContent: 'center', paddingBottom: 16, flexDirection: 'row' }}>{dot}</View>
+    );
+  };
+
+  const onNext = () => {
+    console.log("NEXT");
+  };
+
+  return (
+    <View style={{ flex: 1, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, marginBottom: 4, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#aaaaaa' }}>
+      <TouchableOpacity activeOpacity={1}>
+        <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+        <Dots />
+      </TouchableOpacity>
+      <View style={{ padding: 8, flexDirection: 'row' }}>
+        <View style={{ flexGrow: 1 }}>
+          <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
+          <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function VideoEntry({item}) {
+
+  const [data, setData] = React.useState({});
+  const [source, setSource] = React.useState(require('../assets/placeholder.png'));
+
+  useEffect(() => {
+    if(item.data != null) {
+      let d = JSON.parse(item.data);
+      setData(d);
+      if(d.thumb != null) {
+        setSource({ uri: item.asset(d.thumb), cache: 'force-cache' });
+      } 
+    } 
+  }, []);
+
+  return (
+    <View style={{ flex: 1, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, marginBottom: 4, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
+      <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+      <View style={{ padding: 8, flexDirection: 'row' }}>
+        <View style={{ flexGrow: 1 }}>
+          <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
+          <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
+        </View>
+        <TouchableOpacity style={{ alignItems: 'flex-end' }}>
+          <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }
 
