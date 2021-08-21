@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView, ContactReqeust } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectItem, SubjectRecord, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView, ContactReqeust } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -172,8 +172,14 @@ export interface Diatum {
   // set blocked state
   setBlockedContact(amigoId: string, block: boolean): Promise<void>
 
+  // get subjects
+  getSubjects(labelId: string): Promise<SubjectRecord[]>
+
+  // get subject tags
+  getSubjectTags(subjectId: string): Promise<Tag[]>
+
   // get contact subjects
-  getContactSubjects(amigoId: string): Promise<Subjct[]>
+  getContactSubjects(amigoId: string): Promise<SubjctItem[]>
 
   // get contact subject tags
   getContactSubjectTags(amigoId: string, subjectId: string): Promise<Tag[]>
@@ -1397,6 +1403,21 @@ class _Diatum {
     this.notifyListeners(DiatumEvent.Amigos);
   }
 
+  public async getSubjects(labelId: string): Promise<SubjectRecord[]> {
+    let subjects = await this.storage.getSubjects(this.session.amigoId, labelId);
+    for(let i = 0; i < subjects.length; i++) {
+      subjects[i].asset = (assetId: string) => {
+        return this.session.amigoNode + "/show/subjects/" + subjects[i].subjectId + "/assets/" + assetId + "?token=" + this.session.amigoToken;
+      }
+    }
+    return subjects;
+  }
+
+  // get subject tags
+  public async getSubjectTags(subjectId: string): Promise<Tag[]> {
+    return await this.storage.getSubjectTags(this.session.amigoId, subjectid);
+  }
+
   public async getContactSubjects(amigoId: string): Promise<SubjectItem[]> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     let subjects =  await this.storage.getConnectionSubjects(this.session.amigoId, amigoId);
@@ -1405,11 +1426,11 @@ class _Diatum {
         return connection.node + "/view/subjects/" + subjects[i].subjectId + "/assets/" + assetId + "?token=" + connection.token + "&agent=" + this.authToken;
       }
     }
-    return subjects
+    return subjects;
   }
 
   public async getContactSubjectTags(amigoId: string, subjectId: string): Promsie<Tag[]> {
-    return this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
+    return await this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
   }
 
 }
@@ -1678,6 +1699,16 @@ async function setBlockedContact(amigoId: string, block: boolean): Promise<void>
   return await diatum.setBlockedContact(amigoId, block);
 }
 
+async function getSubjects(labelId: string): Promise<SubjectRecord[]> {
+  let diatum = await getInstance();
+  return await diatum.getSubjects(labelId);
+}
+
+async function getSubjectTags(subjectId: string): Promise<Tag[]> {
+  let diatum = await getInstance();
+  return await diatum.getSubjectTags(subjectId);
+}
+
 async function getContactSubjects(amigoId: string): Promise<SubjectItem[]> { 
   let diatum = await getInstance();
   return await diatum.getContactSubjects(amigoId);
@@ -1698,5 +1729,5 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getContactSubjects, getContactSubjectTags };
+    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags };
 

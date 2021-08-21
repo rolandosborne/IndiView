@@ -219,7 +219,7 @@ function MyProfilePage({ navigation, labelId }) {
     let act = [ onPhone, onEmail, onAddress, onBusiness, onSocial, onWebsite, ()=>{} ];
     const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, width: 48, textAlign: 'center' }} />);
     navigation.setOptions({ 
-      title: identity.handle,
+      title: <Text><Icon name="cog" style={{ fontSize: 18, color: '#444444' }} />&nbsp;&nbsp;{ identity.handle }</Text>,
       headerRight: () => (<OptionsMenu customButton={plus} options={opt} actions={act} />)
     });
   }, [navigation, identity]);

@@ -7,6 +7,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerI
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -92,17 +93,21 @@ function PhotoEntry({item}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = React.useState(index);
 
   useEffect(() => {
     if(item.data != null) {
       let d = JSON.parse(item.data);
       setData(d);
-      if(d.images != null && d.images.length > 0) {
-        setSource({ uri: item.asset(d.images[0].thumb), cache: 'force-cache' });
-      } 
+      setIndex(0);
     } 
   }, []);
+
+  useEffect(() => {
+    if(index != null && data.images != null && data.images.length > 0) {
+      setSource({ uri: item.asset(data.images[index].thumb), cache: 'force-cache' });
+    } 
+  }, [index]);
 
   const Dots = () => {
 
@@ -114,32 +119,61 @@ function PhotoEntry({item}) {
     // dot for each image
     let dot = []
     for(let i = 0; i < data.images.length; i++) {
-      dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+      if(index == i) {
+        dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+      }
+      else {
+        dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+      }
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, width: '100%', justifyContent: 'center', paddingBottom: 16, flexDirection: 'row' }}>{dot}</View>
+      <TouchableOpacity onPress={onNext} style={{ position: 'absolute', bottom: 0, width: '100%', justifyContent: 'center', padding: 16, flexDirection: 'row' }}>{dot}</TouchableOpacity>
     );
   };
 
+  const onPrevious = () => {
+    if(data.images != null && data.images.length > 1) {
+      if(index > 1) {
+        setIndex(index-1);
+      }
+      else {
+        setIndex(data.images.length-1);
+      }
+      setSource({ uri: item.asset(data.images[index].thumb), cache: 'force-cache' });
+    }
+  };
+
   const onNext = () => {
-    console.log("NEXT");
+    if(data.images != null && data.images.length > 1) {
+      if(index < data.images.length - 1) {
+        setIndex(index+1);
+      }
+      else {
+        setIndex(0);
+      }
+    }
+  };
+
+  const swipeConfig = {
+    velocityThreshold: 0.3,
+    directionalOffsetThreshold: 80
   };
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, marginBottom: 4, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#aaaaaa' }}>
-      <TouchableOpacity activeOpacity={1}>
+    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#aaaaaa' }}>
+      <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <Dots />
-      </TouchableOpacity>
+      </View>
       <View style={{ padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
+        <TouchableOpacity style={{ alignItems: 'flex-end' }}>
           <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -161,7 +195,7 @@ function VideoEntry({item}) {
   }, []);
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, marginBottom: 4, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
+    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
       <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
       <View style={{ padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>

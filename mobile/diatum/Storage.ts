@@ -271,6 +271,30 @@ export class Storage {
     }
     return views;
   }
+  public async getSubjects(id: string, labelId: string): Promise<SubjectRecord[]> {
+    let res;
+    if(labelId == null) {
+      res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " ORDER BY modified DESC;");
+    }
+    else {
+      res = await this.db.executeSql("SELECT show_" + id + ".subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " INNER JOIN showgroup_" + id + " ON show_" + id + ".subject_id = showgroup_" + id + ".subject_id WHERE showgroup_" + id + ".label_id=? ORDER BY MODIFIED DESC;", [labelId]);
+    }
+    let subjects: SubjectRecord[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        subjects.push({ subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, share: item.share != 0, ready: item.ready != 0, tagCount: item.tag_count, blocked: item.hide });
+      }
+    }
+    return subjects;
+  }
+  public async getSubjectTags(id: string, subjectId: string): Promise<Tag[]> {
+    let res = await this.db.executeSql("SELECT tags FROM show_" + id + " WHERE subject_id=?;", [amigoId, subjectId]);
+    if(hasResult(res)) {
+      return decodeObject(res[0].rows.item(0));
+    }
+    return [];
+  }
   public async addSubject(id: string, subject: Subject, ready: boolean, share: boolean) {
     await this.db.executeSql("INSERT INTO show_" + id + " (subject_id, revision, created, modified, expires, schema, data, share, ready, tag_revision, tag_count) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0);", [subject.subjectId, subject.revision, subject.created, subject.modified, subject.expires, subject.schema, subject.data, share, ready]);
   } 
@@ -405,7 +429,7 @@ export class Storage {
     return views;
   }
   public async getConnectionSubjects(id: string, amigoId: string): Promise<SubjectItem[]> {
-    let res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE amigo_id=? and hide=?;", [amigoId, 0]);
+    let res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE amigo_id=? and hide=? ORDER BY modified DESC;", [amigoId, 0]);
     let subjects: SubjectItem[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
