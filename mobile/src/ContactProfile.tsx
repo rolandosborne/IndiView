@@ -254,6 +254,15 @@ export function ContactProfilePage({ contact, navigation, names }) {
       Alert.alert("failed to save contact");
     }
   }
+  const refreshContact = async () => {
+    try {
+      await diatum.syncContact(contact.amigoId);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to refresh contact");
+    }
+  };
   const deleteContact = async () => {
     try {
       await diatum.removeContact(contact.amigoId);
@@ -366,6 +375,8 @@ export function ContactProfilePage({ contact, navigation, names }) {
       actions.push(disconnectContact);
       options.push("Delete Contact");
       actions.push(deleteContact);
+      options.push("Refresh Contact");
+      actions.push(refreshContact);
     }
     else if(e.status == 'received') {
       options.push("Accept Connection");

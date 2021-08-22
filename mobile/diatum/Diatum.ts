@@ -183,6 +183,9 @@ export interface Diatum {
 
   // get contact subject tags
   getContactSubjectTags(amigoId: string, subjectId: string): Promise<Tag[]>
+
+  // refresh contact
+  syncContact(amigoId: string): Promise<void>
 }
 
 async function asyncForEach(map, handler) {
@@ -1433,6 +1436,11 @@ class _Diatum {
     return await this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
   }
 
+  public async syncContact(amigoId: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    await this.syncAmigoConnection(connection);
+  }    
+
 }
 
 let instance: _Diatum | undefined;
@@ -1719,6 +1727,11 @@ async function getContactSubjectTags(amigoId: string, subjectId: string): Promsi
   return await diatum.getContactSubjectTags(amigoId, subjectId);
 }
 
+async function syncContact(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.syncContact(amigoId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1729,5 +1742,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags };
+    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags,
+    syncContact };
 

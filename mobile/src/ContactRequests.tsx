@@ -87,7 +87,7 @@ function SavedEntry({item}) {
           }
           catch(err) {
             console.log(err);
-            Alert.alert("failed to delete label");
+            Alert.alert("failed to delete request");
           }
         }},
         { text: 'Cancel', type: 'cancel' }

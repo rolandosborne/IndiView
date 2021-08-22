@@ -326,6 +326,13 @@ function ContactEntry({item}) {
     )
   }
 
+  const Control = () => {
+    if(item.status == 'connected') {
+      return (<ContactControl attributes={item.appAttribute} />);
+    }
+    return (<></>);
+  }
+
   if(item.type == 'contact') {
     return (
       <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
@@ -337,7 +344,7 @@ function ContactEntry({item}) {
           <Text>{item.handle}</Text>
         </View>
         <View style={{ flexGrow: 1 }}></View>
-        <ContactControl attributes={item.appAttribute} />
+        <Control />
       </TouchableOpacity>
     )
   }
