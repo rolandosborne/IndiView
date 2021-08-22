@@ -223,18 +223,16 @@ function IdentityEntry() {
     };
   }, []);  
 
-  let imgSrc = {};
-  if(identity.imageUrl == null) {
-    imgSrc = require('../assets/avatar.png');
-  }
-  else { 
-    imgSrc = { uri: identity.imageUrl, cache: 'force-cache' };
+  let defaultSource = require('../assets/avatar.png');
+  let source = defaultSource;
+  if(identity.imageUrl != null) {
+    source = { uri: identity.imageUrl, cache: 'force-cache' };
   }
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
+        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
@@ -255,18 +253,16 @@ function ContactEntry({entry}) {
     navigation.navigate("ContactFeed", entry);
   }
 
-  let imgSrc = {};
-  if(entry.imageUrl == null) {
-    imgSrc = require('../assets/avatar.png');
-  }
-  else {
-    imgSrc = { uri: entry.imageUrl, cache: 'force-cache' };
+  let defaultSource = require('../assets/avatar.png');
+  let source = defaultSource;
+  if(entry.imageUrl != null) {
+    source = { uri: entry.imageUrl, cache: 'force-cache' };
   }
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
-        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={ imgSrc }/>
+        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />

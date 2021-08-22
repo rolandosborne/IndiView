@@ -52,7 +52,7 @@ export function ContactFeed({ route, navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       title: contact.handle,
-      headerRight: () => (<Image style={{ flexGrow: 1, width: 32, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
+      headerRight: () => (<Image style={{ flexGrow: 1, width: null, height: null, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
     });
   }, [navigation, contact]);
 
@@ -93,6 +93,7 @@ function PhotoEntry({item}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
+  const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
 
   useEffect(() => {
@@ -120,15 +121,15 @@ function PhotoEntry({item}) {
     let dot = []
     for(let i = 0; i < data.images.length; i++) {
       if(index == i) {
-        dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
       }
       else {
-        dot.push(<View key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
       }
     }
 
     return (
-      <TouchableOpacity onPress={onNext} style={{ position: 'absolute', bottom: 0, width: '100%', justifyContent: 'center', padding: 16, flexDirection: 'row' }}>{dot}</TouchableOpacity>
+      <TouchableOpacity activeOpacity={1} onPress={onNext} style={{ position: 'absolute', bottom: 0, width: '100%', justifyContent: 'center', padding: 16, flexDirection: 'row' }}>{dot}</TouchableOpacity>
     );
   };
 
@@ -163,7 +164,12 @@ function PhotoEntry({item}) {
   return (
     <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#aaaaaa' }}>
       <View>
-        <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+        <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
+        <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
+          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
+            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
+          </View>
+        </TouchableOpacity>
         <Dots />
       </View>
       <View style={{ padding: 8, flexDirection: 'row' }}>
@@ -183,6 +189,7 @@ function VideoEntry({item}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
+  const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
 
   useEffect(() => {
     if(item.data != null) {
@@ -196,7 +203,19 @@ function VideoEntry({item}) {
 
   return (
     <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
-      <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+      <View>
+        <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
+        <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
+          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
+            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
+          <View opacity={0.8}>
+            <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} />
+          </View>
+        </TouchableOpacity>
+      </View>
       <View style={{ padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
