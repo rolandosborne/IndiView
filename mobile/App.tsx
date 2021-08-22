@@ -16,6 +16,7 @@ import { IndiViewCom } from "./src/IndiViewCom";
 import { AppSupport, AppSupportProvider, useApp } from './src/AppSupport';
 import { Latch, LatchProvider, useLatch } from './src/LatchContext';
 import { AttributeUtil } from "./src/AttributeUtil";
+import { SubjectUtil } from "./src/SubjectUtil";
 
 import { Contacts } from "./src/Contacts";
 import { ContactProfile } from "./src/ContactProfile";
@@ -33,11 +34,6 @@ import { ManageLabels } from "./src/ManageLabels";
 import { ContactRequests } from "./src/ContactRequests";
 import { BlockedItems } from "./src/BlockedItems";
 
-// schema identifiers
-const TEXT: string = 'de91199232b71e2e06921b051ddcb5288bb289f27ad87402bde701146dac6e9e';
-const PHOTO: string = '6cf626f1b2222b128dc39dceabdfce7073ea961d97f34fe20fd30ef02b7bf8dd';
-const VIDEO: string = 'e245d8cc676a79055aac13a2d0aa9a3eb3f673765556070dc0bd131510e60e40';
-const AUDIO: string = '6c816e6cfa33ba3685436ddc2279b39627d724a5a47f79413e4ff604273bf785';
 const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a86473991f7fe9f962';
 
 const Stack = createStackNavigator(); 
@@ -115,11 +111,11 @@ function RootScreen({ navigation }) {
   }
   
   let attributes = AttributeUtil.getSchemas();
-  let subjects = [ TEXT, PHOTO, VIDEO, AUDIO ];
+  let subjects = SubjectUtil.getSchemas();
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v104.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v105.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }
