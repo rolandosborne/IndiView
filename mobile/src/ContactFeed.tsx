@@ -30,11 +30,18 @@ export function ContactFeed({ route, navigation }) {
     imgSrc = { uri: contact.imageUrl, cache: 'force-cache' };
   }
 
+  const updateSubjects = async (amigoId: string) => {
+    if(amigoId == null || amigoId == contact.amigoId) {
+      setSubjects(await diatum.getContactSubjects(contact.amigoId));
+    }
+  }
+
   let diatum = useDiatum();
   useEffect(() => {
-    diatum.getContactSubjects(contact.amigoId).then(s => {
-      setSubjects(s);
-    });
+    diatum.setListener(DiatumEvent.View, updateSubjects);
+    return () => {
+      diatum.clearListener(DiatumEvent.View, updateSubjects);
+    }
   }, []);
 
   let latch: Latch = useLatch();
@@ -95,6 +102,58 @@ function PhotoEntry({item}) {
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
+  const [options, setOptions] = React.useState(<></>);
+
+  let diatum = useDiatum();
+  const onBlock = () => { 
+    const title = 'Do you want to block this story?';
+    const message = '';
+    const buttons = [
+      { text: 'Cancel', type: 'cancel' },
+      { text: 'Yes, Block', onPress: async () => {
+        try {
+          await diatum.setBlockedSubject(item.amigoId, item.subjectId, true);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to block story");
+        }
+      }}
+    ];
+    Alert.alert(title, message, buttons);
+  };
+  const onUnblock = () => {
+    const title = 'Do you want to unblock this story?';
+    const message = '';
+    const buttons = [
+      { text: 'Cancel', type: 'cancel' },
+      { text: 'Yes, Unblock', onPress: async () => {
+        try {
+          await diatum.setBlockedSubject(item.amigoId, item.subjectId, false);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to unblock story");
+        }
+      }}
+    ];
+    Alert.alert(title, message, buttons);
+  };
+
+  useEffect(() => {
+    if(item.blocked) {
+      let opt = [ "Unlock Story", "Close Menu" ];
+      let act = [ onUnblock, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+    else {
+      let opt = [ "Block Story", "Close Menu" ];
+      let act = [ onBlock, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+  }, [item]);
 
   useEffect(() => {
     if(item.data != null) {
@@ -166,9 +225,7 @@ function PhotoEntry({item}) {
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
-          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
-            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
-          </View>
+          <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
         <Dots />
       </View>
@@ -190,6 +247,58 @@ function VideoEntry({item}) {
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
+  const [options, setOptions] = React.useState(<></>);
+
+  useEffect(() => {
+    if(item.blocked) {
+      let opt = [ "Unlock Story", "Close Menu" ];
+      let act = [ onUnblock, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+    else {
+      let opt = [ "Block Story", "Close Menu" ];
+      let act = [ onBlock, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+  }, [item]);
+
+  let diatum = useDiatum();
+  const onBlock = () => {
+    const title = 'Do you want to block this story?';
+    const message = '';
+    const buttons = [
+      { text: 'Cancel', type: 'cancel' },
+      { text: 'Yes, Block', onPress: async () => {
+        try {
+          await diatum.setBlockedSubject(item.amigoId, item.subjectId, true);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to block story");
+        }
+      }}
+    ];
+    Alert.alert(title, message, buttons);
+  };
+  const onUnblock = () => {
+    const title = 'Do you want to unblock this story?';
+    const message = '';
+    const buttons = [
+      { text: 'Cancel', type: 'cancel' },
+      { text: 'Yes, Unblock', onPress: async () => {
+        try {
+          await diatum.setBlockedSubject(item.amigoId, item.subjectId, false);
+        }
+        catch(err) {
+          console.log(err);
+          Alert.alert("failed to unblock story");
+        }
+      }}
+    ];
+    Alert.alert(title, message, buttons);
+  };
 
   useEffect(() => {
     if(item.data != null) {
@@ -205,10 +314,8 @@ function VideoEntry({item}) {
     <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
-        <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
-          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
-            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
-          </View>
+        <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }} onPress={onBlock}>
+          <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
         <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
           <View opacity={0.8}>

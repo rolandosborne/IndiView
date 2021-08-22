@@ -429,12 +429,12 @@ export class Storage {
     return views;
   }
   public async getConnectionSubjects(id: string, amigoId: string): Promise<SubjectItem[]> {
-    let res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE amigo_id=? and hide=? ORDER BY modified DESC;", [amigoId, 0]);
+    let res = await this.db.executeSql("SELECT amigo_id, subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE amigo_id=? and hide=? ORDER BY modified DESC;", [amigoId, 0]);
     let subjects: SubjectItem[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        subjects.push({ subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, tagCount: item.tag_count, blocked: item.hide });
+        subjects.push({ amigoId: item.amigo_id, subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, tagCount: item.tag_count, blocked: item.hide });
       }
     }
     return subjects;
@@ -465,7 +465,20 @@ export class Storage {
     }
     await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amigoId, subjectId]);
   }
-
+  public async getBlockedSubjects(id: string): Promise<SubjectItem[]> {
+    let res = await this.db.executeSql("SELECT amigo_id, subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE hide!=? ORDER BY modified DESC;", [0]);
+    let subjects: SubjectItem[] = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        subjects.push({ amigoId: item.amigo_id, subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, tagCount: item.tag_count, blocked: item.hide!=0 });
+      }
+    }
+    return subjects;
+  }
+  public async setBlockedSubject(id: string, amigoId: string, subjectId: string, block: boolean): Promise<void> {
+    await this.db.executeSql("UPDATE view_" + id + " SET hide = ? WHERE amigo_id=? AND  subject_id=?;", [ block ? 1 : 0, amigoId, subjectId]);
+  }
 
 
   // conversation module synchronization

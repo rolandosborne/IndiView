@@ -185,6 +185,7 @@ export interface Subject {
 }
 
 export interface SubjectItem {
+    amigoId: string;
     subjectId: string;
     revision: number;
     created: number;

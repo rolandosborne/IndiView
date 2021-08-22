@@ -184,6 +184,12 @@ export interface Diatum {
   // get contact subject tags
   getContactSubjectTags(amigoId: string, subjectId: string): Promise<Tag[]>
 
+  // get blocked subjects
+  getBlockedSubjects(): Promise<SubjectItem[]>
+
+  // set blocked subject state
+  setBlockedSubject(amigoId: string, subjectId: string, block: boolean): Promise<void>
+
   // refresh contact
   syncContact(amigoId: string): Promise<void>
 }
@@ -1436,6 +1442,22 @@ class _Diatum {
     return await this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
   }
 
+  public async getBlockedSubjects(): Promise<SubjectItem[]> {
+    let subjects = await this.storage.getBlockedSubjects(this.session.amigoId);
+    for(let i = 0; i < subjects.length; i++) {
+      let connection = await this.storage.getAmigoConnection(this.session.amigoId, subjects[i].amigoId);
+      subjects[i].asset = (assetId: string) => {
+        return connection.node + "/view/subjects/" + subjects[i].subjectId + "/assets/" + assetId + "?token=" + connection.token + "&agent=" + this.authToken;
+      }
+    }
+    return subjects;
+  }
+
+  public async setBlockedSubject(amigoId: string, subjectId: string, block: boolean): Promise<void> {
+    await this.storage.setBlockedSubject(this.session.amigoId, amigoId, subjectId, block);
+    this.notifyListeners(DiatumEvent.View, amigoId);
+  }
+
   public async syncContact(amigoId: string): Promise<void> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     await this.syncAmigoConnection(connection);
@@ -1727,6 +1749,16 @@ async function getContactSubjectTags(amigoId: string, subjectId: string): Promsi
   return await diatum.getContactSubjectTags(amigoId, subjectId);
 }
 
+async function getBlockedSubjects(): Promise<BlockedSubject[]> {
+  let diatum = await getInstance();
+  return await diatum.getBlockedSubjects();
+}
+
+async function setBlockedSubject(amigoId: string, subjectId: string, block: boolean): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setBlockedSubject(amigoId, subjectId, block);
+}
+
 async function syncContact(amigoId: string): Promise<void> {
   let diatum = await getInstance();
   return await diatum.syncContact(amigoId);
@@ -1742,6 +1774,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags,
+    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
     syncContact };
 
