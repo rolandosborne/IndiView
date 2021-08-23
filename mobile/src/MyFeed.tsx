@@ -94,7 +94,7 @@ export function MyFeed({ route, navigation }) {
   }
 
   React.useLayoutEffect(() => {
-    let opt = [ "Photo", "Video", "Close Menu" ];
+    let opt = [ "Post Photo", "Post Video", "Close Menu" ];
     let act = [ onPhoto, onVideo, ()=>{} ];
     const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, width: 48, textAlign: 'center' }} />);
     navigation.setOptions({
@@ -200,8 +200,21 @@ function PhotoEntry({item}) {
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
+  const [options, setOptions] = React.useState(<></>);
+
+  const onUpdatePhoto = () => {
+    console.log("UPDATE");
+  }
+  const onDeletePhoto = () => {
+    console.log("DELETE");
+  }
 
   useEffect(() => {
+    let opt = [ "Update Post", "Delete Post", "Close Menu" ];
+    let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
+    let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+    setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+
     if(item.share && item.ready && item.data != null) {
       let d = JSON.parse(item.data);
       setData(d);
@@ -271,9 +284,7 @@ function PhotoEntry({item}) {
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
-          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
-            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
-          </View>
+          <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
         <Dots />
       </View>
@@ -294,8 +305,21 @@ function VideoEntry({item}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
+  const [options, setOptions] = React.useState(<></>);
+
+  const onUpdateVideo = () => {
+    console.log("UPDATE");
+  }
+  const onDeleteVideo = () => {
+    console.log("DELETE");
+  }
 
   useEffect(() => {
+    let opt = [ "Update Post", "Delete Post", "Close Menu" ];
+    let act = [ onUpdateVideo, onDeleteVideo, ()=>{} ];
+    let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+    setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    
     if(item.share && item.ready && item.data != null) {
       let d = JSON.parse(item.data);
       setData(d);
@@ -310,9 +334,7 @@ function VideoEntry({item}) {
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
-          <View opacity={0.8} style={{ padding: 8, backgroundColor: '#ffffff', borderRadius: 8 }}>
-            <Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18 }} />
-          </View>
+          <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
         <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
           <View opacity={0.8}>
