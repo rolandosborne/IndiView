@@ -228,7 +228,7 @@ export class DiatumApi {
     return await response.json();
   }
   public static async getConnectionSubjectTags(node: string, token: string, agent: string, subjectId: string, filter: string): Promise<Subject> {
-    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter), { method: 'GET', timeout: FETCH_TIMEOUT });
+    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter), { method: 'GET', timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }

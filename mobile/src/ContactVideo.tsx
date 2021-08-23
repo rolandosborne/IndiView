@@ -38,6 +38,7 @@ export function ContactVideo({item}) {
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
   const [options, setOptions] = React.useState(<></>);
+  const [comment, setComment] = React.useState('comment');
 
   useEffect(() => {
     if(item.blocked) {
@@ -51,6 +52,12 @@ export function ContactVideo({item}) {
       let act = [ onBlock, ()=>{} ];
       let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
       setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+    if(item.tagCount > 0) {
+      setComment('commenting-o');
+    }
+    else {
+      setComment('comment-o');
     }
   }, [item]);
 
@@ -101,7 +108,7 @@ export function ContactVideo({item}) {
   }, []);
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
+    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }} onPress={onBlock}>
@@ -119,7 +126,7 @@ export function ContactVideo({item}) {
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
         </View>
         <TouchableOpacity style={{ alignItems: 'flex-end' }}>
-          <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
+          <Icon name={comment} style={{ fontSize: 20, color: '#0072CC' }} />
         </TouchableOpacity>
       </View>
     </View>

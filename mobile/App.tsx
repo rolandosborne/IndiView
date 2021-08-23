@@ -115,7 +115,7 @@ function RootScreen({ navigation }) {
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v105.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v109.db", attributes, subjects, tag, dataCallback).then(async ctx => {
     if(ctx.context == null) {
       navigation.replace('Login');
     }

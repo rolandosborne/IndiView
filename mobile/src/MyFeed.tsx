@@ -201,6 +201,7 @@ function PhotoEntry({item}) {
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
   const [options, setOptions] = React.useState(<></>);
+  const [comment, setComment] = React.useState('comment-o');
 
   const onUpdatePhoto = () => {
     console.log("UPDATE");
@@ -210,7 +211,7 @@ function PhotoEntry({item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Update Post", "Delete Post", "Close Menu" ];
+    let opt = [ "Change Access", "Delete Post", "Close Menu" ];
     let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
     let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
     setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
@@ -220,6 +221,12 @@ function PhotoEntry({item}) {
       setData(d);
       setIndex(0);
     } 
+    if(item.tagCount > 0) {
+      setComment('commenting-o');
+    }
+    else {
+      setComment('comment-o');
+    }
   }, []);
 
   useEffect(() => {
@@ -280,7 +287,7 @@ function PhotoEntry({item}) {
   };
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#aaaaaa' }}>
+    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
@@ -306,6 +313,7 @@ function VideoEntry({item}) {
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [options, setOptions] = React.useState(<></>);
+  const [comment, setComment] = React.useState('comment-o');
 
   const onUpdateVideo = () => {
     console.log("UPDATE");
@@ -327,10 +335,16 @@ function VideoEntry({item}) {
         setSource({ uri: item.asset(d.thumb), cache: 'force-cache' });
       } 
     } 
+    if(item.tagCount > 0) {
+      setComment('commenting-o');
+    }
+    else {
+      setComment('comment-o');
+    }
   }, []);
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#eeeeee', borderWidth: 1, borderColor: '#888888' }}>
+    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
@@ -348,7 +362,7 @@ function VideoEntry({item}) {
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
         </View>
         <TouchableOpacity style={{ alignItems: 'flex-end' }}>
-          <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
+          <Icon name={comment} style={{ fontSize: 20, color: '#0072CC' }} />
         </TouchableOpacity>
       </View>
     </View>

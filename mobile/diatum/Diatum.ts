@@ -242,6 +242,9 @@ class _Diatum {
     for(let i = 0; i < DiatumEvent.COUNT; i++) {
       this.listeners.set(i, new Set<() => void>());
     }
+
+console.log("TAGS: " + this.tagFilter);
+
   }
 
   public async init(path: string, cb: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<any> {
