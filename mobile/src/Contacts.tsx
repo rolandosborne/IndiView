@@ -69,13 +69,8 @@ function ContactDrawerContent(props) {
 
 export function Contacts({ navigation }) {
   
-  const [latchColor, setLatchColor] = React.useState('#282827');
-  const latchColorRef = useRef(latchColor);
-  const _setLatchColor = color => {
-    latchColorRef.current = color;
-    setLatchColor(color);
-    latch.setColor(color);
-  };
+  const callbackRef = useRef(null);
+  const latchColorRef = useRef('#282827');
 
   const latch = useLatch();
   const onLatch = () => {
@@ -83,7 +78,6 @@ export function Contacts({ navigation }) {
   };
 
   useEffect(() => {
-    _setLatchColor(latchColor);
     const unfocus = navigation.addListener('focus', () => {
       contactNav.closeDrawer();
       latch.setToggleListener(onLatch, latchColorRef.current);
@@ -94,25 +88,25 @@ export function Contacts({ navigation }) {
     }) 
   }, []);
 
-  let callack: (id: string) => {} = null;
   const selected = (id: string) => {
     if(id == null) {
-      _setLatchColor('#282827');
+      latchColorRef.current = '#282827';
     }
     else {
-      _setLatchColor('#0077CC');
+      latchColorRef.current = '#0077CC';
     }
-    if(callback != null) {
-      callback(id);
+    latch.setColor(latchColorRef.current);
+    if(callbackRef.current != null) {
+      callbackRef.current(id);
     }
   };
 
   const setCallback = (cb: (id: string) => {}) => {
-    callback = cb;
+    callbackRef.current = cb;
   };
 
   const clearCallback = () => {
-    callback = null;
+    callbackRef.current = null;
   };
 
   return (

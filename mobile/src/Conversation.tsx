@@ -17,14 +17,8 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 
 export function Conversation({ navigation }) {
-  
-  const [latchColor, setLatchColor] = React.useState('#282827');
-  const latchColorRef = useRef(latchColor);
-  const _setLatchColor = color => {
-    latchColorRef.current = color;
-    setLatchColor(color);
-    latch.setColor(color);
-  };
+
+  const latchColorRef = useRef('#282827');
 
   const latch = useLatch();
   const onLatch = () => {
@@ -32,7 +26,6 @@ export function Conversation({ navigation }) {
   };
 
   useEffect(() => {
-    _setLatchColor(latchColor);
     const unfocus = navigation.addListener('focus', () => {
       latch.setToggleListener(onLatch, latchColorRef.current);
     });

@@ -82,7 +82,7 @@ export function ManageLabels({ navigation }) {
 
   return (
     <View style={{ flex: 1, width: '100%' }}>
-      <View style={{ height: 48, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end', paddingLeft: 16, paddingRight: 16, borderBottomWidth: 2, borderColor: '#dddddd', paddingBottom: 4, backgroundColor: '#dddddd' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end', paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, borderBottomWidth: 2, borderColor: '#dddddd', backgroundColor: '#dddddd' }}>
         <Text style={{ color: '#444444', fontSize: 16, flexGrow: 1 }}>Name</Text>
         <View style={{ width: 48, alignItems: 'center' }}>
           <Icon name="user" size={16} color={'#444444'} solid />
