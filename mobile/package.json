@@ -29,7 +29,8 @@
     "react-native-side-drawer": "^1.2.8",
     "react-native-sqlite-storage": "^5.0.0",
     "react-native-swipe-gestures": "^1.0.5",
-    "react-native-vector-icons": "^8.1.0"
+    "react-native-vector-icons": "^8.1.0",
+    "react-native-video": "^5.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

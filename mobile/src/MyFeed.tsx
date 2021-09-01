@@ -18,6 +18,7 @@ import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { SubjectUtil } from './SubjectUtil';
+import { VideoPlayer } from './VideoPlayer';
 
 const ProfileDrawer = createDrawerNavigator();
 let profileNav = null;
@@ -211,7 +212,7 @@ function PhotoEntry({item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Change Access", "Delete Post", "Close Menu" ];
+    let opt = [ "Sharing", "Delete", "Close Menu" ];
     let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
     let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
     setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
@@ -310,6 +311,7 @@ function PhotoEntry({item}) {
 
 function VideoEntry({item}) {
 
+  const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [options, setOptions] = React.useState(<></>);
@@ -343,6 +345,17 @@ function VideoEntry({item}) {
     }
   }, []);
 
+  const onPlay = () => {
+    setUri(item.asset(data.standard));
+  }
+
+  const MyVideo = () => {
+    if(uri == null) {
+      return (<></>);
+    }
+    return (<VideoPlayer uri={uri} />);
+  }
+
   return (
     <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
       <View>
@@ -352,9 +365,10 @@ function VideoEntry({item}) {
         </TouchableOpacity>
         <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
           <View opacity={0.8}>
-            <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} />
+            <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} onPress={onPlay}/>
           </View>
         </TouchableOpacity>
+        <MyVideo />
       </View>
       <View style={{ padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>

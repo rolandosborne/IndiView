@@ -12,7 +12,7 @@ import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { SubjectUtil } from './SubjectUtil';
-
+import { VideoPlayer } from './VideoPlayer';
 
 function getTime(epoch: number): string {
   let d: Date = new Date();
@@ -34,6 +34,7 @@ function getTime(epoch: number): string {
 
 export function ContactVideo({item}) {
 
+  const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
@@ -107,6 +108,17 @@ export function ContactVideo({item}) {
     } 
   }, []);
 
+  const onPlay = () => {
+    setUri(item.asset(data.standard));
+  };
+
+  const ContactVideo = () => {
+    if(uri == null) {
+      return (<></>);
+    }
+    return (<VideoPlayer uri={uri} />);
+  }
+
   return (
     <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
       <View>
@@ -114,11 +126,12 @@ export function ContactVideo({item}) {
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }} onPress={onBlock}>
           <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
-        <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
+        <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }} onPress={onPlay}>
           <View opacity={0.8}>
             <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} />
           </View>
         </TouchableOpacity>
+        <ContactVideo />
       </View>
       <View style={{ padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>
