@@ -112,11 +112,15 @@ export function ContactVideo({item}) {
     setUri(item.asset(data.standard));
   };
 
+  const onDone = () => {
+    setUri(null);
+  }
+
   const ContactVideo = () => {
     if(uri == null) {
       return (<></>);
     }
-    return (<VideoPlayer uri={uri} />);
+    return (<VideoPlayer uri={uri} done={onDone} />);
   }
 
   return (
