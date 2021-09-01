@@ -21,9 +21,9 @@ export function VideoPlayer({uri}) {
   }
 
   return (
-    <View style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000000' }}>
-      <Video source={{uri: uri}} ref={(ref) => { console.log(ref) }} onBuffer={onBuffer} onError={onError}
-          style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }} />
+    <View style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' }}>
+      <Video source={{uri: uri}} ref={(ref) => { console.log(ref) }} onBuffer={onBuffer} onError={onError} resizeMode="contain"
+          style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, alignSelf: 'center' }} />
     </View>
   )
 }
