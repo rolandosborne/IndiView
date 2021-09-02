@@ -59,7 +59,7 @@ export function VideoPlayer({uri, done}) {
       return (
         <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
           <View opacity={0.8}>
-            <Icon name="stop-circle-o" style={{ fontSize: 48, color: '#ffffff' }} onPress={onStop} />
+            <Icon name="times-circle-o" style={{ fontSize: 48, color: '#ffffff' }} onPress={onStop} />
           </View>
         </TouchableOpacity>
       );

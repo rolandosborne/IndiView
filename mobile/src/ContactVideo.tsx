@@ -124,7 +124,7 @@ export function ContactVideo({item}) {
   }
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
+    <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }} onPress={onBlock}>
@@ -137,7 +137,7 @@ export function ContactVideo({item}) {
         </TouchableOpacity>
         <ContactVideo />
       </View>
-      <View style={{ padding: 8, flexDirection: 'row' }}>
+      <View style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888', padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>

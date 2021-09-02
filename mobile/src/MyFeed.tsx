@@ -288,7 +288,7 @@ function PhotoEntry({item}) {
   };
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
+    <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#aaaaaa' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
@@ -296,7 +296,7 @@ function PhotoEntry({item}) {
         </TouchableOpacity>
         <Dots />
       </View>
-      <View style={{ padding: 8, flexDirection: 'row' }}>
+      <View style={{ padding: 8, flexDirection: 'row', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
@@ -325,7 +325,7 @@ function VideoEntry({item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Update Post", "Delete Post", "Close Menu" ];
+    let opt = [ "Sharing", "Delete", "Close Menu" ];
     let act = [ onUpdateVideo, onDeleteVideo, ()=>{} ];
     let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
     setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
@@ -361,7 +361,7 @@ function VideoEntry({item}) {
   }
 
   return (
-    <View style={{ flex: 1, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, marginBottom: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
+    <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
@@ -374,7 +374,7 @@ function VideoEntry({item}) {
         </TouchableOpacity>
         <MyVideo />
       </View>
-      <View style={{ padding: 8, flexDirection: 'row' }}>
+      <View style={{ padding: 8, flexDirection: 'row', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>

@@ -232,7 +232,7 @@ function IdentityEntry() {
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
       </TouchableOpacity>
-      <Text style={{ fontSize: 15, color: '#444444' }}>{ identity.handle }</Text>
+      <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
     </View>
   );
 }
@@ -262,7 +262,7 @@ function ContactEntry({entry}) {
           <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
       </TouchableOpacity>
-      <Text style={{ fontSize: 15, color: '#444444' }}>{ entry.handle }</Text>
+      <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
     </View>
   );
 }

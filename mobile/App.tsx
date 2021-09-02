@@ -33,6 +33,7 @@ import { ContactSearch } from "./src/ContactSearch";
 import { ManageLabels } from "./src/ManageLabels";
 import { ContactRequests } from "./src/ContactRequests";
 import { BlockedItems } from "./src/BlockedItems";
+import { Settings } from "./src/Settings";
 
 const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a86473991f7fe9f962';
 
@@ -253,6 +254,7 @@ function MainScreen() {
       <MainStack.Screen name="Manage Labels" component={ManageLabels} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Contact Requests" component={ContactRequests} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Blocked Items" component={BlockedItems} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="Settings" component={Settings} options={{headerBackTitle: null, headerShown: true}} />
     </MainStack.Navigator>
   );
 }
@@ -337,6 +339,7 @@ function HomeDrawerContent(props) {
       }} />
       <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
         props.navigation.closeDrawer();
+        props.navigate("Settings");
       }} />
       <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
     </View>
