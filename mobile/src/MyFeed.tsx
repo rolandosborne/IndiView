@@ -349,11 +349,15 @@ function VideoEntry({item}) {
     setUri(item.asset(data.standard));
   }
 
+  const onDone = () => {
+    setUri(null);
+  };
+
   const MyVideo = () => {
     if(uri == null) {
       return (<></>);
     }
-    return (<VideoPlayer uri={uri} />);
+    return (<VideoPlayer uri={uri} done={onDone} />);
   }
 
   return (
