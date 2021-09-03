@@ -47,7 +47,13 @@ export function Settings({ navigation }) {
     let c = await app.getConfig();
     c.searchable = s;
     app.setConfig(c);
-    IndiViewCom.setSettings(app.getToken(), c);
+    try {
+      IndiViewCom.setSettings(app.getToken(), c);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to save settings");
+    }
   };
 
   const onMute = async () => {
@@ -58,7 +64,13 @@ export function Settings({ navigation }) {
     let c = await app.getConfig();
     c.videoMute = m;
     app.setConfig(c);
-    IndiViewCom.setSettings(app.getToken(), c);
+    try {
+      IndiViewCom.setSettings(app.getToken(), c);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to save settings");
+    }
   };
 
   const onQuality = async (q: string) => {
@@ -68,9 +80,14 @@ export function Settings({ navigation }) {
     let c = await app.getConfig();
     c.videoQuality = q;
     app.setConfig(c);
-    IndiViewCom.setSettings(app.getToken(), c);
+    try {
+      IndiViewCom.setSettings(app.getToken(), c);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to save settings");
+    }
   };
-
 
   return (
     <View style={{ marginTop: 8 }}>

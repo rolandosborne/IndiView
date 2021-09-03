@@ -19,6 +19,7 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { SubjectUtil } from './SubjectUtil';
 import { VideoPlayer } from './VideoPlayer';
+import { AppSupport, useApp } from './AppSupport';
 
 const ProfileDrawer = createDrawerNavigator();
 let profileNav = null;
@@ -345,9 +346,43 @@ function VideoEntry({item}) {
     }
   }, []);
 
+  let app = useApp();
   const onPlay = () => {
-    setUri(item.asset(data.standard));
-  }
+    let config = app.getConfig();
+    if(config != null && config.videoQuality == 'hd') {
+      if(data.high != null) {
+        setUri(item.asset(data.high));
+      }
+      else if(data.standard != null) {
+        setUri(item.asset(data.standard));
+      }
+      else {
+        setUri(item.asset(data.low));
+      }
+    }
+    else if(config != null && config.videoQuality == 'lq') {
+      if(data.low != null) {
+        setUri(item.asset(data.low));
+      }
+      else if(data.standard != null) {
+        setUri(item.asset(data.standard));
+      }
+      else {
+        setUri(item.asset(data.high));
+      }
+    }
+    else {
+      if(data.standard != null) {
+        setUri(item.asset(data.standard));
+      }
+      else if(data.high != null) {
+        setUri(item.asset(data.high));
+      }
+      else {
+        setUri(item.asset(data.low));
+      }
+    }
+  };
 
   const onDone = () => {
     setUri(null);
