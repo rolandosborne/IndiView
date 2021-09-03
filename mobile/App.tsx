@@ -36,6 +36,7 @@ import { BlockedItems } from "./src/BlockedItems";
 import { Settings } from "./src/Settings";
 
 const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a86473991f7fe9f962';
+const APP_CONFIG: string = 'INDIVIEW_CONFIG';
 
 const Stack = createStackNavigator(); 
 const MainStack = createStackNavigator();
@@ -126,6 +127,7 @@ function RootScreen({ navigation }) {
       try {
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
+        await syncConfig(diatum, support);
         navigation.replace('Main');
       }
       catch(err) {
@@ -194,7 +196,7 @@ function AgreeScreen({ route, navigation }) {
         let l = await IndiViewCom.attach(code);
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
-        await diatum.setAppContext(l);
+        await syncConfig(diatum, support);
         navigation.replace("Main");
       }
       catch(err) {
@@ -440,6 +442,20 @@ function LabelScreen({ navigation }) {
       <Text>LabelScreen</Text>
     </View>
   );
+}
+
+async function syncConfig(diatum: Diatum, support: AppSupport) {
+
+  try {
+    let c = await IndiViewCom.getSettings(support.getToken());
+    diatum.setAccountData(APP_CONFIG, c);
+    support.setConfig(c); 
+  }
+  catch(err) {
+    console.log(err);
+    let c = diatum.getAccountData(APP_CONFIG);
+    support.setConfig(c);
+  }
 }
 
 const App = () => {

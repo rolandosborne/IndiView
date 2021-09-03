@@ -1,8 +1,10 @@
 import React, { useContext, useState } from "react";
 import { Alert } from 'react-native';
+import { Config } from 'IndiViewCom';
 
 export class AppSupport {
   private token: string;
+  private config: Config;
 
   public getToken(): string {
     return this.token;
@@ -10,6 +12,14 @@ export class AppSupport {
 
   public setToken(value: string) {
     this.token = value;
+  }
+
+  public getConfig(): Config {
+    return this.config;
+  }
+
+  public setConfig(value: Config) {
+    this.config = value;
   }
 };
 

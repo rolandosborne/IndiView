@@ -13,19 +13,64 @@ import { useNavigation } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { IndiViewCom, Contact } from "./IndiViewCom";
 import { AppSuppport, useApp } from './AppSupport';
+import { Diatum, DiatumEvent } from '../diatum/Diatum';
+import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
+
+const APP_CONFIG: string = 'INDIVIEW_CONFIG';
 
 export function Settings({ navigation }) {
 
+  const [quality, setQuality] = React.useState('sd');
   const [searchable, setSearchable] = React.useState(true);  
   const [muting, setMuting] = React.useState(true);  
 
-  const onSearch = () => {
-    setSearchable(!searchable);
+  let app = useApp();
+  let diatum = useDiatum();
+
+  useEffect(async () => {
+    let c = await app.getConfig();
+    if(c == null) {
+      c = await IndiViewCom.getSettings(app.getToken());
+      await diatum.setAccountData(APP_CONFIG, c);
+      app.setConfig(c);
+    }
+    setQuality(c.videoQuality);
+    setSearchable(c.searchable);
+    setMuting(c.videoMute);
+  }, []);
+
+  const onSearch = async () => {
+    let s = !searchable;
+    setSearchable(s);
+
+    // sync to store and server
+    let c = await app.getConfig();
+    c.searchable = s;
+    app.setConfig(c);
+    IndiViewCom.setSettings(app.getToken(), c);
   };
 
-  const onMute = () => {
-    setMuting(!muting);
-  }
+  const onMute = async () => {
+    let m = !muting;
+    setMuting(m);
+
+    // sync to store and server
+    let c = await app.getConfig();
+    c.videoMute = m;
+    app.setConfig(c);
+    IndiViewCom.setSettings(app.getToken(), c);
+  };
+
+  const onQuality = async (q: string) => {
+    setQuality(q);
+
+    // sync to store and server
+    let c = await app.getConfig();
+    c.videoQuality = q;
+    app.setConfig(c);
+    IndiViewCom.setSettings(app.getToken(), c);
+  };
+
 
   return (
     <View style={{ marginTop: 8 }}>
@@ -46,7 +91,7 @@ export function Settings({ navigation }) {
       <View style={{ margin: 16, borderBottomWidth: 1, borderColor: '#888888' }}>
         <Text>
           <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#222222', paddingLeft: 16, paddingRight: 16 }}>Muting:</Text>
-          <Text style={{ fontSize: 14, color: '#222222' }}> default audio state for video playback in feed.</Text>
+          <Text style={{ fontSize: 14, color: '#222222' }}> default audio state for video playback within feed.</Text>
         </Text>
         <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center' }}>
           <Text style={{ width: 64, textAlign: 'right' }}>Mute</Text>
@@ -56,6 +101,33 @@ export function Settings({ navigation }) {
           <Text style={{ width: 64, textAlign: 'left' }}>Unmute</Text>
         </View>
       </View>
+
+      <View style={{ margin: 16, borderBottomWidth: 1, borderColor: '#888888' }}>
+        <Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#222222', paddingLeft: 16, paddingRight: 16 }}>Streaming:</Text>
+          <Text style={{ fontSize: 14, color: '#222222' }}> default video playback quality.</Text>
+        </Text>
+        <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity activeOpacity={1} style={{ margin: 16, alignItems: 'center', justifyContent: 'center' }} onPress={() => onQuality('lq')}>
+            <Text style={{ fontSize: 12, color: '#444444' }}>Low</Text>
+            <View style={{ margin: 8, width: 16, height: 16, borderRadius: 8, backgroundColor: quality=='lq' ? '#0072CE' : '#888888', justifyContent: 'center' }}>
+            </View>
+          </TouchableOpacity>
+ 
+          <TouchableOpacity activeOpacity={1} style={{ margin: 16, alignItems: 'center', justifyContent: 'center' }} onPress={() => onQuality('sd')}>
+            <Text style={{ fontSize: 12, color: '#444444' }}>Standard</Text>
+            <View style={{ margin: 8, width: 16, height: 16, borderRadius: 8, backgroundColor: quality=='sd' ? '#0072CE' : '#888888', justifyContent: 'center' }}>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity activeOpacity={1} style={{ margin: 16, alignItems: 'center', justifyContent: 'center' }} onPress={() => onQuality('hd')}>
+            <Text style={{ fontSize: 12, color: '#444444' }}>High</Text>
+            <View style={{ margin: 8, width: 16, height: 16, borderRadius: 8, backgroundColor: quality=='hd' ? '#0072CE' : '#888888', justifyContent: 'center' }}>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+
     </View>
   );
 }

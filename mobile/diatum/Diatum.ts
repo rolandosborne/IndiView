@@ -16,6 +16,7 @@ const REVISIONS_KEY: string = "diatum_revisions";
 const ACCESS_KEY: string = "service_access";
 const IDENTITY_KEY: string = "identity";
 const AUTH_KEY: string = "auth_message";
+const ACCOUNT_DATA: string = "account_data_";
 
 export enum DiatumDataType {
   Identity,
@@ -60,6 +61,12 @@ export interface Diatum {
 
   // clear active identity
   clearSession(): Promise<void>;
+
+  // get app data
+  getAccountData(key: string): Promise<any>;
+
+  // set app data
+  setAccountData(key: string, data: any): Promise<void>; 
 
   // add event listener
   setListener(event: DiatumEvent, callback: () => void): Promise<void>;
@@ -646,7 +653,14 @@ console.log("TAGS: " + this.tagFilter);
     this.session = null;
   }
 
-  
+  public async getAccountData(key: string): Promise<any> {
+    return await this.storage.getAccountObject(this.session.amigoId, ACCOUNT_DATA + key);
+  }
+
+  public async setAccountData(key: string, data: any): Promise<void> {
+    return await this.storage.setAccountObject(this.session.amigoId, ACCOUNT_DATA + key, data);
+  }
+ 
   private async syncIdentity(): Promsie<void> {
 
     let revision = await DiatumApi.getIdentityRevision(this.session.amigoNode, this.session.amigoToken);
@@ -1543,6 +1557,16 @@ async function clearSession(): Promise<void> {
   return diatum.clearSession();
 }
 
+async function getAccountData(key: string): Promise<any> {
+  let diatum = await getInstance();
+  return await diatum.getAccountData(key);
+}
+
+async function setAccountData(key: string, data: any): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setAccountData(key);
+}
+
 async function setListener(event: DiatumEvent, callback: () => void): Promise<void> {
   let diatum = await getInstance();
   return diatum.setListener(event, callback);
@@ -1768,7 +1792,7 @@ async function syncContact(amigoId: string): Promise<void> {
 }
 
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
-    setListener, clearListener, 
+    getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
     setProfileName, setProfileImage, setProfileLocation, setProfileDescription, 
     getIdentity, getLabels, getLabelCount, addLabel, updateLabel, removeLabel, 

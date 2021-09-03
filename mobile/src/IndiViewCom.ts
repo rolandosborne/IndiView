@@ -21,6 +21,14 @@ export interface Contact {
   description?: string;
 }
 
+export interface Config {
+  searchable: boolean;
+  videoQuality: string;
+  audioQuality: string;
+  videoMute: string;
+  audioMute: string;
+}
+
 function checkResponse(response) {
   if(response.status >= 400 && response.status < 600) {
     throw new Error(response.url + " failed");
@@ -49,5 +57,17 @@ export class IndiViewCom {
       return await response.json();
     }
 
+
+    static async getSettings(token: string): Promise<Config> {
+      let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/settings?token=" + encodeURIComponent(token));
+      checkResponse(response);
+      return await response.json();
+    }
+
+    static async setSettings(token: string, data): Promise<void> {
+      let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/settings?token=" + encodeURIComponent(token),
+          { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      checkResponse(response);
+    }
 }
 
