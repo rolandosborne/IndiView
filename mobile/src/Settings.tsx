@@ -15,18 +15,47 @@ import { IndiViewCom, Contact } from "./IndiViewCom";
 import { AppSuppport, useApp } from './AppSupport';
 
 export function Settings({ navigation }) {
-  
-  const onCheck = (set: boolean) => {
-    console.log("CHECK");
+
+  const [searchable, setSearchable] = React.useState(true);  
+  const [muting, setMuting] = React.useState(true);  
+
+  const onSearch = () => {
+    setSearchable(!searchable);
+  };
+
+  const onMute = () => {
+    setMuting(!muting);
   }
 
   return (
-    <View style={{ padding: 16, alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Icon name="check-square" style={{ fontSize: 24, color: '#0072CC' }} onPress={onCheck(false)} />
-        <Text style={{ fontSize: 16, color: '#444444', paddingLeft: 16, paddingRight: 16 }}>Searchable</Text>
+    <View style={{ marginTop: 8 }}>
+      <View style={{ margin: 16, borderBottomWidth: 1, borderColor: '#888888' }}>
+        <Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#222222', paddingLeft: 16, paddingRight: 16 }}>Searchable:</Text>
+          <Text style={{ fontSize: 14, color: '#222222' }}> allow your account to be visible in the 'Contact Search' page.</Text>
+        </Text>
+        <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ width: 64, textAlign: 'right' }}>No</Text>
+          <TouchableOpacity activeOpacity={1} style={{ margin: 16, width: 48, height: 24, borderRadius: 16, backgroundColor: searchable ? '#0072CC' : '#888888', justifyContent: 'center' }} onPress={onSearch}>
+            <View style={{ margin: 1, borderRadius: 16, flex: 1, aspectRatio: 1, backgroundColor: '#ffffff', alignSelf: searchable ? 'flex-end' : 'flex-start' }}></View>
+          </TouchableOpacity>
+          <Text style={{ width: 64, textAlign: 'left' }}>Yes</Text>
+        </View>
       </View>
-      <Text style={{ fontSize: 14, color: '#888888' }}>You are searchable within the 'Contact Search' page</Text>
+
+      <View style={{ margin: 16, borderBottomWidth: 1, borderColor: '#888888' }}>
+        <Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#222222', paddingLeft: 16, paddingRight: 16 }}>Muting:</Text>
+          <Text style={{ fontSize: 14, color: '#222222' }}> default audio state for video playback in feed.</Text>
+        </Text>
+        <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ width: 64, textAlign: 'right' }}>Mute</Text>
+          <TouchableOpacity activeOpacity={1} style={{ margin: 16, width: 48, height: 24, borderRadius: 16, backgroundColor: muting ? '#888888' : '#0072CE', justifyContent: 'center' }} onPress={onMute}>
+            <View style={{ margin: 1, borderRadius: 16, flex: 1, aspectRatio: 1, backgroundColor: '#ffffff', alignSelf: muting ? 'flex-start' : 'flex-end' }}></View>
+          </TouchableOpacity>
+          <Text style={{ width: 64, textAlign: 'left' }}>Unmute</Text>
+        </View>
+      </View>
     </View>
   );
 }

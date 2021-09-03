@@ -256,6 +256,7 @@ function ContactEntry({entry}) {
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
+        <Image style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: 32 }} source={defaultSource} />
         <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
         <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
