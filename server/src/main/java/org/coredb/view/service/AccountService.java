@@ -61,7 +61,7 @@ import org.coredb.view.model.LinkMessage;
 import org.coredb.view.model.UserEntry;
 import org.coredb.view.model.ServiceAccess;
 import org.coredb.view.model.Contact;
-
+import org.coredb.view.model.Settings;
 import org.coredb.view.model.Login;
 
 import javax.ws.rs.NotAcceptableException;
@@ -95,6 +95,7 @@ public class AccountService {
     return "OK";
   }
 
+  @Transactional
   public List<Contact> getMatching(String token, String match) throws IllegalArgumentException {
   
     // lookup account token
@@ -218,6 +219,42 @@ public class AccountService {
     login.setAccountNode(amigo.getNode());
     login.setServiceNode(appNode.getStrValue());
     return login;
+  }
+
+  public Settings getSettings(String token) throws NotFoundException {
+    
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // extract settings
+    Settings settings = new Settings();
+    settings.setSearchable(account.getSearchable());
+    settings.setVideoQuality(account.getVideoQuality());
+    settings.setAudioQuality(account.getAudioQuality());
+    settings.setVideoMute(account.getVideoMute());
+    settings.setAudioMute(account.getAudioMute());
+    return settings;
+  }
+
+  @Transactional
+  public void setSettings(String token, Settings settings) throws NotFoundException {
+  
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // store settings
+    account.setSearchable(settings.isSearchable());
+    account.setVideoQuality(settings.getVideoQuality());
+    account.setAudioQuality(settings.getAudioQuality());
+    account.setVideoMute(settings.isVideoMute());
+    account.setAudioMute(settings.isAudioMute());
+    accountRepository.save(account);
   }
 
   private UserEntry setToken(AmigoToken amigo, String base, String token) throws RestClientException {
