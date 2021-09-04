@@ -9,7 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { Diatum, DiatumEvent, DiatumDataType } from './diatum/Diatum';
 import { AttachCode, getAttachCode } from './diatum/DiatumUtil';
-import { DiatumSession, LabelEntry, Attribute } from './diatum/DiatumTypes';
+import { DiatumSession, LabelEntry, Attribute, Subject } from './diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
@@ -58,6 +58,30 @@ function RootScreen({ navigation }) {
 
   const dataCallback = async (type: DiatumDataType, amigoId: string, objectId: string) => {
     try {
+      if(type == DiatumDataType.AmigoSubject && objectId == null) {
+
+        // compute revision of retrieved subjects
+        let s: Subject[] = await diatum.getContactSubjects(amigoId);
+        let rev: number = null;
+        let mod: number = null;
+        for(let i = 0; i < s.length; i++) {
+          if(rev == null || s[i].revision > rev) {
+            rev = s[i].revision;
+          }
+          if(mod == null || s[i].modified > mod) {
+            mod = s[i].modified;
+          }
+        }
+
+        // update subject revision
+        let c: ContactEntry = await diatum.getContact(amigoId);
+        let feed: number = null;
+        if(c.appSubject != null) {
+          feed = c.appSubject.feedRevision;
+        }
+        await diatum.setContactSubjectData(amigoId, { feedRevision: feed, subjectRevision: rev, subjectModified: mod });
+      }
+
       if(type == DiatumDataType.AmigoAttribute && objectId == null) {
         let phoneNumbers = [];
         let textNumbers = [];
@@ -117,7 +141,9 @@ function RootScreen({ navigation }) {
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v109.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v126.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+console.log("INIT", ctx);
+
     if(ctx.context == null) {
       navigation.replace('Login');
     }
@@ -196,6 +222,7 @@ function AgreeScreen({ route, navigation }) {
         let l = await IndiViewCom.attach(code);
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
+        await diatum.setAppContext(l);
         await syncConfig(diatum, support);
         navigation.replace("Main");
       }

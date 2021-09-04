@@ -31,6 +31,8 @@ export interface ContactEntry {
   status?: string;
   errorFlag?: boolean
   appAttribute?: any;
+  appSubject?: any;
+  appData?: any;
   blocked?: boolean;
 }
 

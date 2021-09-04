@@ -149,6 +149,12 @@ export interface Diatum {
   // set app data for amigo
   setContactAttributeData(amigoId: string, obj: any): Promise<void>
 
+  // set app data for amigo
+  setContactSubjectData(amigoId: string, obj: any): Promise<void>
+
+  // set app data for amigo
+  setContactAppData(amigoId: string, obj: any): Promise<void>
+
   // add contact
   addContact(amigoId: string, registry: string): Promise<void>
 
@@ -573,6 +579,7 @@ console.log("TAGS: " + this.tagFilter);
       if(!localMap.has(key)) {
         let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
         await this.storage.addConnectionSubject(this.session.amigoId, amigoId, subject);
+        await this.callback(DiatumDataType.AmigoSubject, amigoId, subject.subjectId); 
         if(value.tag != null) {
           let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, key, this.tagFilter);
           await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
@@ -583,6 +590,7 @@ console.log("TAGS: " + this.tagFilter);
         if(localMap.get(key).subject != value.subject) {
           let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
           await this.storage.updateConnectionSubject(this.session.amigoId, amigoId, subject);
+          await this.callback(DiatumDataType.AmigoSubject, amigoId, subject.subjectId); 
           notify = true;
         }
 
@@ -603,6 +611,7 @@ console.log("TAGS: " + this.tagFilter);
     });
 
     if(notify) {
+      await this.callback(DiatumDataType.AmigoSubject, amigoId); 
       this.notifyListeners(DiatumEvent.View, amigoId);
     }
   }
@@ -1283,7 +1292,7 @@ console.log("TAGS: " + this.tagFilter);
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, appSubject: c[i].appSubject, errorFlag: c[i].errorFlag });
     }
     return entries;
   }
@@ -1294,7 +1303,7 @@ console.log("TAGS: " + this.tagFilter);
       return null;
     }
     let url: string = c.logoSet ? this.session.amigoNode + "/index/amigos/" + c.amigoId + "/logo?token=" + this.session.amigoToken : null;
-    return { amigoId: c.amigoId, name: c.name, handle: c.handle, registry: c.registry, location: c.location, description: c.description, notes: c.notes, blocked: c.blocked, status: c.status, imageUrl: url, appAttribute: c.appAttribute, errorFlag: c.errorFlag };
+    return { amigoId: c.amigoId, name: c.name, handle: c.handle, registry: c.registry, location: c.location, description: c.description, notes: c.notes, blocked: c.blocked, status: c.status, imageUrl: url, appAttribute: c.appAttribute, appSubject: c.appSubject, errorFlag: c.errorFlag };
   }
 
   public async getContactAttributes(amigoId: string): Promise<Attribute[]> {
@@ -1316,7 +1325,13 @@ console.log("TAGS: " + this.tagFilter);
   }
 
   public async setContactAttributeData(amigoId: string, obj: any): Promise<void> {
-    return await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
+    await this.storage.setContactAttributeData(this.session.amigoId, amigoId, obj);
+    this.notifyListeners(DiatumEvent.Contact);
+  }
+
+  public async setContactSubjectData(amigoId: string, obj: any): Promise<void> {
+    await this.storage.setContactSubjectData(this.session.amigoId, amigoId, obj);
+    this.notifyListeners(DiatumEvent.View);
   }
 
   public async addContact(amigoId: string, registry: string) {
@@ -1419,7 +1434,7 @@ console.log("TAGS: " + this.tagFilter);
     let entries: ContactEntry[] = [];
     for(let i = 0; i < c.length; i++) {
       let url: string = c[i].logoSet ? this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision: null;
-      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, errorFlag: c[i].errorFlag });
+      entries.push({ amigoId: c[i].amigoId, name: c[i].name, handle: c[i].handle, registry: c[i].registry, location: c[i].location, description: c[i].description, notes: c[i].notes, blocked: c[i].blocked, status: c[i].status, imageUrl: url, appAttribute: c[i].appAttribute, appSubject: c[i].appSubject, errorFlag: c[i].errorFlag });
     }
     return entries;
   }
@@ -1706,6 +1721,11 @@ async function setContactAttributeData(amigoId: string, obj: any): Promise<void>
   return await diatum.setContactAttributeData(amigoId, obj);
 }
 
+async function setContactSubjectData(amigoId: string, obj: any): Promise<viod> {
+  let diatum = await getInstance();
+  return await diatum.setContactSubjectData(amigoId, obj);
+}
+
 async function addContact(amigoId: string, registry: string): Promise<void> {
   let diatum = await getInstance();
   return await diatum.addContact(amigoId, registry);
@@ -1798,7 +1818,7 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getIdentity, getLabels, getLabelCount, addLabel, updateLabel, removeLabel, 
     getAttributes, addAttribute, removeAttribute, setAttribute, getAttributeLabels, setAttributeLabel, clearAttributeLabel,
     getContacts, getContact, getContactAttributes, 
-    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData,
+    getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, setContactSubjectData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
     getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,

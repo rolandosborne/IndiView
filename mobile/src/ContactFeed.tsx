@@ -46,6 +46,15 @@ export function ContactFeed({ route, navigation }) {
     }
   }, []);
 
+  useEffect(async () => {
+    let data = await diatum.getContact(contact.amigoId);
+    if(data != null && data.appSubject != null) {
+      data.appSubject.feedRevision = data.appSubject.subjectRevision;
+      let appSubject = { feedRevision: data.appSubject.subjectRevision, subjectRevision: data.appSubject.subjectRevision, subjectModified: data.appSubject.subjectModified };
+      await diatum.setContactSubjectData(contact.amigoId, appSubject); 
+    }
+  }, []);
+
   let latch: Latch = useLatch();
   const onLatch = () => { };
   useEffect(() => {

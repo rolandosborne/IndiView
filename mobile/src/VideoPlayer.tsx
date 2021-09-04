@@ -73,12 +73,12 @@ export function VideoPlayer({uri, done}) {
         <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
           <TouchableOpacity style={{ position: 'absolute', padding: 16, top: 0, right: 0 }} onPress={onStop} >
             <View opacity={0.8}>
-              <Icon name="times-circle-o" style={{ fontSize: 32, color: '#ffffff' }} />
+              <Icon name="times-circle-o" style={{ fontSize: 36, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={{ position: 'absolute', padding: 16, top: 0, left: 0 }} onPress={onMute}>
             <View opacity={0.8}>
-              <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ fontSize: 32, color: '#ffffff' }} />
+              <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ fontSize: 28, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
         </View>

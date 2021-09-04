@@ -60,6 +60,8 @@ export class Contact {
   notes: string;
   errorFlag: boolean;
   appAttribute: any;
+  appSubject: any;
+  appData: any;
   blocked: boolean;
 }
 
@@ -87,7 +89,7 @@ export class Storage {
   public async setAccount(id: string): Promise<void> {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS _account_" + id + " (key text, value text null, unique(key))");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS group_" + id + " (label_id text, revision integer, name text, unique(label_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, logo_flag integer, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, connection_error integer, registry_error integer, hide integer, app_identity text, app_attribute text, app_subject text, notes text, searchable text, blocked integer, unique(amigo_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS index_" + id + " (amigo_id text unique, revision integer, node text, registry text, name text, handle text, location text, description text, logo_flag integer, identity_revision, attribute_revision integer, subject_revision integer, update_timestamp integer, connection_error integer, registry_error integer, hide integer, app_identity text, app_attribute text, app_subject text, app_data text, notes text, searchable text, blocked integer, unique(amigo_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS indexgroup_" + id + " (label_id text, amigo_id text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, amigo text, updated integer, app_share text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profile_" + id + " (attribute_id text, revision integer, schema text, data text, unique(attribute_id));");
@@ -303,7 +305,7 @@ export class Storage {
   }
   public async removeSubject(id: string, subjectId: string) {
     await this.db.executeSql("DELETE FROM show_" + id + " where subject_id=?;", [subjectId]);
-    await this.db.executeSql("DELETE FROM showlabel_" + id + " where subject_id=?;", [subjectId]);
+    await this.db.executeSql("DELETE FROM showgroup_" + id + " where subject_id=?;", [subjectId]);
   }
   public async setSubjectLabel(id: string, subjectId: string, labelId: string) {
     await this.db.executeSql("INSERT INTO showgroup_" + id + " (subject_id, label_id) values (?, ?);", [subjectId, labelId]);
@@ -617,12 +619,12 @@ export class Storage {
   }
 
   public async getBlockedContacts(id: string): Promise<Contact[]> {
-    let res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where blocked != ? ORDER BY name COLLATE NOCASE ASC;", [0]);
+    let res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id where blocked != ? ORDER BY name COLLATE NOCASE ASC;", [0]);
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) });
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute), appSubject: decodeObject(item.app_subject), appData: decodeObject(item.app_data) });
       }
     }
     return contacts;
@@ -635,32 +637,32 @@ export class Storage {
   public async getContacts(id: string, labelId: string, status: string): Promise<Contact[]> {
     let res;
     if(labelId == null && status == null) {
-      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE blocked=? ORDER BY name COLLATE NOCASE ASC;", [0]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE blocked=? ORDER BY name COLLATE NOCASE ASC;", [0]);
     }
     else if(labelId != null && status == null) {
-      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [labelId, 0]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [labelId, 0]);
     }
     else if(labelId == null && status != null) {
-      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE share_" + id + ".status=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [status, 0]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE share_" + id + ".status=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [status, 0]);
     }
     else if(labelId != null && status != null) {
-      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND share_" + id + ".status=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [labelId, status, 0]);
+      res = await this.db.executeSql("SELECT DISTINCT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " inner join indexgroup_" + id + " on index_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE indexgroup_" + id + ".label_id=? AND share_" + id + ".status=? AND blocked=? ORDER BY name COLLATE NOCASE ASC;", [labelId, status, 0]);
     }
     let contacts: Contacts[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) });
+        contacts.push({ amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute), appSubject: decodeObject(item.app_subject), appData: decodeObject(item.app_data) });
       }
     }
     return contacts;
   }
   public async getContact(id: string, amigoId: string): Promise<Contact> {
-    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE index_" + id + ".amigo_id=?;", [amigoId]);
+    let res = await this.db.executeSql("SELECT index_" + id + ".amigo_id, name, handle, identity_revision, registry, location, description, notes, blocked, logo_flag, connection_error, status, app_attribute, app_subject, app_data from index_" + id + " left outer join share_" + id + " on index_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE index_" + id + ".amigo_id=?;", [amigoId]);
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        return { amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute) };
+        return { amigoId: item.amigo_id, name: item.name, handle: item.handle, revision: item.identity_revision, registry: item.registry, location: item.location, description: item.description, notes: item.notes, blocked: item.blocked != 0, status: item.status, logoSet: item.logo_flag != 0, errorFlag: item.connection_error!=0, appAttribute: decodeObject(item.app_attribute), appSubject: decodeObject(item.app_subject), appData: decodeObject(item.app_data) };
       }
     }
     return null; 
@@ -688,6 +690,12 @@ export class Storage {
   }
   public async setContactAttributeData(id: string, amigoId: string, obj: any): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " SET app_attribute=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
+  }
+  public async setContactSubjectData(id: string, amigoId: string, obj: any): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " SET app_subject=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
+  }
+  public async setContactAppData(id: string, amigoId: string, obj: any): Promise<void> {
+    await this.db.executeSql("UPDATE index_" + id + " SET app_data=? WHERE amigo_id=?;", [encodeOjbect(obj), amigoId]);
   }
 
   public async getContactShareId(id: string, amigoId: string): Promsie<string> {

@@ -132,6 +132,23 @@ function ContactList({ setListener, clearListener }) {
   let diatum: Diatum = useDiatum();
   const updateContacts = async () => {
     let c = await diatum.getContacts(labelIdRef.current, "connected");
+    
+    // sort by modified subject
+    c.sort((a,b) => { 
+      if(a.appSubject == null) {
+        return 1;
+      }
+      if(b.appSubject == null) {
+        return -1;
+      }
+      if(a.appSubject.subjectModified < b.appSubject.subjectModified) {
+        return 1;
+      }
+      else {
+        return -1;
+      }
+    });
+
     let grid = [];
     for(let i = -1; i < c.length; i+=3) {
       if(i < 0) {
@@ -156,6 +173,7 @@ function ContactList({ setListener, clearListener }) {
     diatum.setListener(DiatumEvent.Contact, updateContacts);
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
+    diatum.setListener(DiatumEvent.View, updateContacts);
     return () => {
       if(clearListener != null) {
         clearListener();
@@ -163,6 +181,7 @@ function ContactList({ setListener, clearListener }) {
       diatum.clearListener(DiatumEvent.Contact, updateContacts);
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
       diatum.clearListener(DiatumEvent.Share, updateContacts);
+      diatum.clearListener(DiatumEvent.View, updateContacts);
     }
   }, []);
 
@@ -247,6 +266,20 @@ function ContactEntry({entry}) {
     navigation.navigate("ContactFeed", entry);
   }
 
+  const Star = () => {
+    if(entry != null && entry.appSubject != null && entry.appSubject.subjectRevision != null) {
+      if(entry.appSubject.feedRevision == null || entry.appSubject.subjectRevision > entry.appSubject.feedRevision) {
+        return (
+          <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
+            <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
+            <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
+          </View>
+        );
+      }
+    }
+    return (<></>);
+  }
+
   let defaultSource = require('../assets/avatar.png');
   let source = defaultSource;
   if(entry.imageUrl != null) {
@@ -258,10 +291,7 @@ function ContactEntry({entry}) {
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
         <Image style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: 32 }} source={defaultSource} />
         <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
-        <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
-          <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
-          <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
-        </View>
+        <Star />
       </TouchableOpacity>
       <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
     </View>
