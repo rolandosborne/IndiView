@@ -203,6 +203,12 @@ export interface Diatum {
   // set blocked subject state
   setBlockedSubject(amigoId: string, subjectId: string, block: boolean): Promise<void>
 
+  // add a new subject
+  addSubject(schema: string): Promise<string>;
+
+  // remove subject
+  removeSubject(subjectId: string): Promise<void>;  
+
   // refresh contact
   syncContact(amigoId: string): Promise<void>
 }
@@ -1495,6 +1501,18 @@ console.log("TAGS: " + this.tagFilter);
     await this.syncAmigoConnection(connection);
   }    
 
+  public async addSubject(schema: string): Promise<string> {
+    let entry = await DiatumApi.addSubject(this.session.amigoNode, this.session.amigoToken, schema);
+console.log("ADD SUBJECT", entry);
+    await this.syncShow();
+    return entry.subject.subjectId;
+  }
+
+  public async removeSubject(subjectId: string): Promise<void> {
+    await DiatumApi.removeSubject(this.session.amigoNode, this.session.amigoToken, subjectId);
+    await this.syncShow();
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -1811,6 +1829,16 @@ async function syncContact(amigoId: string): Promise<void> {
   return await diatum.syncContact(amigoId);
 }
 
+async function addSubject(schema: string): Promise<string> {
+  let diatum = await getInstance();
+  return await diatum.addSubject(schema);
+}
+
+async function removeSubject(subjectId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeSubject(subjectId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1822,5 +1850,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
     getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
+    addSubject, removeSubject,
     syncContact };
 

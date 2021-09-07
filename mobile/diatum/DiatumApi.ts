@@ -419,4 +419,14 @@ export class DiatumApi {
     return await response.json();
   }
 
+  public static async addSubject(node: string, token: string, schema: string): Promise<SubjectEntry> {
+    let response = await fetchWithTimeout(node + "/show/subjects?token=" + token + "&schema=" + encodeURIComponent(schema), { method: 'POST', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async removeSubject(node: string, token: string, subjectId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "?token=" + token, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
 }

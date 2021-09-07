@@ -25,6 +25,7 @@ import { MyAttribute } from "./src/MyAttribute";
 
 import { Feed } from "./src/Feed";
 import { MyFeed } from "./src/MyFeed";
+import { AddPhoto } from "./src/AddPhoto";
 import { ContactFeed } from "./src/ContactFeed";
 
 import { Conversation } from "./src/Conversation";
@@ -299,6 +300,7 @@ function HomeFeedScreen() {
     <FeedStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
       <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="Post Photo" component={AddPhoto} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
     </FeedStack.Navigator>
   );

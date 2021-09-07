@@ -87,10 +87,17 @@ export function MyFeed({ route, navigation }) {
     imgSrc = { uri: identity.imageUrl, cache: 'force-cache' };
   }
 
-  const onPhoto = () => {
-    console.log("ON PHOTO");
+  let diatum = useDiatum();
+  const onPhoto = async () => {
+    try {
+      let subjectId: string = await diatum.addSubject(SubjectUtil.PHOTO);
+      navigation.navigate('Post Photo', { subjectId: subjectId });
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed to create new post");
+    }
   }
-
   const onVideo = () => {
     console.log("ON VIDEO");
   }
@@ -160,6 +167,13 @@ function MyFeedPage({ labelId }) {
   }
 
   useEffect(() => {
+    diatum.setListener(DiatumEvent.Subjects, updateSubjects);
+    return () => {
+      diatum.clearListener(DiatumEvent.Subjects, updateSubjects);
+    }
+  }, []);
+
+  useEffect(() => {
     updateSubjects();
   }, [labelId]);
 
@@ -205,11 +219,26 @@ function PhotoEntry({item}) {
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
 
+  let diatum = useDiatum();
   const onUpdatePhoto = () => {
     console.log("UPDATE");
   }
-  const onDeletePhoto = () => {
-    console.log("DELETE");
+  const onDeletePhoto = async () => {
+    const title = 'Are you sure you want to delete the post?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Delete', onPress: async () => {
+          try {
+            await diatum.removeSubject(item.subjectId);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete post");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
   }
 
   useEffect(() => {
