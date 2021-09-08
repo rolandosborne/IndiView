@@ -430,14 +430,27 @@ export class DiatumApi {
     checkResponse(response);
   }
 
-  public static async setSubjectLabel(node: stirng, token: string, subjectId: string, labelId: string): Promise<void> {
+  public static async setSubjectLabel(node: stirng, token: string, subjectId: string, labelId: string): Promise<SubjectEntry> {
     let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'POST', timeout: FETCH_TIMEOUT });
     checkResponse(response);
+    return await response.json();
   }
 
-  public static async clearSubjectLabel(node: string, token: string, subjectId: string, labelId: string): Promise<void> {
+  public static async clearSubjectLabel(node: string, token: string, subjectId: string, labelId: string): Promise<SubjectEntry> {
     let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/labels/" + labelId + "?token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
+    return await response.json();
   }
 
+  public static async setSubjectData(node: string, token: string, subjectId: string, schema: string, data: string): Promise<SubjectEntry> {
+    let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/data?token=" + encodeURIComponent(token) + "&schema=" + schema, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async setSubjectShare(node: string, token: string, subjectId: string, share: boolean): Promise<SubjectEntry> {
+    let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/access?token=" + encodeURIComponent(token) + "&done=" + share, { method: 'PUT', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
 }

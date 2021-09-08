@@ -221,6 +221,12 @@ export interface Diatum {
   // remove subject label
   clearSubjectLabel(subjectId: string, labelId: string): Promise<void>;
 
+  // save subject data
+  setSubjectData(subjectId: string, schema: string, data: string): Promise<void>;
+
+  // set sharing statue
+  setSubjectShare(subjectId: string, share: boolean): Promise<void>;
+
   // refresh contact
   syncContact(amigoId: string): Promise<void>
 }
@@ -1544,7 +1550,16 @@ class _Diatum {
     await DiatumApi.clearSubjectLabel(this.session.amigoNode, this.session.amigoToken, subjectId, labelId);
     await this.syncShow();
   }
+  
+  public async setSubjectData(subjectId: string, schema: string, data: string): Promise<void> {
+    await DiatumApi.setSubjectData(this.session.amigoNode, this.session.amigoToken, subjectId, schema, data);
+    await this.syncShow();
+  }
 
+  public async setSubjectShare(subjectId: string, share: boolean): Promise<void> {
+    await DiatumApi.setSubjectShare(this.session.amigoNode, this.session.amigoToken, subjectId, share);
+    await this.syncShow();
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1891,6 +1906,16 @@ async function clearSubjectLabel(subjectId: string, labelId: string): Promise<vo
   return await diatum.clearSubjectLabel(subjectId, labelId);
 }
 
+async function setSubjectData(subjectId: string, schema: string, data: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setSubjectData(subjectId, schema, data);
+}
+
+async function setSubjectShare(subjectId: string, share: boolean): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setSubjectShare(subjectId, share);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1902,6 +1927,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
     getSubjects, getSubject, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
-    addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel,
+    addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
     syncContact };
 

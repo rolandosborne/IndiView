@@ -147,7 +147,7 @@ export function MyFeed({ route, navigation }) {
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <MyFeedPage labelId={labelId} />
+              <MyFeedPage navigation={navigation} labelId={labelId} />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -156,14 +156,18 @@ export function MyFeed({ route, navigation }) {
   )
 }
 
-function MyFeedPage({ labelId }) {
+function MyFeedPage({ navigation, labelId }) {
 
   const [subjects, setSubjects] = React.useState([]);
+  const [refresh, setRefresh] = React.useState(null);
 
   let diatum = useDiatum();
-  const updateSubjects = async () => {
-    let s = await diatum.getSubjects(labelId);
-    setSubjects(s);
+  const updateSubjects = async (objectId: string) => {
+    if(objectId == null) {
+      let s = await diatum.getSubjects(labelId);
+      setSubjects(s);
+      setRefresh(JSON.parse('{}'));
+    }
   }
 
   useEffect(() => {
@@ -180,12 +184,12 @@ function MyFeedPage({ labelId }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => {
+      <FlatList data={subjects} extraData={refresh} keyExtractor={item => item.subjectId} renderItem={({item}) => {
         if(SubjectUtil.isPhoto(item)) {
-          return (<PhotoEntry item={item} />);
+          return (<PhotoEntry navigation={navigation} item={item} />);
         }
         if(SubjectUtil.isVideo(item)) {
-          return (<VideoEntry item={item} />);
+          return (<VideoEntry navigation={navigation} item={item} />);
         }
         return (<></>);
       }} />
@@ -211,7 +215,7 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-function PhotoEntry({item}) {
+function PhotoEntry({navigation, item}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
@@ -221,7 +225,7 @@ function PhotoEntry({item}) {
 
   let diatum = useDiatum();
   const onUpdatePhoto = () => {
-    console.log("UPDATE");
+    navigation.navigate('Post Photo', { subjectId: item.subjectId });
   }
   const onDeletePhoto = async () => {
     const title = 'Are you sure you want to delete the post?';
@@ -242,7 +246,7 @@ function PhotoEntry({item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Sharing", "Delete", "Close Menu" ];
+    let opt = [ "Edit", "Delete", "Close Menu" ];
     let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
     let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
     setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
@@ -258,7 +262,7 @@ function PhotoEntry({item}) {
     else {
       setComment('comment-o');
     }
-  }, []);
+  }, [item]);
 
   useEffect(() => {
     if(index != null && data.images != null && data.images.length > 0) {
@@ -339,7 +343,7 @@ function PhotoEntry({item}) {
   );
 }
 
-function VideoEntry({item}) {
+function VideoEntry({navigation, item}) {
 
   const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});

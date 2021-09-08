@@ -16,14 +16,14 @@ import { AppSupport, useApp } from './AppSupport';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { LabelEntry } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
+import { SubjectUtil } from "./SubjectUtil";
 
 const LabelDrawer = createDrawerNavigator();
 let labelNav = null;
 
 function LabelDrawerContent(props) {
-
   labelNav = props.navigation;
-  const [labels, setLabels] = React.useState(props.labels);
+  const [labels, setLabels] = React.useState([]);
   const [refresh, setRefresh] = React.useState(null);
   let labelSet = React.useRef(new Set<string>());
 
@@ -41,6 +41,7 @@ function LabelDrawerContent(props) {
           set.add(l[i]);
         }
         labelSet.current = set;
+        props.label(set.size != 0);
         setRefresh(JSON.parse('{}'));
       }
       catch(err) {
@@ -113,7 +114,6 @@ function LabelDrawerContent(props) {
 export function EditPhoto({ route, navigation }) {
   const [subjectLabels, setSubjectLabels] = React.useState([]);
   const [latchColor, setLatchColor] = React.useState('#282827');
-  const ids = useRef([]);
 
   let latch: Latch = useLatch();
   const onLatch = () => {
@@ -131,25 +131,24 @@ export function EditPhoto({ route, navigation }) {
     })
   }, []);
 
-  const onLabel = (l: string[]) => {
-    ids.current = l;
-    if(l == null || l.length == 0) {
-      setLatchColor('#282827');
-      latch.setColor('#282827');
-    }
-    else {
+  const onLabel = (set: boolean) => {
+    if(set) {
       setLatchColor('#0077CC');
       latch.setColor('#0077CC');
+    }
+    else {
+      setLatchColor('#282827');
+      latch.setColor('#282827');
     }
   };
 
   return (
     <View style={{ flex: 1 }} >
-      <LabelDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <LabelDrawerContent {...props} {...{subject: route.params}} />}>
+      <LabelDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <LabelDrawerContent {...props} {...{label: onLabel, subject: route.params}} />}>
         <LabelDrawer.Screen name="Subject">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <EditPhotoPage subject={route.params} />
+              <EditPhotoPage navigation={navigation} subject={route.params} />
             </View>
           )
         }}</LabelDrawer.Screen>
@@ -158,13 +157,13 @@ export function EditPhoto({ route, navigation }) {
   )
 }
 
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-function EditPhotoPage({subject}) {
-
-console.log("SUBJECT---> ", subject);  
-
+function EditPhotoPage({navigation, subject}) {
   const [placeholder, setPlaceholder ] = React.useState(require('../assets/placeholder.png'));
-  const [selected, setSelected] = React.useState(0);
+  const [selected, setSelected] = React.useState(null);
   const [gallery, setGallery] = React.useState([]);
   const [options, setOptions] = React.useState(['Open Gallery', 'Open Camera', 'Close Menu' ]);
   const [actions, setActions] = React.useState([ () => onGallery(0), () => onCamera(0) ]);
@@ -173,14 +172,36 @@ console.log("SUBJECT---> ", subject);
   const [mode, setMode] = React.useState(null);
   const [text, setText] = React.useState(null);
   let images = React.useRef([]);
+  let data = React.useRef({});
   let listRef = React.useRef(null);
   const Plus = (<Text style={{ color: '#0077CC', fontSize: 18 }}>Add Photo</Text>);
 
   let diatum = useDiatum();
+
+  const onShare = () => {
+    onUpload(subject.subjectId);
+    navigation.goBack();
+  }
+
+  const onUpload = async (subjectId) => {
+    try {
+      await diatum.setSubjectData(subjectId, SubjectUtil.PHOTO, JSON.stringify(data.current));
+      await diatum.setSubjectShare(subjectId, true);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("error posting photo");
+    }
+  }
+
   useEffect(async () => {
     try {
       let s = await diatum.getSubject(subject.subjectId);
-
+      if(s.data != null) {
+        data.current = JSON.parse(s.data);
+        setLocation(data.current.location);
+        setDescription(data.current.description);
+      }
       console.log(s);
     }
     catch(err) {
@@ -188,10 +209,21 @@ console.log("SUBJECT---> ", subject);
     }
   }, []);
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => <Icon name="upload" style={{ color: '#44AADD', fontSize: 24, width: 48, textAlign: 'center' }} onPress={onShare} />
+    });
+  }, [navigation]);
+
+  let latch: Latch = useLatch();
+  const onLatch = () => {
+    profileNav.toggleDrawer();
+  };
+
   const onRemove = (idx: number) => {
     images.current.splice(idx, 1);
     setGallery(images.current);
-    setSelected(images.current.length);
+    setSelected(JSON.parse('{}'));
     setTimeout(() => { 
       if(listRef.current != null) {
         let val: number = images.current.length; 
@@ -210,7 +242,7 @@ console.log("SUBJECT---> ", subject);
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
       images.current.splice(idx, 0, { full: full.path, crop: crop.path });
       setGallery(images.current);
-      setSelected(images.current.length);
+      setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
     }
     catch(err) {
@@ -224,7 +256,7 @@ console.log("SUBJECT---> ", subject);
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
       images.current.splice(idx, 0, { full: full.path, crop: crop.path });
       setGallery(images.current);
-      setSelected(images.current.length);
+      setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
     }
     catch(err) {
@@ -305,9 +337,11 @@ console.log("SUBJECT---> ", subject);
   const onSave = (value: string) => {
     if(mode == 'location') {
       setLocation(value);
+      data.current.location = value;
     }
     if(mode == 'description') {
       setDescription(value);
+      data.current.description = value;
     }
     setMode(null);
   }
@@ -349,8 +383,6 @@ console.log("SUBJECT---> ", subject);
 }
 
 function PhotoEntry({item, index, remove, camera, gallery}) {
-  console.log(item.crop);
-
   const [options, setOptions] = React.useState(['Open Gallery', 'Open Camera', 'Close Menu' ]);
   const [leftActions, setLeftActions] = React.useState([ () => gallery(index), () => camera(index) ]);
   const [rightActions, setRightActions] = React.useState([ () => gallery(index+1), () => camera(index+1) ]);
