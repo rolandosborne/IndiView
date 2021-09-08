@@ -19,52 +19,53 @@ export function AddPhoto(props) {
   const [selected, setSelected] = React.useState(0);
   const [gallery, setGallery] = React.useState([]);
   const [options, setOptions] = React.useState(['Open Gallery', 'Open Camera', 'Close Menu' ]);
-  const [actions, setActions] = React.useState([
-    async () => {
-      try {
-        let full = await ImagePicker.openPicker({ width: 512, height: 512 });
-        let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
-        images.current.push({ full: full.path, crop: crop.path });
-        setGallery(images.current);
-        setSelected(images.current.length);
-      }
-      catch(err) {
-        console.log(err);
-      }
-    }, async () => {
-      try {
-        let full = await ImagePicker.openCamera({ width: 512, height: 512 });
-        let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
-        images.current.push({ full: full.path, crop: crop.path });
-        setGallery(images.current);
-        setSelected(images.current.length);
-      }
-      catch(err) {
-        console.log(err);
-      }
-    } 
-  ]);
+  const [actions, setActions] = React.useState([ () => onGallery(0), () => onCamera(0) ]);
   let images = React.useRef([]);
-  const Plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28 }} />);
+  let listRef = React.useRef(null);
+  const Plus = (<Text style={{ color: '#0077CC', fontSize: 18 }}>Add Photo</Text>);
 
   const onRemove = (idx: number) => {
-    console.log("REMOVE: ", idx);
+    images.current.splice(idx, 1);
+    setGallery(images.current);
+    setSelected(images.current.length);
+    setTimeout(() => { 
+      if(listRef.current != null) {
+        let val: number = images.current.length; 
+        if(idx < val) {
+          listRef.current.scrollToIndex({ animated: true, index: idx })
+        }
+        else {
+          listRef.current.scrollToIndex({ animated: true, index: idx-1 })
+        }
+      } }, 100);
   }
 
-  const onCameraLeft = (idx: number) => {
-    console.log("CAMERA LEFT: " + idx);
+  const onGallery = async (idx: number) => {
+    try {
+      let full = await ImagePicker.openPicker({ width: 512, height: 512 });
+      let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
+      images.current.splice(idx, 0, { full: full.path, crop: crop.path });
+      setGallery(images.current);
+      setSelected(images.current.length);
+      setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
+    }
+    catch(err) {
+      console.log(err);
+    }
   }
 
-  const onCameraRight = (idx: number) => {
-    console.log("CAMERA RIGHT: " + idx);
-  }
-  
-  const onGalleryLeft = (idx: number) => {
-    console.log("GALLERY LEFT: " + idx);
-  }
-
-  const onGalleryRight = (idx: number) => {
-    console.log("GALLERY RIGHT: " + idx);
+  const onCamera = async (idx: number) => {
+    try {
+      let full = await ImagePicker.openCamera({ width: 512, height: 512 });
+      let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
+      images.current.splice(idx, 0, { full: full.path, crop: crop.path });
+      setGallery(images.current);
+      setSelected(images.current.length);
+      setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
+    }
+    catch(err) {
+      console.log(err);
+    }
   }
 
   const Gallery = () => {
@@ -80,12 +81,10 @@ export function AddPhoto(props) {
     }
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <FlatList style={{ paddingTop: 16 }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.crop} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} cameraLeft={onCameraLeft} cameraRight={onCameraRight} galleryLeft={onGalleryLeft} galleryRight={onGalleryRight} /> } />
+        <FlatList style={{ paddingTop: 16 }} ref={ref => { listRef.current = ref }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.crop} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} camera={onCamera} gallery={onGallery} />} />
       </View>
     );
   }
-
-  console.log(gallery.length);
 
   return (
     <View style={{ flex: 1}}>
@@ -95,12 +94,12 @@ export function AddPhoto(props) {
   )
 }
 
-function PhotoEntry({item, index, remove, cameraLeft, cameraRight, galleryLeft, galleryRight}) {
+function PhotoEntry({item, index, remove, camera, gallery}) {
   console.log(item.crop);
 
   const [options, setOptions] = React.useState(['Open Gallery', 'Open Camera', 'Close Menu' ]);
-  const [leftActions, setLeftActions] = React.useState([ () => galleryLeft(index), () => cameraLeft(index) ]);
-  const [rightActions, setRightActions] = React.useState([ () => galleryRight(index), () => cameraRight(index) ]);
+  const [leftActions, setLeftActions] = React.useState([ () => gallery(index), () => camera(index) ]);
+  const [rightActions, setRightActions] = React.useState([ () => gallery(index+1), () => camera(index+1) ]);
   const InsertLeft = (
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', padding: 8, borderRadius: 8, margin: 16 }}>
         <Icon name="chevron-left" style={{ color: '#0077CC', fontSize: 14 }} />

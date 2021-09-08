@@ -258,6 +258,18 @@ function IdentityEntry() {
 }
 
 function ContactEntry({entry}) {
+
+  const [source, setSource] = React.useState(null);
+
+  useEffect(() => {
+    if(entry != null && entry.imageUrl != null) {
+      setSource({ uri: entry.imageUrl, cache: 'force-cache' });
+    }
+    else {
+      setSource(require('../assets/avatar.png'));
+    } 
+  }, []);
+
   if(entry == null) {
     return (<View style={{ flex: 1, alignItems: 'center', padding: 16 }}></View>);
   }
@@ -268,7 +280,7 @@ function ContactEntry({entry}) {
   }
 
   const Star = () => {
-    if(entry != null && entry.appSubject != null && entry.appSubject.subjectRevision != null) {
+    if(entry.appSubject != null && entry.appSubject.subjectRevision != null) {
       if(entry.appSubject.feedRevision == null || entry.appSubject.subjectRevision > entry.appSubject.feedRevision) {
         return (
           <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
@@ -282,16 +294,15 @@ function ContactEntry({entry}) {
   }
 
   let defaultSource = require('../assets/avatar.png');
-  let source = defaultSource;
-  if(entry.imageUrl != null) {
-    source = { uri: entry.imageUrl, cache: 'force-cache' };
-  }
+  let onDefault = () => {
+    setSource(defaultSource);
+  };
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
-        <Image style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: 32 }} source={defaultSource} />
-        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
+        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
+            source={source} defaultSource={defaultSource} onError={onDefault} />
         <Star />
       </TouchableOpacity>
       <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
