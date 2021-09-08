@@ -93,9 +93,9 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS indexgroup_" + id + " (label_id text, amigo_id text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS pending_" + id + " (share_id text unique, revision integer, amigo text, updated integer, app_share text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS profile_" + id + " (attribute_id text, revision integer, schema text, data text, unique(attribute_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS profilegroup_" + id + " (label_id text, attribute_id text, unique (label_id, attribute_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS profilegroup_" + id + " (label_id text, attribute_id text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS show_" + id + " (subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, share integer, ready integer, assets text, originals text, app_subject text, searchable text, unique(subject_id));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS showgroup_" + id + " (label_id text, subject_id text, subject text, unique (label_id, subject_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS showgroup_" + id + " (label_id text, subject_id text, subject text);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS share_" + id + " (amigo_id text, share_id text, revision integer, status text, token text, updated integer, app_share text, unique(amigo_id), unique(share_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
@@ -276,7 +276,7 @@ export class Storage {
   public async getSubjects(id: string, labelId: string): Promise<SubjectRecord[]> {
     let res;
     if(labelId == null) {
-      res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " ORDER BY modified DESC;");
+      res = await this.db.executeSql("SELECT DISTINCT subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " ORDER BY modified DESC;");
     }
     else {
       res = await this.db.executeSql("SELECT show_" + id + ".subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " INNER JOIN showgroup_" + id + " ON show_" + id + ".subject_id = showgroup_" + id + ".subject_id WHERE showgroup_" + id + ".label_id=? ORDER BY MODIFIED DESC;", [labelId]);
@@ -289,6 +289,24 @@ export class Storage {
       }
     }
     return subjects;
+  }
+  public async getSubject(id: string, subjectId: string): Promise<SubjectRecord> {
+    let res = await this.db.executeSql("SELECT subject_id, revision, created, modified, expires, schema, data, share, ready, tag_count FROM show_" + id + " WHERE subject_id=?;", [subjectId]);
+    if(hasResult(res)) {
+      let item = res[0].rows.item(0);
+      return { subjectId: item.subject_id, revision: item.revision, created: item.created, modified: item.modified, expires: item.expires, schema: item.schema, data: item.data, share: item.share != 0, ready: item.ready != 0, tagCount: item.tag_count, blocked: item.hide };
+    }
+    return null;
+  }
+  public async getSubjectLabels(id: string, subjectId: string): Promise<string[]> {
+    let res = await this.db.executeSql("SELECT label_id FROM showgroup_" + id + " WHERE subject_id=?;", [subjectId]);
+    let labels: string[] =[];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        labels.push(res[0].rows.item(i).label_id);
+      }
+    }
+    return labels;
   }
   public async getSubjectTags(id: string, subjectId: string): Promise<Tag[]> {
     let res = await this.db.executeSql("SELECT tags FROM show_" + id + " WHERE subject_id=?;", [amigoId, subjectId]);
@@ -468,7 +486,7 @@ export class Storage {
     await this.db.executeSql("UPDATE view_" + id + " SET tag_revision=?, tag_count=?, tags=? WHERE amigo_id=? and subject_id=?;", [revision, count, encodeObject(tags), amigoId, subjectId]);
   }
   public async getBlockedSubjects(id: string): Promise<SubjectItem[]> {
-    let res = await this.db.executeSql("SELECT amigo_id, subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE hide!=? ORDER BY modified DESC;", [0]);
+    let res = await this.db.executeSql("SELECT DISTINCT amigo_id, subject_id, revision, created, modified, expires, schema, data, tag_count, hide FROM view_" + id + " WHERE hide!=? ORDER BY modified DESC;", [0]);
     let subjects: SubjectItem[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
@@ -688,6 +706,7 @@ export class Storage {
     }
     return labels;
   }
+
   public async setContactAttributeData(id: string, amigoId: string, obj: any): Promise<void> {
     await this.db.executeSql("UPDATE index_" + id + " SET app_attribute=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }

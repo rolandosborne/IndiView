@@ -25,7 +25,7 @@ import { MyAttribute } from "./src/MyAttribute";
 
 import { Feed } from "./src/Feed";
 import { MyFeed } from "./src/MyFeed";
-import { AddPhoto } from "./src/AddPhoto";
+import { EditPhoto } from "./src/EditPhoto";
 import { ContactFeed } from "./src/ContactFeed";
 
 import { Conversation } from "./src/Conversation";
@@ -57,12 +57,12 @@ let homeNav = null;
 function RootScreen({ navigation }) {
   logoutNav = navigation;
 
-  const dataCallback = async (type: DiatumDataType, amigoId: string, objectId: string) => {
+  const dataCallback = async (type: DiatumDataType, objectId: string) => {
     try {
-      if(type == DiatumDataType.AmigoSubject && objectId == null) {
+      if(type == DiatumDataType.AmigoSubject) {
 
         // compute revision of retrieved subjects
-        let s: Subject[] = await diatum.getContactSubjects(amigoId);
+        let s: Subject[] = await diatum.getContactSubjects(objectId);
         let rev: number = null;
         let mod: number = null;
         for(let i = 0; i < s.length; i++) {
@@ -75,18 +75,18 @@ function RootScreen({ navigation }) {
         }
 
         // update subject revision
-        let c: ContactEntry = await diatum.getContact(amigoId);
+        let c: ContactEntry = await diatum.getContact(objectId);
         let feed: number = null;
         if(c.appSubject != null) {
           feed = c.appSubject.feedRevision;
         }
-        await diatum.setContactSubjectData(amigoId, { feedRevision: feed, subjectRevision: rev, subjectModified: mod });
+        await diatum.setContactSubjectData(objectId, { feedRevision: feed, subjectRevision: rev, subjectModified: mod });
       }
 
-      if(type == DiatumDataType.AmigoAttribute && objectId == null) {
+      if(type == DiatumDataType.AmigoAttribute) {
         let phoneNumbers = [];
         let textNumbers = [];
-        let a: Attribute[] = await diatum.getContactAttributes(amigoId);
+        let a: Attribute[] = await diatum.getContactAttributes(objectId);
         for(let i = 0; i < a.length; i++) {
           if(AttributeUtil.isPhone(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
@@ -129,7 +129,7 @@ function RootScreen({ navigation }) {
           }
             let obj = AttributeUtil.getDataObject(a[i]);
         }
-        await diatum.setContactAttributeData(amigoId, { phone: phoneNumbers, text: textNumbers });
+        await diatum.setContactAttributeData(objectId, { phone: phoneNumbers, text: textNumbers });
       }
     }
     catch(err) {
@@ -142,7 +142,7 @@ function RootScreen({ navigation }) {
   let tag = MESSAGE_TAG;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v126.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v129.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 console.log("INIT", ctx);
 
     if(ctx.context == null) {
@@ -300,7 +300,7 @@ function HomeFeedScreen() {
     <FeedStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
       <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null, headerShow: true }} />
-      <FeedStack.Screen name="Post Photo" component={AddPhoto} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="Post Photo" component={EditPhoto} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
     </FeedStack.Navigator>
   );

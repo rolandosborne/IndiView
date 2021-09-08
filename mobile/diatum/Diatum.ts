@@ -48,7 +48,7 @@ export enum DiatumEvent {
 export interface Diatum {
   // initialize SDK and retrive previous context
   init(path: string, attributes: string[], subjects: string[], tag: string,
-    callback: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<AppContext>;
+    callback: (type: DiatumDataType, objectId: string) => {}): Promise<AppContext>;
 
   // set context for next init
   setAppContext(ctx: AppContext): Promise<void>;
@@ -69,10 +69,10 @@ export interface Diatum {
   setAccountData(key: string, data: any): Promise<void>; 
 
   // add event listener
-  setListener(event: DiatumEvent, callback: () => void): Promise<void>;
+  setListener(event: DiatumEvent, callback: (objectId: string) => void): Promise<void>;
 
   // remove added listener
-  clearListener(callback: () => void): Promise<void>;
+  clearListener(callback: (objectId: string) => void): Promise<void>;
 
   // get registry amigo object
   getRegistryAmigo(amigoId: string, registry: string): Promise<Amigo>;
@@ -188,6 +188,9 @@ export interface Diatum {
   // get subjects
   getSubjects(labelId: string): Promise<SubjectRecord[]>
 
+  // get subject
+  getSubject(subjectId: string): Promise<SubjectRecord>;
+
   // get subject tags
   getSubjectTags(subjectId: string): Promise<Tag[]>
 
@@ -208,6 +211,15 @@ export interface Diatum {
 
   // remove subject
   removeSubject(subjectId: string): Promise<void>;  
+
+  // get subject labels
+  getSubjectLabels(subjectId: string): Promise<string[]>;
+
+  // add a subject label
+  setSubjectLabel(subjectId: string, labelId: string): Promise<void>;
+
+  // remove subject label
+  clearSubjectLabel(subjectId: string, labelId: string): Promise<void>;
 
   // refresh contact
   syncContact(amigoId: string): Promise<void>
@@ -246,7 +258,7 @@ class _Diatum {
   private authMessage: AuthMessage;
   private authToken: string;
   private nodeError: boolean;
-  private callback: (type: DiatumDataType, amigoId: string, objectId: string) => {};
+  private callback: (type: DiatumDataType, objectId: string) => {};
 
   constructor(attributes: string[], subjects: string[], tag: string) {
     this.session = null;
@@ -261,12 +273,9 @@ class _Diatum {
     for(let i = 0; i < DiatumEvent.COUNT; i++) {
       this.listeners.set(i, new Set<() => void>());
     }
-
-console.log("TAGS: " + this.tagFilter);
-
   }
 
-  public async init(path: string, cb: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<any> {
+  public async init(path: string, cb: (type: DiatumDataType, objectId: string) => {}): Promise<any> {
     this.callback = cb;
 
     await this.storage.init(path);
@@ -278,12 +287,12 @@ console.log("TAGS: " + this.tagFilter);
     }
   }
 
-  public setListener(event: DiatumEvent, callback: () => void): void {
+  public setListener(event: DiatumEvent, callback: (objectId: string) => void): void {
     this.listeners.get(event).add(callback);
     callback();
   }
 
-  public clearListener(event: DiatumEvent, callback: () => void): void {
+  public clearListener(event: DiatumEvent, callback: (objectId: string) => void): void {
     this.listeners.get(event).delete(callback);
   }
 
@@ -538,13 +547,11 @@ console.log("TAGS: " + this.tagFilter);
       if(!localMap.has(key)) {
         let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
         await this.storage.addConnectionAttribute(this.session.amigoId, amigoId, a);
-        await this.callback(DiatumDataType.AmigoAttribute, amigoId, a.attributeId);
         notify = true;
       }
       else if(localMap.get(key) != value) {
         let a: Attribute = await DiatumApi.getConnectionAttribute(node, token, this.authToken, key);
         await this.storage.updateConnectionAttribute(this.session.amigoId, amigoId, a);
-        await this.callback(DiatumDataType.AmigoAttribute, amigoId, a.attributeId);
         notify = true;
       }
     });
@@ -585,7 +592,6 @@ console.log("TAGS: " + this.tagFilter);
       if(!localMap.has(key)) {
         let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
         await this.storage.addConnectionSubject(this.session.amigoId, amigoId, subject);
-        await this.callback(DiatumDataType.AmigoSubject, amigoId, subject.subjectId); 
         if(value.tag != null) {
           let tag: SubjectTag = await DiatumApi.getConnectionSubjectTags(node, token, this.authToken, key, this.tagFilter);
           await this.storage.updateConnectionSubjectTags(this.session.amigoId, amigoId, key, tag.revision, tag.tags);
@@ -596,7 +602,6 @@ console.log("TAGS: " + this.tagFilter);
         if(localMap.get(key).subject != value.subject) {
           let subject: Subject = await DiatumApi.getConnectionSubject(node, token, this.authToken, key);
           await this.storage.updateConnectionSubject(this.session.amigoId, amigoId, subject);
-          await this.callback(DiatumDataType.AmigoSubject, amigoId, subject.subjectId); 
           notify = true;
         }
 
@@ -931,6 +936,7 @@ console.log("TAGS: " + this.tagFilter);
           let tag: SubjectTag = await DiatumApi.getSubjectTags(this.session.amigoNode, this.session.amigoToken, key, this.tagFilter);
           await this.storage.updateSubjectTags(this.session.amigoId, key, tag.revision, tag.tags);
         }
+        this.notifyListeners(DiatumEvent.Subjects, key);
         notify = true;
       }
       else {
@@ -943,11 +949,13 @@ console.log("TAGS: " + this.tagFilter);
           for(let i = 0; i < entry.labels.length; i++) {
             await this.storage.setSubjectLabel(this.session.amigoId, key, entry.labels[i]);
           }
+          this.notifyListeners(DiatumEvent.Subjects, key);
           notify = true;
         }
         if(localMap.get(key).tag != value.tag) {
           let tag: SubjectTag = await DiatumApi.getSubjectTags(this.session.amigoNode, this.session.amigoToken, key, this.tagFilter);
           await this.storage.updateSubjectTags(this.session.amigoId, key, tag.revision, tag.tags);
+          this.notifyListeners(DiatumEvent.Subjects, key);
           notify = true;
         }
       }
@@ -957,6 +965,7 @@ console.log("TAGS: " + this.tagFilter);
     await asyncForEach(localMap, async (value, key) => {
       if(!remoteMap.has(key)) {
         await this.storage.removeSubject(this.session.amigoId, key);
+        this.notifyListeners(DiatumEvent.Subjects, key);
         notify = true;
       }
     });
@@ -1460,6 +1469,16 @@ console.log("TAGS: " + this.tagFilter);
     return subjects;
   }
 
+  public async getSubject(subjectId: string): Promise<SubjectRecord> {
+    let subject = await this.storage.getSubject(this.session.amigoId, subjectId);
+    if(subject != null) {
+      subject.asset = (assetId: string) => {
+        return this.session.amigoNode + "/show/subjects/" + subject.subject.Id + "/assets/" + assetId + "?token=" + this.session.amigoToken;
+      }
+    }
+    return subject;
+  }
+
   // get subject tags
   public async getSubjectTags(subjectId: string): Promise<Tag[]> {
     return await this.storage.getSubjectTags(this.session.amigoId, subjectid);
@@ -1503,13 +1522,26 @@ console.log("TAGS: " + this.tagFilter);
 
   public async addSubject(schema: string): Promise<string> {
     let entry = await DiatumApi.addSubject(this.session.amigoNode, this.session.amigoToken, schema);
-console.log("ADD SUBJECT", entry);
     await this.syncShow();
     return entry.subject.subjectId;
   }
 
   public async removeSubject(subjectId: string): Promise<void> {
     await DiatumApi.removeSubject(this.session.amigoNode, this.session.amigoToken, subjectId);
+    await this.syncShow();
+  }
+
+  public async getSubjectLabels(subjectId: string): Promise<string[]> {
+    return await this.storage.getSubjectLabels(this.session.amigoId, subjectId);
+  }
+
+  public async setSubjectLabel(subjectId: string, labelId: string): Promise<void> {
+    await DiatumApi.setSubjectLabel(this.session.amigoNode, this.session.amigoToken, subjectId, labelId);
+    await this.syncShow();
+  }
+
+  public async clearSubjectLabel(subjectId: string, labelId: string): Promise<void> {
+    await DiatumApi.clearSubjectLabel(this.session.amigoNode, this.session.amigoToken, subjectId, labelId);
     await this.syncShow();
   }
 
@@ -1527,7 +1559,7 @@ function appState(state: AppStateStatus) {
 }
 
 async function init(path: string, attributes: string[], subjects: string[], tag: string, 
-    callback: (type: DiatumDataType, amigoId: string, objectId: string) => {}): Promise<AppContext> {
+    callback: (type: DiatumDataType, objectId: string) => {}): Promise<AppContext> {
   if(instance !== undefined) {
     throw "diatum already initialised";
   }
@@ -1600,12 +1632,12 @@ async function setAccountData(key: string, data: any): Promise<void> {
   return await diatum.setAccountData(key);
 }
 
-async function setListener(event: DiatumEvent, callback: () => void): Promise<void> {
+async function setListener(event: DiatumEvent, callback: (objectId: string) => void): Promise<void> {
   let diatum = await getInstance();
   return diatum.setListener(event, callback);
 }
 
-async function clearListener(event: DiatumEvent, callback: () => void): Promise<void> {
+async function clearListener(event: DiatumEvent, callback: (objectId: string) => void): Promise<void> {
   let diatum = await getInstance();
   return diatum.clearListener(event, callback);
 }
@@ -1799,6 +1831,11 @@ async function getSubjects(labelId: string): Promise<SubjectRecord[]> {
   return await diatum.getSubjects(labelId);
 }
 
+async function getSubject(subjectId: string): Promise<SubjectRecord> {
+  let diatum = await getInstance();
+  return await diatum.getSubject(subjectId);
+}
+
 async function getSubjectTags(subjectId: string): Promise<Tag[]> {
   let diatum = await getInstance();
   return await diatum.getSubjectTags(subjectId);
@@ -1839,6 +1876,21 @@ async function removeSubject(subjectId: string): Promise<void> {
   return await diatum.removeSubject(subjectId);
 }
 
+async function getSubjectLabels(subjectId: string): Promise<string[]> {
+  let diatum = await getInstance();
+  return await diatum.getSubjectLabels(subjectId);
+}
+
+async function setSubjectLabel(subjectId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setSubjectLabel(subjectId, labelId);
+}
+
+async function clearSubjectLabel(subjectId: string, labelId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.clearSubjectLabel(subjectId, labelId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1849,7 +1901,7 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, setContactSubjectData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getSubjects, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
-    addSubject, removeSubject,
+    getSubjects, getSubject, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
+    addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel,
     syncContact };
 
