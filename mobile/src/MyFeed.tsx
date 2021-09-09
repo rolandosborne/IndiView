@@ -161,10 +161,12 @@ function MyFeedPage({ navigation, labelId }) {
   const [subjects, setSubjects] = React.useState([]);
   const [refresh, setRefresh] = React.useState(null);
 
+  const label = React.useRef(labelId);
+
   let diatum = useDiatum();
   const updateSubjects = async (objectId: string) => {
     if(objectId == null) {
-      let s = await diatum.getSubjects(labelId);
+      let s = await diatum.getSubjects(label.current);
       setSubjects(s);
       setRefresh(JSON.parse('{}'));
     }
@@ -178,6 +180,7 @@ function MyFeedPage({ navigation, labelId }) {
   }, []);
 
   useEffect(() => {
+    label.current = labelId;
     updateSubjects();
   }, [labelId]);
 
@@ -217,11 +220,13 @@ function getTime(epoch: number): string {
 
 function PhotoEntry({navigation, item}) {
 
-  const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
+  const [status, setStatus] = React.useState(<></>);
+
+  const data = React.useRef({});
 
   let diatum = useDiatum();
   const onUpdatePhoto = () => {
@@ -246,14 +251,39 @@ function PhotoEntry({navigation, item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Edit", "Delete", "Close Menu" ];
-    let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
-    let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
-    setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    if(item.share) {
+      let opt = [ "Edit", "Delete", "Close Menu" ];
+      let act = [ onUpdatePhoto, onDeletePhoto, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+    else {
+      let opt = [ "Delete", "Close Menu" ];
+      let act = [ onDeletePhoto, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+
+    if(!item.share) {
+      setStatus(
+        <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, marginBottom: 64 }}> 
+          <Icon name="wrench" style={{ fontSize: 64, color: '#dddddd' }} />
+        </View>
+      );
+    }
+    else if(!item.ready) {
+      setStatus(
+        <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, marginBottom: 64 }}> 
+          <Icon name="refresh" style={{ fontSize: 64, color: '#dddddd' }} />
+        </View>
+      );
+    }
+    else {
+      setStatus(<></>);
+    }
 
     if(item.share && item.ready && item.data != null) {
-      let d = JSON.parse(item.data);
-      setData(d);
+      data.current = JSON.parse(item.data);
       setIndex(0);
     } 
     if(item.tagCount > 0) {
@@ -265,21 +295,26 @@ function PhotoEntry({navigation, item}) {
   }, [item]);
 
   useEffect(() => {
-    if(index != null && data.images != null && data.images.length > 0) {
-      setSource({ uri: item.asset(data.images[index].thumb), cache: 'force-cache' });
+    if(index != null && data.current.images != null && data.current.images.length > 0) {
+      if(index >= data.current.images.length) {
+        setSource({ uri: item.asset(data.current.images[0].thumb), cache: 'force-cache' });
+      }
+      else {
+        setSource({ uri: item.asset(data.current.images[index].thumb), cache: 'force-cache' });
+      }
     } 
-  }, [index]);
+  }, [item, index]);
 
   const Dots = () => {
 
     // only dots for more than one
-    if(data.images == null || data.images.length <= 1) {
+    if(data.current.images == null || data.current.images.length <= 1) {
       return (<></>);
     }
 
     // dot for each image
     let dot = []
-    for(let i = 0; i < data.images.length; i++) {
+    for(let i = 0; i < data.current.images.length; i++) {
       if(index == i) {
         dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
       }
@@ -294,20 +329,20 @@ function PhotoEntry({navigation, item}) {
   };
 
   const onPrevious = () => {
-    if(data.images != null && data.images.length > 1) {
+    if(data.current.images != null && data.current.images.length > 1) {
       if(index > 1) {
         setIndex(index-1);
       }
       else {
-        setIndex(data.images.length-1);
+        setIndex(data.current.images.length-1);
       }
-      setSource({ uri: item.asset(data.images[index].thumb), cache: 'force-cache' });
+      setSource({ uri: item.asset(data.current.images[index].thumb), cache: 'force-cache' });
     }
   };
 
   const onNext = () => {
-    if(data.images != null && data.images.length > 1) {
-      if(index < data.images.length - 1) {
+    if(data.current.images != null && data.current.images.length > 1) {
+      if(index < data.current.images.length - 1) {
         setIndex(index+1);
       }
       else {
@@ -325,6 +360,7 @@ function PhotoEntry({navigation, item}) {
     <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#aaaaaa' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+        { status }
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
           <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
@@ -332,8 +368,8 @@ function PhotoEntry({navigation, item}) {
       </View>
       <View style={{ padding: 8, flexDirection: 'row', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#aaaaaa' }}>
         <View style={{ flexGrow: 1 }}>
-          <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
-          <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
+          <Text>{ data.current.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
+          <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.current.description }</Text>
         </View>
         <TouchableOpacity style={{ alignItems: 'flex-end' }}>
           <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
@@ -359,11 +395,19 @@ function VideoEntry({navigation, item}) {
   }
 
   useEffect(() => {
-    let opt = [ "Sharing", "Delete", "Close Menu" ];
-    let act = [ onUpdateVideo, onDeleteVideo, ()=>{} ];
-    let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
-    setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
-    
+    if(item.share) {
+      let opt = [ "Sharing", "Delete", "Close Menu" ];
+      let act = [ onUpdateVideo, onDeleteVideo, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+    else {
+      let opt = [ "Delete", "Close Menu" ];
+      let act = [ onDeleteVideo, ()=>{} ];
+      let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
+      setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+
     if(item.share && item.ready && item.data != null) {
       let d = JSON.parse(item.data);
       setData(d);

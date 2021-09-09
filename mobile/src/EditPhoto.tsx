@@ -155,10 +155,6 @@ export function EditPhoto({ route, navigation }) {
   )
 }
 
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function EditPhotoPage({navigation, subject}) {
   const [placeholder, setPlaceholder ] = React.useState(require('../assets/placeholder.png'));
   const [selected, setSelected] = React.useState(null);
@@ -172,7 +168,7 @@ function EditPhotoPage({navigation, subject}) {
 
   let record = React.useRef({});
   let images = React.useRef([]);
-  let data = React.useRef({});
+  let data = React.useRef({ location: null, description: null, images: []});
   let listRef = React.useRef(null);
 
   const Plus = (<Text style={{ color: '#0077CC', fontSize: 18 }}>Add Photo</Text>);
@@ -189,26 +185,31 @@ function EditPhotoPage({navigation, subject}) {
       let img = [];
       for(let i = 0; i < images.current.length; i++) {
 
-        // upload crop image
-        let cropdata = new FormData();
-        cropdata.append("file", {uri: 'file://' + images.current[i].crop, name: 'asset', type: 'application/octent-stream'});
-        let crop = await fetch(record.current.upload(['P04']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: cropdata });
-        if(crop.status >= 400 && crop.status < 600) {
-          throw new Error(crop.url + " failed");
-        }
-        let cropasset = await crop.json();
+        if(images.current[i].local) {
+          // upload thumb image
+          let thumbdata = new FormData();
+          thumbdata.append("file", {uri: 'file://' + images.current[i].thumb, name: 'asset', type: 'application/octent-stream'});
+          let thumb = await fetch(record.current.upload(['P04']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: thumbdata });
+          if(thumb.status >= 400 && thumb.status < 600) {
+            throw new Error(thumb.url + " failed");
+          }
+          let thumbasset = await thumb.json();
 
-        // upload full image
-        let fulldata = new FormData();
-        fulldata.append("file", {uri: 'file://' + images.current[i].full, name: 'asset', type: 'application/octent-stream'});
-        let full = await fetch(record.current.upload(['P01']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: fulldata });
-        if(full.status >= 400 && full.status < 600) {
-          throw new Error(full.url + " failed");
+          // upload full image
+          let fulldata = new FormData();
+          fulldata.append("file", {uri: 'file://' + images.current[i].full, name: 'asset', type: 'application/octent-stream'});
+          let full = await fetch(record.current.upload(['P01']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: fulldata });
+          if(full.status >= 400 && full.status < 600) {
+            throw new Error(full.url + " failed");
+          }
+          let fullasset = await full.json();
+       
+          // append gallery entry 
+          img.push({ thumb: thumbasset.assets[0].assetId, full: fullasset.assets[0].assetId }); 
         }
-        let fullasset = await full.json();
-     
-        // append gallery entry 
-        img.push({ thumb: cropasset.assets[0].assetId, full: fullasset.assets[0].assetId });      
+        else {
+          img.push({ thumb: images.current[i].thumb, full: images.current[i].full });
+        }    
       }
       data.current.images = img;
       await diatum.setSubjectData(subjectId, SubjectUtil.PHOTO, JSON.stringify(data.current));
@@ -227,6 +228,15 @@ function EditPhotoPage({navigation, subject}) {
         data.current = JSON.parse(record.current.data);
         setLocation(data.current.location);
         setDescription(data.current.description);
+        if(record.current.ready) {
+          if(data.current.images != null) {
+            for(let i = 0; i < data.current.images.length; i++) {
+              images.current.push({ local: false, uri: record.current.asset(data.current.images[i].thumb), thumb: data.current.images[i].thumb, full: data.current.images[i].full });
+            }
+            setGallery(images.current);
+            setSelected(JSON.parse('{}'));
+          }
+        }
       }
       console.log(record.current);
     }
@@ -266,7 +276,7 @@ function EditPhotoPage({navigation, subject}) {
     try {
       let full = await ImagePicker.openPicker({ width: 512, height: 512 });
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
-      images.current.splice(idx, 0, { full: full.path, crop: crop.path });
+      images.current.splice(idx, 0, { local: true, uri: 'file://' + crop.path, full: full.path, thumb: crop.path });
       setGallery(images.current);
       setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
@@ -280,7 +290,7 @@ function EditPhotoPage({navigation, subject}) {
     try {
       let full = await ImagePicker.openCamera({ width: 512, height: 512 });
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
-      images.current.splice(idx, 0, { full: full.path, crop: crop.path });
+      images.current.splice(idx, 0, { local: true, uri: 'file://' + crop.path, full: full.path, thumb: crop.path });
       setGallery(images.current);
       setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
@@ -318,7 +328,7 @@ function EditPhotoPage({navigation, subject}) {
     }
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <FlatList style={{ paddingTop: 16 }} ref={ref => { listRef.current = ref }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.crop} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} camera={onCamera} gallery={onGallery} />} />
+        <FlatList style={{ paddingTop: 16 }} ref={ref => { listRef.current = ref }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.uri} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} camera={onCamera} gallery={onGallery} />} />
       </View>
     );
   }
@@ -412,7 +422,7 @@ function EditPhotoPage({navigation, subject}) {
   return (
     <View style={{ flex: 1}}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <FlatList style={{ paddingTop: 16 }} ref={ref => { listRef.current = ref }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.crop} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} camera={onCamera} gallery={onGallery} />} />
+        <FlatList style={{ paddingTop: 16 }} ref={ref => { listRef.current = ref }} data={gallery} extraData={selected} horizontal={true} keyExtractor={item => item.uri} renderItem={({item, index}) => <PhotoEntry item={item} index={index} remove={onRemove} camera={onCamera} gallery={onGallery} />} />
       </View>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <TouchableOpacity onPress={onLocation}><Location /></TouchableOpacity>
@@ -445,7 +455,7 @@ function PhotoEntry({item, index, remove, camera, gallery}) {
 
   return (
     <View>
-      <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={{ uri: 'file://' + item.crop }} />
+      <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={{ uri: item.uri }} />
       <View opacity={0.8} style={{ position: 'absolute', width: '100%', bottom: 0, flexDirection: 'row', justifyContent: 'center' }}>
         <OptionsMenu customButton={InsertLeft} options={options} actions={leftActions} />
         <TouchableOpacity style={{ backgroundColor: '#ffffff', padding: 8, borderRadius: 8, margin: 16 }} onPress={onRemove}>
