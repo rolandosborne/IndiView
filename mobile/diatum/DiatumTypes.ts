@@ -211,7 +211,8 @@ export interface SubjectRecord {
     share: boolean;
     ready: boolean;
     tagCount: number;
-    asset?: (assetId: string) => string
+    asset?: (assetId: string) => string;
+    upload?: (transforms: string[]) => string;
 }
 
 export interface SubjectEntry { 

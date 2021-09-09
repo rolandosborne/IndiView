@@ -8,7 +8,6 @@ import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
-import Video from 'react-native-video';
 import ImagePicker from 'react-native-image-crop-picker';
 
 import { Latch, useLatch } from './LatchContext';
@@ -30,7 +29,6 @@ function LabelDrawerContent(props) {
   let diatum: Diatum = useDiatum();
 
   const updateSubject = async (objectId: string) => {
-
     if(objectId == props.subject.subjectId) {
       try {
         let l = await diatum.getSubjectLabels(props.subject.subjectId);
@@ -171,9 +169,12 @@ function EditPhotoPage({navigation, subject}) {
   const [description, setDescription] = React.useState(null);
   const [mode, setMode] = React.useState(null);
   const [text, setText] = React.useState(null);
+
+  let record = React.useRef({});
   let images = React.useRef([]);
   let data = React.useRef({});
   let listRef = React.useRef(null);
+
   const Plus = (<Text style={{ color: '#0077CC', fontSize: 18 }}>Add Photo</Text>);
 
   let diatum = useDiatum();
@@ -185,6 +186,31 @@ function EditPhotoPage({navigation, subject}) {
 
   const onUpload = async (subjectId) => {
     try {
+      let img = [];
+      for(let i = 0; i < images.current.length; i++) {
+
+        // upload crop image
+        let cropdata = new FormData();
+        cropdata.append("file", {uri: 'file://' + images.current[i].crop, name: 'asset', type: 'application/octent-stream'});
+        let crop = await fetch(record.current.upload(['P04']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: cropdata });
+        if(crop.status >= 400 && crop.status < 600) {
+          throw new Error(crop.url + " failed");
+        }
+        let cropasset = await crop.json();
+
+        // upload full image
+        let fulldata = new FormData();
+        fulldata.append("file", {uri: 'file://' + images.current[i].full, name: 'asset', type: 'application/octent-stream'});
+        let full = await fetch(record.current.upload(['P01']), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: fulldata });
+        if(full.status >= 400 && full.status < 600) {
+          throw new Error(full.url + " failed");
+        }
+        let fullasset = await full.json();
+     
+        // append gallery entry 
+        img.push({ thumb: cropasset.assets[0].assetId, full: fullasset.assets[0].assetId });      
+      }
+      data.current.images = img;
       await diatum.setSubjectData(subjectId, SubjectUtil.PHOTO, JSON.stringify(data.current));
       await diatum.setSubjectShare(subjectId, true);
     }
@@ -196,13 +222,13 @@ function EditPhotoPage({navigation, subject}) {
 
   useEffect(async () => {
     try {
-      let s = await diatum.getSubject(subject.subjectId);
-      if(s.data != null) {
-        data.current = JSON.parse(s.data);
+      record.current = await diatum.getSubject(subject.subjectId);
+      if(record.current.data != null && record.current.share) {
+        data.current = JSON.parse(record.current.data);
         setLocation(data.current.location);
         setDescription(data.current.description);
       }
-      console.log(s);
+      console.log(record.current);
     }
     catch(err) {
       console.log(err);
@@ -265,7 +291,22 @@ function EditPhotoPage({navigation, subject}) {
   }
 
   const Gallery = () => {
-    if(gallery.length == 0) {
+    if(!record.current.ready) {
+      return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={placeholder} />
+          <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center' }}>
+            <Icon name="refresh" style={{ color: '#FFFFFF', fontSize: 32 }} />
+          </View>
+          <View style={{ position: 'absolute', bottom: 0, alignItems: 'center' }}>
+            <TouchableOpacity style={{ backgroundColor: '#ffffff', padding: 8, borderRadius: 8, margin: 16 }} onPress={onRemove}>
+              <Icon name="trash-o" style={{ color: '#0077CC', fontSize: 24 }} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+    else if(gallery.length == 0) {
       return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={placeholder} />

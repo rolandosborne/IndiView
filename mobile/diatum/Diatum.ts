@@ -1471,6 +1471,9 @@ class _Diatum {
       subjects[i].asset = (assetId: string) => {
         return this.session.amigoNode + "/show/subjects/" + subjects[i].subjectId + "/assets/" + assetId + "?token=" + this.session.amigoToken;
       }
+      subjects[i].upload = (transforms: string[]) => {
+        return this.session.amigoNode + "/show/subjects/" + subjects[i].subjectId + "/assets?token=" + this.session.amigoToken + "&transforms=" + encodeURIComponent(transforms.join());
+      }
     }
     return subjects;
   }
@@ -1479,7 +1482,10 @@ class _Diatum {
     let subject = await this.storage.getSubject(this.session.amigoId, subjectId);
     if(subject != null) {
       subject.asset = (assetId: string) => {
-        return this.session.amigoNode + "/show/subjects/" + subject.subject.Id + "/assets/" + assetId + "?token=" + this.session.amigoToken;
+        return this.session.amigoNode + "/show/subjects/" + subject.subjectId + "/assets/" + assetId + "?token=" + this.session.amigoToken;
+      }
+      subject.upload = (transforms: string[]) => {
+        return this.session.amigoNode + "/show/subjects/" + subject.subjectId + "/assets?token=" + this.session.amigoToken + "&transforms=" + encodeURIComponent(transforms.join());
       }
     }
     return subject;
