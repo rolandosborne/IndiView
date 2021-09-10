@@ -165,13 +165,14 @@ function EditPhotoPage({navigation, subject}) {
   const [description, setDescription] = React.useState(null);
   const [mode, setMode] = React.useState(null);
   const [text, setText] = React.useState(null);
+  const [color, setColor] = React.useState('#888888');
 
   let record = React.useRef({});
   let images = React.useRef([]);
   let data = React.useRef({ location: null, description: null, images: []});
   let listRef = React.useRef(null);
 
-  const Plus = (<Text style={{ color: '#0077CC', fontSize: 18 }}>Add Photo</Text>);
+  const plus = (<Icon name="plus-square-o" style={{ color: '#0077CC', fontSize: 28, width: 48, textAlign: 'center' }} />);
 
   let diatum = useDiatum();
 
@@ -246,10 +247,17 @@ function EditPhotoPage({navigation, subject}) {
   }, []);
 
   React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => <Icon name="upload" style={{ color: '#44AADD', fontSize: 24, width: 48, textAlign: 'center' }} onPress={onShare} />
-    });
-  }, [navigation]);
+    if(images.current.length == 0) {
+      navigation.setOptions({
+        headerRight: () => <OptionsMenu customButton={plus} options={options} actions={actions} />
+      });
+    }
+    else {
+      navigation.setOptions({
+        headerRight: () => <Icon name="upload" style={{ color: color, fontSize: 24, width: 48, textAlign: 'center' }} onPress={onShare} />
+      });
+    }
+  }, [color, navigation, selected]);
 
   let latch: Latch = useLatch();
   const onLatch = () => {
@@ -257,6 +265,7 @@ function EditPhotoPage({navigation, subject}) {
   };
 
   const onRemove = (idx: number) => {
+    setColor('#0077CC');
     images.current.splice(idx, 1);
     setGallery(images.current);
     setSelected(JSON.parse('{}'));
@@ -274,10 +283,11 @@ function EditPhotoPage({navigation, subject}) {
 
   const onGallery = async (idx: number) => {
     try {
-      let full = await ImagePicker.openPicker({ width: 512, height: 512 });
+      let full = await ImagePicker.openPicker({ mediaType: 'photo', width: 512, height: 512 });
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
       images.current.splice(idx, 0, { local: true, uri: 'file://' + crop.path, full: full.path, thumb: crop.path });
       setGallery(images.current);
+      setColor('#0077CC');
       setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
     }
@@ -288,10 +298,11 @@ function EditPhotoPage({navigation, subject}) {
 
   const onCamera = async (idx: number) => {
     try {
-      let full = await ImagePicker.openCamera({ width: 512, height: 512 });
+      let full = await ImagePicker.openCamera({ mediaType: 'photo', width: 512, height: 512 });
       let crop = await ImagePicker.openCropper({ path: full.path, width: 512, height: 512, cropperCircleOverlay: true });
       images.current.splice(idx, 0, { local: true, uri: 'file://' + crop.path, full: full.path, thumb: crop.path });
       setGallery(images.current);
+      setColor('#0077CC');
       setSelected(JSON.parse('{}'));
       setTimeout(() => { listRef.current.scrollToIndex({ animated: true, index: idx }) }, 100);
     }
@@ -320,9 +331,6 @@ function EditPhotoPage({navigation, subject}) {
       return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={placeholder} />
-          <View style={{ position: 'absolute', alignItems: 'center', bottom: 0, backgroundColor: '#ffffff', padding: 8, borderRadius: 8, margin: 32 }}>
-            <OptionsMenu customButton={Plus} options={options} actions={actions} />
-          </View>
         </View>
       );
     }
@@ -386,6 +394,7 @@ function EditPhotoPage({navigation, subject}) {
   }
 
   const onSave = (value: string) => {
+    setColor('#0077CC');
     if(mode == 'location') {
       setLocation(value);
       data.current.location = value;
@@ -406,9 +415,6 @@ function EditPhotoPage({navigation, subject}) {
       <View style={{ flex: 1}}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <Image style={{ resizeMode: 'contain', margin: 8, flex: 1, borderColor: '#dddddd', borderWidth: 2, borderRadius: 8, aspectRatio: 1 }} source={placeholder} />
-          <View style={{ position: 'absolute', alignItems: 'center', bottom: 0, backgroundColor: '#ffffff', padding: 8, borderRadius: 8, margin: 32 }}>
-            <OptionsMenu customButton={Plus} options={options} actions={actions} />
-          </View>
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <TouchableOpacity onPress={onLocation}><Location /></TouchableOpacity>

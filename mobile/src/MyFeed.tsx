@@ -74,7 +74,7 @@ function ProfileDrawerContent(props) {
 }
 
 export function MyFeed({ route, navigation }) {
-
+  const [busy, setBusy] = React.useState(false);
   const [identity, setContact] = React.useState(route.params);
   const [labelId, setLabelId] = React.useState(null);
   const latchColor = useRef('#282827');
@@ -90,10 +90,13 @@ export function MyFeed({ route, navigation }) {
   let diatum = useDiatum();
   const onPhoto = async () => {
     try {
+      setBusy(true);
       let subjectId: string = await diatum.addSubject(SubjectUtil.PHOTO);
+      setBusy(false);
       navigation.navigate('Post Photo', { subjectId: subjectId });
     }
     catch(err) {
+      setBusy(false);
       console.log(err);
       Alert.alert("failed to create new post");
     }
@@ -141,6 +144,19 @@ export function MyFeed({ route, navigation }) {
     profileNav.closeDrawer();
   };
 
+  const Working = () => {
+    if(!busy) {
+      return (<></>);
+    }
+    return (
+      <View style={{ position: 'absolute', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ padding: 32, borderRadius: 8, backgroundColor: '#444444' }}>
+          <ActivityIndicator animating={busy} size="large" color="#ffffff" /> 
+        </View>
+      </View>
+    );
+  }             
+
   return (
     <View style={{ flex: 1 }} >
       <ProfileDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'right'} drawerContent={(props) => <ProfileDrawerContent {...props} {...{callback: onLabel}} />}>
@@ -148,6 +164,7 @@ export function MyFeed({ route, navigation }) {
           return (
             <View style={{ flex: 1 }}>
               <MyFeedPage navigation={navigation} labelId={labelId} />
+              <Working />
             </View>
           )
         }}</ProfileDrawer.Screen>
@@ -266,8 +283,13 @@ function PhotoEntry({navigation, item}) {
 
     if(!item.share) {
       setStatus(
-        <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, marginBottom: 64 }}> 
-          <Icon name="wrench" style={{ fontSize: 64, color: '#dddddd' }} />
+        <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+          <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, paddingRight: 16, marginBottom: 64 }}> 
+            <Icon name="wrench" style={{ transform: [{rotateY: '180deg'}], fontSize: 64, color: '#dddddd' }} />
+          </View>
+          <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, paddingLeft: 16, marginBottom: 64 }}> 
+            <Icon name="wrench" style={{ fontSize: 64, color: '#dddddd' }} />
+          </View>
         </View>
       );
     }
@@ -302,6 +324,9 @@ function PhotoEntry({navigation, item}) {
       else {
         setSource({ uri: item.asset(data.current.images[index].thumb), cache: 'force-cache' });
       }
+    }
+    else {
+      setSource(require('../assets/placeholder.png'));
     } 
   }, [item, index]);
 
