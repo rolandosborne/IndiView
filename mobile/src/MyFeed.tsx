@@ -423,6 +423,8 @@ function VideoEntry({navigation, item}) {
   const [comment, setComment] = React.useState('comment-o');
   const [status, setStatus] = React.useState(<></>);
 
+  let dataRef = React.useRef(null);
+
   let diatum = useDiatum();
   const onUpdateVideo = () => {
     navigation.navigate('Post Video', { subjectId: item.subjectId });
@@ -491,6 +493,7 @@ function VideoEntry({navigation, item}) {
     if(item.share && item.ready && item.data != null) {
       let d = JSON.parse(item.data);
       setData(d);
+      dataRef.current = d;
       if(d.thumb != null) {
         setSource({ uri: item.asset(d.thumb), cache: 'force-cache' });
       } 
@@ -507,36 +510,36 @@ function VideoEntry({navigation, item}) {
   const onPlay = () => {
     let config = app.getConfig();
     if(config != null && config.videoQuality == 'hd') {
-      if(data.high != null) {
-        setUri(item.asset(data.high));
+      if(dataRef.current.high != null) {
+        setUri(item.asset(dataRef.current.high));
       }
-      else if(data.standard != null) {
-        setUri(item.asset(data.standard));
+      else if(dataRef.current.standard != null) {
+        setUri(item.asset(dataRef.current.standard));
       }
       else {
-        setUri(item.asset(data.low));
+        setUri(item.asset(dataRef.current.low));
       }
     }
     else if(config != null && config.videoQuality == 'lq') {
-      if(data.low != null) {
-        setUri(item.asset(data.low));
+      if(dataRef.current.low != null) {
+        setUri(item.asset(dataRef.current.low));
       }
-      else if(data.standard != null) {
-        setUri(item.asset(data.standard));
+      else if(dataRef.current.standard != null) {
+        setUri(item.asset(dataRef.current.standard));
       }
       else {
-        setUri(item.asset(data.high));
+        setUri(item.asset(dataRef.current.high));
       }
     }
     else {
-      if(data.standard != null) {
-        setUri(item.asset(data.standard));
+      if(dataRef.current.standard != null) {
+        setUri(item.asset(dataRef.current.standard));
       }
-      else if(data.high != null) {
-        setUri(item.asset(data.high));
+      else if(dataRef.current.high != null) {
+        setUri(item.asset(dataRef.current.high));
       }
       else {
-        setUri(item.asset(data.low));
+        setUri(item.asset(dataRef.current.low));
       }
     }
   };

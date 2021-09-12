@@ -237,8 +237,6 @@ function EditVideoPage({navigation, subject}) {
           setThumb(record.current.asset(data.current.thumb));
         }
       }
-      console.log(record.current);
-      console.log("DATA", remote.current);
     }
     catch(err) {
       console.log(err);
@@ -382,6 +380,7 @@ function EditVideoPage({navigation, subject}) {
 
   const onLoad = (params) => {
     duration.current = params.duration;
+    player.current.seek(0);
   }
 
   const onLeft = () => {
