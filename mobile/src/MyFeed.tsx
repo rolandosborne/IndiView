@@ -101,8 +101,18 @@ export function MyFeed({ route, navigation }) {
       Alert.alert("failed to create new post");
     }
   }
-  const onVideo = () => {
-    console.log("ON VIDEO");
+  const onVideo = async () => {
+    try {
+      setBusy(true);
+      let subjectId: string = await diatum.addSubject(SubjectUtil.VIDEO);
+      setBusy(false);
+      navigation.navigate('Post Video', { subjectId: subjectId });
+    }
+    catch(err) {
+      setBusy(false);
+      console.log(err);
+      Alert.alert("failed to create new post");
+    }
   }
 
   React.useLayoutEffect(() => {
@@ -411,17 +421,33 @@ function VideoEntry({navigation, item}) {
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
+  const [status, setStatus] = React.useState(<></>);
 
+  let diatum = useDiatum();
   const onUpdateVideo = () => {
-    console.log("UPDATE");
+    navigation.navigate('Post Video', { subjectId: item.subjectId });
   }
-  const onDeleteVideo = () => {
-    console.log("DELETE");
+  const onDeleteVideo = async () => {
+    const title = 'Are you sure you want to delete the post?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Delete', onPress: async () => {
+          try {
+            await diatum.removeSubject(item.subjectId);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete post");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
   }
 
   useEffect(() => {
     if(item.share) {
-      let opt = [ "Sharing", "Delete", "Close Menu" ];
+      let opt = [ "Edit", "Delete", "Close Menu" ];
       let act = [ onUpdateVideo, onDeleteVideo, ()=>{} ];
       let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
       setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
@@ -431,6 +457,35 @@ function VideoEntry({navigation, item}) {
       let act = [ onDeleteVideo, ()=>{} ];
       let btn = (<Icon name="ellipsis-v" style={{ color: '#444444', fontSize: 18, padding: 8 }} />);
       setOptions(<OptionsMenu customButton={btn} options={opt} actions={act} />);
+    }
+
+    if(!item.share) {
+      setStatus(
+        <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+          <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, paddingRight: 16, marginBottom: 64 }}>
+            <Icon name="wrench" style={{ transform: [{rotateY: '180deg'}], fontSize: 64, color: '#dddddd' }} />
+          </View>
+          <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, paddingLeft: 16, marginBottom: 64 }}>
+            <Icon name="wrench" style={{ fontSize: 64, color: '#dddddd' }} />
+          </View>
+        </View>
+      );
+    }
+    else if(!item.ready) {
+      setStatus(
+        <View style={{ position: 'absolute', width: '100%', alignItems: 'center', bottom: 0, marginBottom: 64 }}>
+          <Icon name="refresh" style={{ fontSize: 64, color: '#dddddd' }} />
+        </View>
+      );
+    }
+    else {
+      setStatus(
+        <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
+          <View opacity={0.8}>
+            <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} onPress={onPlay}/>
+          </View>
+        </TouchableOpacity>
+      );
     }
 
     if(item.share && item.ready && item.data != null) {
@@ -446,7 +501,7 @@ function VideoEntry({navigation, item}) {
     else {
       setComment('comment-o');
     }
-  }, []);
+  }, [item]);
 
   let app = useApp();
   const onPlay = () => {
@@ -501,13 +556,9 @@ function VideoEntry({navigation, item}) {
     <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#888888' }}>
       <View>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} />
+        { status }
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
           <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
-        </TouchableOpacity>
-        <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: 0, width: '100%', alignItems: 'center' }}>
-          <View opacity={0.8}>
-            <Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} onPress={onPlay}/>
-          </View>
         </TouchableOpacity>
         <MyVideo />
       </View>

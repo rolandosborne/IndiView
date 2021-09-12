@@ -26,6 +26,7 @@ import { MyAttribute } from "./src/MyAttribute";
 import { Feed } from "./src/Feed";
 import { MyFeed } from "./src/MyFeed";
 import { EditPhoto } from "./src/EditPhoto";
+import { EditVideo } from "./src/EditVideo";
 import { ContactFeed } from "./src/ContactFeed";
 
 import { Conversation } from "./src/Conversation";
@@ -301,6 +302,7 @@ function HomeFeedScreen() {
       <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
       <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="Post Photo" component={EditPhoto} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="Post Video" component={EditVideo} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
     </FeedStack.Navigator>
   );
