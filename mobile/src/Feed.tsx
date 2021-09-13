@@ -275,7 +275,7 @@ function ContactEntry({entry}) {
     else {
       setSource(require('../assets/avatar.png'));
     } 
-  }, []);
+  }, [entry]);
 
   if(entry == null) {
     return (<View style={{ flex: 1, alignItems: 'center', padding: 16 }}></View>);

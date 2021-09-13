@@ -268,7 +268,7 @@ function EditVideoPage({navigation, subject}) {
 
   const onGallery = async (idx: number) => {
     try {
-      let vid = await ImagePicker.openPicker({ mediaType: 'video', width: 512, height: 512 });
+      let vid = await ImagePicker.openPicker({ mediaType: 'video' });
       setThumb(null);
       setVideo(vid.path);
       path.current = vid.path;
