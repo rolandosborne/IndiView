@@ -189,7 +189,12 @@ function EditVideoPage({navigation, subject}) {
     try {
       if(path.current != null) {
         let formdata = new FormData();
-        formdata.append("file", {uri: 'file://' + path.current, name: 'asset', type: 'application/octent-stream'});
+	if(path.current.startsWith("file://")) {
+	  formdata.append("file", {uri: path.current, name: 'asset', type: 'application/octent-stream'});
+	}
+	else {
+	  formdata.append("file", {uri: 'file://' + path.current, name: 'asset', type: 'application/octent-stream'});
+	}
         let vid = await fetch(record.current.upload(['V01', 'V03', 'V04', 'F01-' + pos.current]), { method: 'post', headers: { 'Content-Type': 'multipart/form-data' }, body: formdata });
         if(vid.status >= 400 && vid.status < 600) {
           throw new Error(vid.url + " failed");
@@ -220,7 +225,7 @@ function EditVideoPage({navigation, subject}) {
     }
     catch(err) {
       console.log(err);
-      Alert.alert("error posting video");
+      Alert.alert("failed to post video");
     }
   }
 
@@ -276,9 +281,10 @@ function EditVideoPage({navigation, subject}) {
 
   const onCamera = async (idx: number) => {
     try {
-      let vid = await ImagePicker.openCamera({ mediaType: 'video', width: 512, height: 512 });
+      let vid = await ImagePicker.openCamera({ mediaType: 'video' });
       setThumb(null);
       setVideo(vid.path);
+      path.current = vid.path;
       setColor('#0077CC');
     }
     catch(err) {
