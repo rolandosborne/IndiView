@@ -28,6 +28,9 @@ import { MyFeed } from "./src/MyFeed";
 import { EditPhoto } from "./src/EditPhoto";
 import { EditVideo } from "./src/EditVideo";
 import { ContactFeed } from "./src/ContactFeed";
+import { FullScreenVideo } from "./src/FullScreenVideo"
+import { FullScreenPhoto } from "./src/FullScreenPhoto"
+import { Comment } from "./src/Comment"
 
 import { Conversation } from "./src/Conversation";
 
@@ -286,6 +289,8 @@ function MainScreen() {
       <MainStack.Screen name="Contact Requests" component={ContactRequests} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Blocked Items" component={BlockedItems} options={{headerBackTitle: null, headerShown: true}} />
       <MainStack.Screen name="Settings" component={Settings} options={{headerBackTitle: null, headerShown: true}} />
+      <MainStack.Screen name="FullScreenVideo" component={FullScreenVideo} options={{ headerBackTitle: null, headerShown: false }} />
+      <MainStack.Screen name="FullScreenPhoto" component={FullScreenPhoto} options={{ headerBackTitle: null, headerShown: false }} />
     </MainStack.Navigator>
   );
 }
@@ -304,6 +309,7 @@ function HomeFeedScreen() {
       <FeedStack.Screen name="Post Photo" component={EditPhoto} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="Post Video" component={EditVideo} options={{ headerBackTitle: null, headerShow: true }} />
       <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="Comment" component={Comment} options={{ headerBackTitle: null, headerShow: true }} />
     </FeedStack.Navigator>
   );
 }  

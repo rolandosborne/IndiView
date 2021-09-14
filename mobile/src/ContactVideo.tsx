@@ -33,7 +33,7 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-export function ContactVideo({item}) {
+export function ContactVideo({item,navigation}) {
 
   const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});
@@ -158,9 +158,17 @@ export function ContactVideo({item}) {
     return (<VideoPlayer uri={uri} done={onDone} />);
   }
 
+  const onComment = () => {
+    navigation.navigate('Comment', { });
+  }
+
+  const onFull = () => {
+    navigation.navigate('FullScreenVideo', { });
+  }
+
   return (
     <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#888888' }}>
-      <View>
+      <TouchableOpacity activeOpacity={1} onLongPress={onFull}>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }} onPress={onBlock}>
           <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
@@ -171,13 +179,13 @@ export function ContactVideo({item}) {
           </View>
         </TouchableOpacity>
         <ContactVideo />
-      </View>
+      </TouchableOpacity>
       <View style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#888888', padding: 8, flexDirection: 'row' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
         </View>
-        <TouchableOpacity style={{ alignItems: 'flex-end' }}>
+        <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onComment}>
           <Icon name={comment} style={{ fontSize: 20, color: '#0072CC' }} />
         </TouchableOpacity>
       </View>

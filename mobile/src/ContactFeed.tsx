@@ -78,10 +78,10 @@ export function ContactFeed({ route, navigation }) {
     <View style={{ flex: 1 }}>
       <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => {
         if(SubjectUtil.isPhoto(item)) {
-          return (<ContactPhoto item={item} />);
+          return (<ContactPhoto item={item} navigation={navigation} />);
         }
         if(SubjectUtil.isVideo(item)) {
-          return (<ContactVideo item={item} />);
+          return (<ContactVideo item={item} navigation={navigation} />);
         }
         return (<></>);
       }} />

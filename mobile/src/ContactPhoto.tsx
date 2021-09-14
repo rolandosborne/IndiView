@@ -31,7 +31,7 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-export function ContactPhoto({item}) {
+export function ContactPhoto({item,navigation}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
@@ -162,22 +162,30 @@ export function ContactPhoto({item}) {
     directionalOffsetThreshold: 80
   };
 
+  const onComment = () => {
+    navigation.navigate('Comment', { });
+  }
+
+  const onFull = () => {
+    navigation.navigate('FullScreenPhoto', { });
+  }
+
   return (
     <View style={{ flex: 1, marginBottom: 8, borderTopWidth: 1, borderColor: '#888888' }}>
-      <View>
+      <TouchableOpacity activeOpacity={1} onLongPress={onFull}>
         <Image style={{ flexGrow: 1, width: null, height: null, aspectRatio: 1 }} source={source} defaultSource={defaultSource} />
         <TouchableOpacity style={{ position: 'absolute', margin: 8, right: 0 }}>
           <View opacity={0.8} style={{ backgroundColor: '#ffffff', borderRadius: 8 }}>{ options }</View>
         </TouchableOpacity>
         <Dots />
-      </View>
+      </TouchableOpacity>
       <View style={{ flexGrow: 1, padding: 8, backgroundColor: '#ffffff', flexDirection: 'row', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderWidth: 1, borderColor: '#888888' }}>
         <View style={{ flexGrow: 1 }}>
           <Text>{ data.location }&nbsp;&nbsp;<Text style={{ color: '#888888' }}>{ getTime(item.modified) }</Text></Text>
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.description }</Text>
         </View>
         <TouchableOpacity style={{ alignItems: 'flex-end' }}>
-          <Icon name={comment}  style={{ fontSize: 20, color: '#0072CC' }} />
+          <Icon name={comment} style={{ fontSize: 20, color: '#0072CC' }} onPress={onComment} />
         </TouchableOpacity>
       </View>
     </View>
