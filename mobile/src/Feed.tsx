@@ -216,6 +216,8 @@ function ContactRow({item}) {
 
 function IdentityEntry() {
   const [identity, setIdentity] = React.useState({});
+  const [refresh, setRefresh] = React.useState(0);
+  let count = useRef(0);
 
   let diatum = useDiatum();
   const updateIdentity = async () => {
@@ -229,10 +231,16 @@ function IdentityEntry() {
     navigation.navigate("MyFeed", identity);
   }
 
+  const onRefresh = () => {
+    setRefresh(++count.current);
+  }
+
   useEffect(() => {
+    Dimensions.addEventListener('change', onRefresh);
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
     return () => {
       diatum.clearListener(DiatumEvent.Identity, updateIdentity);
+      Dimensions.removeEventListener('change', onRefresh);
     };
   }, []);  
 
@@ -251,7 +259,7 @@ function IdentityEntry() {
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ refresh }</Text>
       </TouchableOpacity>
     </View>
   );
