@@ -11,7 +11,6 @@ import { useNavigation } from '@react-navigation/native';
 
 export function FullScreenPhoto({ route }) {
   const [source, setSource] = React.useState(null);
-
   let idx = useRef(0);
 
   useEffect(() => {
@@ -23,9 +22,62 @@ export function FullScreenPhoto({ route }) {
     }
   }, []);
 
+  let navigation = useNavigation();
+  onLeft = () => {
+    if(idx.current > 0) {
+      setSource({ uri: route.params.uri[--idx.current], cache: 'force-cache' });
+    }
+    else {
+      navigation.goBack();
+    }
+  }
+  onRight = () => {
+    if(idx.current + 1 < route.params.uri.length) {
+      setSource({ uri: route.params.uri[++idx.current], cache: 'force-cache' });
+    }
+    else {
+      navigation.goBack();
+    }
+  }
+
+  Dots = () => {
+    if(route.params.uri.length > 1) {
+      let dot = [];
+      for(let i = 0; i < route.params.uri.length; i++) {
+        if(i == idx.current) {
+          dot.push(<View style={{ width: 12, height: 12, backgroundColor: '#ffffff', margin: 4, borderRadius: 6, borderWidth: 1, borderColor: '#ffffff' }} />);
+        }
+        else {
+          dot.push(<View style={{ width: 12, height: 12, margin: 4, borderRadius: 6, borderWidth: 1, borderColor: '#ffffff' }} />);
+        }
+      }
+      return (
+        <View style={{ position: 'absolute', bottom: '10%', width: '100%', flexDirection: 'row', justifyContent: 'center' }} >
+          { dot }
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
+  const Controls = () => {
+    return (
+      <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <Dots />
+        <TouchableOpacity style={{ position: 'absolute', bottom: '10%', left: 0, padding: 32 }} onPress={onLeft}>
+          <Icon name="arrow-circle-o-left" style={{ fontSize: 32, color: '#ffffff' }} />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ position: 'absolute', bottom: '10%', right: 0, padding: 32 }} onPress={onRight}>
+          <Icon name="arrow-circle-o-right" style={{ fontSize: 32, color: '#ffffff' }} />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#000000' }}>
+    <View style={{ flex: 1, backgroundColor: '#000000', width: '100%', height: '100%' }}>
       <Image style={{ flex: 1, resizeMode: 'contain' }} source={source} />
+      <Controls /> 
     </View>
   );
 }

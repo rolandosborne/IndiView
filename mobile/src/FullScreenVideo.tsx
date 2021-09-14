@@ -12,11 +12,14 @@ import Video from 'react-native-video';
 
 export function FullScreenVideo({ route }) {
 
+  const [pos, setPos] = React.useState('0%');
   const [mute, setMute] = React.useState(false);
+  const [paused, setPaused] = React.useState(false);
   const [show, setShow] = React.useState(false);
   let timeout = useRef(null);
   let player = useRef(null);
-  
+  let playing = useRef(true);
+
   let uri = route.params.uri;
   let navigation = useNavigation();
 
@@ -58,20 +61,53 @@ export function FullScreenVideo({ route }) {
     setMute(!mute);
   };
 
+  const onProgress = (progress) => {
+    if(progress.playableDuration > 0) {
+      setPos(Math.floor(100 * progress.currentTime / progress.playableDuration) + '%');
+    }
+  }
+
+  const onPlay = () => {
+    if(playing.current) {
+      playing.current = false;
+      setPaused(true);
+    }
+    else {
+      playing.current = true;
+      setPaused(false);
+    }
+    onShow();
+
+  } 
+
+  const Action = () => {
+    if(paused) {
+      return (<Icon name="play-circle-o" style={{ fontSize: 64, color: '#ffffff' }} />);
+    }
+    return (<Icon name="pause-circle-o" style={{ fontSize: 64, color: '#ffffff' }} />);
+  }
+
   const Controls = () => {
     if(show) {
       return (
         <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
-          <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: '20%', right: 0 }} onPress={onStop} >
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '10%', right: 0 }} onPress={onStop} >
             <View opacity={0.8}>
               <Icon name="times-circle-o" style={{ fontSize: 36, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: '20%', left: 0 }} onPress={onMute}>
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '10%', left: 0 }} onPress={onMute}>
             <View opacity={0.8}>
               <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ fontSize: 28, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
+          <View style={{ position: 'absolute', bottom: '10%', width: '100%' }}>
+            <TouchableOpacity style={{ marginBottom: 32, width: '100%', alignItems: 'center' }} onPress={onPlay} >
+              <View opacity={0.8}><Action /></View>
+            </TouchableOpacity>
+            <View style={{ position: 'absolute', bottom: 0, width: '100%', borderColor: '#ffffff', borderWidth: 1 }} />
+            <View style={{ position: 'absolute', bottom: 0, left: pos, width: 8, height: 12, borderRadius: 8, borderWidth: 1, borderColor: '#ffffff', backgroundColor: '#ffffff' }} />
+          </View>
         </View>
       );
     }
@@ -80,8 +116,8 @@ export function FullScreenVideo({ route }) {
   return (
     <TouchableOpacity activeOpacity={1}  style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' }} onPress={onShow}>
       <ActivityIndicator animating={true} size="large" color="#ffffff" />
-      <Video source={{uri: uri}} ref={(ref) => { player.current = ref }} onEnd={onEnd} onError={onError} resizeMode="contain"
-          muted={mute} style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, alignSelf: 'center' }} />
+      <Video source={{uri: uri}} ref={(ref) => { player.current = ref }} onEnd={onEnd} onError={onError} onProgress={onProgress}
+          resizeMode="contain" muted={mute} paused={paused} style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, alignSelf: 'center' }} />
       <Controls />
     </TouchableOpacity>
   )
