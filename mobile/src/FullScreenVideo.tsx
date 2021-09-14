@@ -19,6 +19,7 @@ export function FullScreenVideo({ route }) {
   let timeout = useRef(null);
   let player = useRef(null);
   let playing = useRef(true);
+  let cur = useRef(0);
 
   let uri = route.params.uri;
   let navigation = useNavigation();
@@ -62,8 +63,13 @@ export function FullScreenVideo({ route }) {
   };
 
   const onProgress = (progress) => {
-    if(progress.playableDuration > 0) {
-      setPos(Math.floor(100 * progress.currentTime / progress.playableDuration) + '%');
+    let d: number = progress.playableDuration;
+    if(d > 0) {
+      let p: number = progress.currentTime;
+      if(cur.current > p || cur.current + 1 < p) {
+        setPos(Math.floor(100 * p / d) + "%");
+        cur.current = p;
+      }
     }
   }
 
