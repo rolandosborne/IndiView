@@ -8,8 +8,81 @@ import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
+import Video from 'react-native-video';
 
-export function FullScreenVideo({ navigation }) {
-  return (<></>);
+export function FullScreenVideo({ route }) {
+
+  const [mute, setMute] = React.useState(false);
+  const [show, setShow] = React.useState(false);
+  let timeout = useRef(null);
+  let player = useRef(null);
+  
+  let uri = route.params.uri;
+  let navigation = useNavigation();
+
+  useEffect(() => {
+    return () => {
+      if(timeout.current != null) {
+        clearTimeout(timeout.current);
+      }
+    };
+  }, []);
+
+  const onBuffer = () => { };
+
+  const onError = () => {
+    Alert.alert("Playback failed, try again");
+  }
+
+  const onEnd = () => {
+    navigation.goBack();
+  };
+
+  const onShow = () => {
+    setShow(true);
+    if(timeout.current != null) {
+      clearTimeout(timeout.current);
+    }
+    timeout.current = setTimeout(() => {
+      timeout.current = null;
+      setShow(false);
+    }, 5000);
+  };
+
+  const onStop = () => {
+    navigation.goBack();
+  };
+
+  const onMute = () => {
+    onShow();
+    setMute(!mute);
+  };
+
+  const Controls = () => {
+    if(show) {
+      return (
+        <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: '20%', right: 0 }} onPress={onStop} >
+            <View opacity={0.8}>
+              <Icon name="times-circle-o" style={{ fontSize: 36, color: '#ffffff' }} />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, bottom: '20%', left: 0 }} onPress={onMute}>
+            <View opacity={0.8}>
+              <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ fontSize: 28, color: '#ffffff' }} />
+            </View>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+  return (
+    <TouchableOpacity activeOpacity={1}  style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' }} onPress={onShow}>
+      <ActivityIndicator animating={true} size="large" color="#ffffff" />
+      <Video source={{uri: uri}} ref={(ref) => { player.current = ref }} onEnd={onEnd} onError={onError} resizeMode="contain"
+          muted={mute} style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, alignSelf: 'center' }} />
+      <Controls />
+    </TouchableOpacity>
+  )
 }
-

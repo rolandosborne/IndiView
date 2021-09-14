@@ -9,7 +9,24 @@ import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 
-export function FullScreenPhoto({ navigation }) {
-  return (<></>);
+export function FullScreenPhoto({ route }) {
+  const [source, setSource] = React.useState(null);
+
+  let idx = useRef(0);
+
+  useEffect(() => {
+    if(route.params.uri.length == 0) {
+      setSource(require('../assets/placeholder.png'));
+    }
+    else {
+      setSource({ uri: route.params.uri[0], cache: 'force-cache' });
+    }
+  }, []);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
+      <Image style={{ flex: 1, resizeMode: 'contain' }} source={source} />
+    </View>
+  );
 }
 

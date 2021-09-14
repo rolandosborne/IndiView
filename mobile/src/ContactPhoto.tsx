@@ -40,6 +40,8 @@ export function ContactPhoto({item,navigation}) {
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
 
+  let images = useRef([]);
+
   let diatum = useDiatum();
   const onBlock = () => { 
     const title = 'Do you want to block this post?';
@@ -100,6 +102,7 @@ export function ContactPhoto({item,navigation}) {
   useEffect(() => {
     if(item.data != null) {
       let d = JSON.parse(item.data);
+      images.current = d.images;
       setData(d);
       setIndex(0);
     } 
@@ -167,7 +170,11 @@ export function ContactPhoto({item,navigation}) {
   }
 
   const onFull = () => {
-    navigation.navigate('FullScreenPhoto', { });
+    let photos = [];
+    for(let i = 0; i < images.current.length; i++) {
+      photos.push(item.asset(images.current[i].full));
+    }
+    navigation.navigate('FullScreenPhoto', { uri: photos });
   }
 
   return (

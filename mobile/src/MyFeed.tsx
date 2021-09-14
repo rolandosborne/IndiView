@@ -396,7 +396,11 @@ function PhotoEntry({navigation, item}) {
   };
 
   const onFull = () => {
-    navigation.navigate('FullScreenPhoto', { });
+    let photos = [];
+    for(let i = 0; i < data.current.images.length; i++) {
+      photos.push(item.asset(data.current.images[i].full));
+    }
+    navigation.navigate('FullScreenPhoto', { uri: photos });
   }
 
   return (
@@ -514,42 +518,46 @@ function VideoEntry({navigation, item}) {
     }
   }, [item]);
 
-  let app = useApp();
-  const onPlay = () => {
+  const getUri = (): string => {
     let config = app.getConfig();
     if(config != null && config.videoQuality == 'hd') {
       if(dataRef.current.high != null) {
-        setUri(item.asset(dataRef.current.high));
+        return item.asset(dataRef.current.high);
       }
       else if(dataRef.current.standard != null) {
-        setUri(item.asset(dataRef.current.standard));
+        return item.asset(dataRef.current.standard);
       }
       else {
-        setUri(item.asset(dataRef.current.low));
+        return item.asset(dataRef.current.low);
       }
     }
     else if(config != null && config.videoQuality == 'lq') {
       if(dataRef.current.low != null) {
-        setUri(item.asset(dataRef.current.low));
+        return item.asset(dataRef.current.low);
       }
       else if(dataRef.current.standard != null) {
-        setUri(item.asset(dataRef.current.standard));
+        return item.asset(dataRef.current.standard);
       }
       else {
-        setUri(item.asset(dataRef.current.high));
+        return item.asset(dataRef.current.high);
       }
     }
     else {
       if(dataRef.current.standard != null) {
-        setUri(item.asset(dataRef.current.standard));
+        return item.asset(dataRef.current.standard);
       }
       else if(dataRef.current.high != null) {
-        setUri(item.asset(dataRef.current.high));
+        return item.asset(dataRef.current.high);
       }
       else {
-        setUri(item.asset(dataRef.current.low));
+        return item.asset(dataRef.current.low);
       }
     }
+  }
+
+  let app = useApp();
+  const onPlay = () => {
+    setUri(getUri());
   };
 
   const onDone = () => {
@@ -568,7 +576,7 @@ function VideoEntry({navigation, item}) {
   }
 
   const onFull = () => {
-    navigation.navigate('FullScreenVideo', {});
+    navigation.navigate('FullScreenVideo', { uri: getUri() });
   }
 
   return (

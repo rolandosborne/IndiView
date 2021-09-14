@@ -110,42 +110,46 @@ export function ContactVideo({item,navigation}) {
   }, []);
 
   let app = useApp();
-  const onPlay = () => {
+  const getUri = ():boolean => {
     let config = app.getConfig();
     if(config != null && config.videoQuality == 'hd') {
       if(data.high != null) {
-        setUri(item.asset(data.high));
+        return item.asset(data.high);
       }
       else if(data.standard != null) {
-        setUri(item.asset(data.standard));
+        return item.asset(data.standard);
       }
       else {
-        setUri(item.asset(data.low));
+        return item.asset(data.low);
       }
     }
     else if(config != null && config.videoQuality == 'lq') {
       if(data.low != null) {
-        setUri(item.asset(data.low));
+        return item.asset(data.low);
       }
       else if(data.standard != null) {
-        setUri(item.asset(data.standard));
+        return item.asset(data.standard);
       }
       else {
-        setUri(item.asset(data.high));
+        return item.asset(data.high);
       }
     }
     else {
       if(data.standard != null) {
-        setUri(item.asset(data.standard));
+        return item.asset(data.standard);
       }
       else if(data.high != null) {
-        setUri(item.asset(data.high));
+        return item.asset(data.high);
       }
       else {
-        setUri(item.asset(data.low));
+        return item.asset(data.low);
       }
     }
   };
+
+  const onPlay = () => {
+    setUri(getUri());
+  }
 
   const onDone = () => {
     setUri(null);
@@ -163,7 +167,7 @@ export function ContactVideo({item,navigation}) {
   }
 
   const onFull = () => {
-    navigation.navigate('FullScreenVideo', { });
+    navigation.navigate('FullScreenVideo', { uri: getUri() });
   }
 
   return (
