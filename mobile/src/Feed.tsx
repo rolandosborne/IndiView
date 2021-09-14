@@ -126,7 +126,6 @@ export function Feed({ navigation }) {
 
 function ContactList({ setListener, clearListener }) {
 
-  const [refresh, setRefresh] = React.useState(null);
   const [contacts, setContacts] = React.useState([]);
   const labelIdRef = useRef(null);
 
@@ -167,15 +166,10 @@ function ContactList({ setListener, clearListener }) {
     updateContacts()
   };
 
-  const Refresh = () => {
-    setRefresh(JSON.parse("{}"));
-  }  
-
   useEffect(() => {
     if(setListener != null) {
       setListener(setLabel);
     }
-    Dimensions.addEventListener('change', Refresh);
     diatum.setListener(DiatumEvent.Contact, updateContacts);
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
@@ -184,7 +178,6 @@ function ContactList({ setListener, clearListener }) {
       if(clearListener != null) {
         clearListener();
       }
-      Dimensions.removeEventListener('change', Refresh);
       diatum.clearListener(DiatumEvent.Contact, updateContacts);
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
       diatum.clearListener(DiatumEvent.Share, updateContacts);
@@ -194,7 +187,7 @@ function ContactList({ setListener, clearListener }) {
 
   return (
     <SafeAreaView style={{ flex: 1}} foctor={item => item.id} forceInset={{ bottom: 'never' }}>
-      <FlatList data={contacts} extraData={refresh} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
+      <FlatList data={contacts} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
     </SafeAreaView>
   );
 }
@@ -252,14 +245,14 @@ function IdentityEntry() {
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
-        <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
+        <Image style={{ flexGrow: 1, width: 64, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
+        <View style={{ position: 'absolute', bottom: 16, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
       </TouchableOpacity>
-      <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
     </View>
   );
 }
@@ -290,7 +283,7 @@ function ContactEntry({entry}) {
     if(entry.appSubject != null && entry.appSubject.subjectRevision != null) {
       if(entry.appSubject.feedRevision == null || entry.appSubject.subjectRevision > entry.appSubject.feedRevision) {
         return (
-          <View style={{ position: 'absolute', bottom: 0, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
+          <View style={{ position: 'absolute', bottom: 16, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
             <Icon name="star" style={{ fontSize: 32, color: '#222200' }} />
             <Icon name="star" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
           </View>
@@ -308,11 +301,11 @@ function ContactEntry({entry}) {
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
-        <Image style={{ flexGrow: 1, width: 64, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
+        <Image style={{ flexGrow: 1, width: 64, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
             source={source} defaultSource={defaultSource} onError={onDefault} />
         <Star />
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
       </TouchableOpacity>
-      <Text style={{ fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
     </View>
   );
 }
