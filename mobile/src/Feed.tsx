@@ -216,14 +216,17 @@ function ContactRow({item}) {
 
 function IdentityEntry() {
   const [identity, setIdentity] = React.useState({});
-  const [refresh, setRefresh] = React.useState(0);
-  let count = useRef(0);
+  const [handle, setHandle] = React.useState(null);
+
+  let handleRef = useRef(null);
 
   let diatum = useDiatum();
   const updateIdentity = async () => {
     let i = await diatum.getIdentity();
     console.log(i);
     setIdentity(i);
+    setHandle(i.handle);
+    handleRef.current = i.handle;
   };
 
   let navigation = useNavigation();
@@ -232,7 +235,7 @@ function IdentityEntry() {
   }
 
   const onRefresh = () => {
-    setRefresh(++count.current);
+    setHandle(" " + handleRef.current + " ");
   }
 
   useEffect(() => {
@@ -259,7 +262,7 @@ function IdentityEntry() {
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ refresh }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
       </TouchableOpacity>
     </View>
   );
@@ -268,6 +271,11 @@ function IdentityEntry() {
 function ContactEntry({entry}) {
 
   const [source, setSource] = React.useState(null);
+  const [handle, setHandle] = React.useState(entry.handle);
+
+  const onRefresh = () => {
+    setHandle(" " + entry.handle + " ");
+  }
 
   useEffect(() => {
     if(entry != null && entry.imageUrl != null) {
@@ -275,7 +283,11 @@ function ContactEntry({entry}) {
     }
     else {
       setSource(require('../assets/avatar.png'));
-    } 
+    }
+    Dimensions.addEventListener('change', onRefresh);
+    return () => {
+      Dimensions.removeEventListener('change', onRefresh);
+    }
   }, [entry]);
 
   if(entry == null) {
@@ -312,7 +324,7 @@ function ContactEntry({entry}) {
         <Image style={{ flexGrow: 1, width: 64, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
             source={source} defaultSource={defaultSource} onError={onDefault} />
         <Star />
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
       </TouchableOpacity>
     </View>
   );
