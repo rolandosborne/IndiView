@@ -430,7 +430,7 @@ function HomeScreen({ navigation }) {
   };
 
   return (
-    <Tab.Navigator tabBarOptions={{showLabel: false}} >
+    <Tab.Navigator tabBarOptions={{initialRouteName: 'Feed', showLabel: false}} >
       <Tab.Screen name="HomeContact" component={HomeContactScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }

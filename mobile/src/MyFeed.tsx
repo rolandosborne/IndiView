@@ -351,10 +351,10 @@ function PhotoEntry({navigation, item}) {
     let dot = []
     for(let i = 0; i < data.current.images.length; i++) {
       if(index == i) {
-        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#0077CC', borderWidth: 1, borderColor: '#ffffff', borderRadius: 8 }} />);
       }
       else {
-        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', borderRadius: 8 }} />);
+        dot.push(<View opacity={0.8} key={i} style={{ width: 16, height: 16, margin: 8, borderWidth: 1, borderColor: '#ffffff', borderRadius: 8 }} />);
       }
     }
 

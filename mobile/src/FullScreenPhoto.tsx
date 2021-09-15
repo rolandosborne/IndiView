@@ -45,7 +45,7 @@ export function FullScreenPhoto({ route }) {
       let dot = [];
       for(let i = 0; i < route.params.uri.length; i++) {
         if(i == idx.current) {
-          dot.push(<View key={i} style={{ width: 12, height: 12, backgroundColor: '#ffffff', margin: 6, borderRadius: 6, borderWidth: 1, borderColor: '#ffffff' }} />);
+          dot.push(<View key={i} style={{ width: 12, height: 12, backgroundColor: '#888888', margin: 6, borderRadius: 6, borderWidth: 1, borderColor: '#ffffff' }} />);
         }
         else {
           dot.push(<View key={i} style={{ width: 12, height: 12, margin: 6, borderRadius: 6, borderWidth: 1, borderColor: '#ffffff' }} />);
