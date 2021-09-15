@@ -223,17 +223,16 @@ function ContactRow({item}) {
 
 function IdentityEntry() {
   const [identity, setIdentity] = React.useState({});
-  const [handle, setHandle] = React.useState(null);
-
-  let handleRef = useRef(null);
+  const [dim, setDim] = React.useState(64);
+  const [source, setSource] = React.useState(require('../assets/avatar.png'));
 
   let diatum = useDiatum();
   const updateIdentity = async () => {
     let i = await diatum.getIdentity();
-    console.log(i);
     setIdentity(i);
-    setHandle(i.handle);
-    handleRef.current = i.handle;
+    if(i.imageUrl != null) {
+      setSource({ uri: i.imageUrl, cache: 'force-cache' });
+    }
   };
 
   let navigation = useNavigation();
@@ -242,10 +241,12 @@ function IdentityEntry() {
   }
 
   const onRefresh = () => {
-    setHandle(" " + handleRef.current + " ");
+    setDim(Math.floor((Dimensions.get('screen').width / 3) - 32));
   }
 
   useEffect(() => {
+    setDim(Math.floor((Dimensions.get('screen').width / 3) - 32));
+
     Dimensions.addEventListener('change', onRefresh);
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
     return () => {
@@ -254,22 +255,16 @@ function IdentityEntry() {
     };
   }, []);  
 
-  let defaultSource = require('../assets/avatar.png');
-  let source = defaultSource;
-  if(identity.imageUrl != null) {
-    source = { uri: identity.imageUrl, cache: 'force-cache' };
-  }
-
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ flexGrow: 1, width: null, height: null, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
+      <TouchableOpacity activeOpacity={1} onPress={onIdentity}>
+        <Image style={{ width: dim, height: dim, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} />
         <View style={{ position: 'absolute', bottom: 16, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
       </TouchableOpacity>
     </View>
   );
@@ -277,21 +272,19 @@ function IdentityEntry() {
 
 function ContactEntry({entry}) {
 
-  const [source, setSource] = React.useState(null);
-  const [handle, setHandle] = React.useState(null);
-
+  const [source, setSource] = React.useState(require('../assets/avatar.png'));
+  const [dim, setDim] = React.useState(64);
+  
   const onRefresh = () => {
-    setHandle(" " + entry.handle + " ");
+    setDim(Math.floor((Dimensions.get('screen').width / 3) - 32));
   }
 
   useEffect(() => {
+    setDim(Math.floor((Dimensions.get('screen').width / 3) - 32));
     if(entry != null && entry.imageUrl != null) {
-      setHandle(entry.handle);
       setSource({ uri: entry.imageUrl, cache: 'force-cache' });
     }
-    else {
-      setSource(require('../assets/avatar.png'));
-    }
+
     Dimensions.addEventListener('change', onRefresh);
     return () => {
       Dimensions.removeEventListener('change', onRefresh);
@@ -328,11 +321,11 @@ function ContactEntry({entry}) {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onContact}>
-        <Image style={{ flexGrow: 1, width: null, height: null, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
+      <TouchableOpacity activeOpacity={1} onPress={onContact}>
+        <Image style={{ width: dim, height: dim, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
             source={source} defaultSource={defaultSource} onError={onDefault} />
         <Star />
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ entry.handle }</Text>
       </TouchableOpacity>
     </View>
   );
