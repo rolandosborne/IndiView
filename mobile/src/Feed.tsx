@@ -262,8 +262,8 @@ function IdentityEntry() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ flexGrow: 1, width: 64, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onIdentity}>
+        <Image style={{ flexGrow: 1, width: null, height: null, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} defaultSource={defaultSource} />
         <View style={{ position: 'absolute', bottom: 16, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
@@ -278,7 +278,7 @@ function IdentityEntry() {
 function ContactEntry({entry}) {
 
   const [source, setSource] = React.useState(null);
-  const [handle, setHandle] = React.useState(entry.handle);
+  const [handle, setHandle] = React.useState(null);
 
   const onRefresh = () => {
     setHandle(" " + entry.handle + " ");
@@ -286,6 +286,7 @@ function ContactEntry({entry}) {
 
   useEffect(() => {
     if(entry != null && entry.imageUrl != null) {
+      setHandle(entry.handle);
       setSource({ uri: entry.imageUrl, cache: 'force-cache' });
     }
     else {
@@ -327,8 +328,8 @@ function ContactEntry({entry}) {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
-      <TouchableOpacity style={{ flex: 1, flexDirection: 'row' }} activeOpacity={1} onPress={onContact}>
-        <Image style={{ flexGrow: 1, width: 64, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onContact}>
+        <Image style={{ flexGrow: 1, width: null, height: null, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: entry.errorFlag ? '#ff8888' : '#00bb88' }}
             source={source} defaultSource={defaultSource} onError={onDefault} />
         <Star />
         <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
