@@ -97,13 +97,15 @@ export function FullScreenVideo({ route }) {
     if(show) {
       return (
         <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
-          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '10%', right: 0 }} onPress={onStop} >
-            <View opacity={0.8}>
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '7%', right: 0 }} onPress={onStop} >
+            <View opacity={0.8} style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="times-circle-o" style={{ position: 'absolute', fontSize: 32, color: '#000000' }} />
               <Icon name="times-circle-o" style={{ fontSize: 36, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '10%', left: 0 }} onPress={onMute}>
-            <View opacity={0.8}>
+          <TouchableOpacity style={{ position: 'absolute', padding: 16, top: '7%', left: 0 }} onPress={onMute}>
+            <View opacity={0.8} style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ position: 'absolute', fontSize: 24, color: '#000000' }} />
               <Icon name={mute ? 'volume-off' : 'volume-up'} style={{ fontSize: 28, color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
