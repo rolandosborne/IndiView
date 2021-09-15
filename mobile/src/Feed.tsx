@@ -126,9 +126,10 @@ export function Feed({ navigation }) {
 
 function ContactList({ setListener, clearListener }) {
 
+  const [refresh, setRefresh] = React.useState(null);
   const [contacts, setContacts] = React.useState([]);
   const labelIdRef = useRef(null);
-
+  
   let diatum: Diatum = useDiatum();
   const updateContacts = async () => {
     let c = await diatum.getContacts(labelIdRef.current, "connected");
@@ -166,6 +167,10 @@ function ContactList({ setListener, clearListener }) {
     updateContacts()
   };
 
+  onRefresh = () => {
+    setRefresh(JSON.parse('{}'));
+  }
+
   useEffect(() => {
     if(setListener != null) {
       setListener(setLabel);
@@ -174,6 +179,7 @@ function ContactList({ setListener, clearListener }) {
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
     diatum.setListener(DiatumEvent.View, updateContacts);
+    Dimensions.addEventListener('change', onRefresh);
     return () => {
       if(clearListener != null) {
         clearListener();
@@ -182,12 +188,13 @@ function ContactList({ setListener, clearListener }) {
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
       diatum.clearListener(DiatumEvent.Share, updateContacts);
       diatum.clearListener(DiatumEvent.View, updateContacts);
+      Dimensions.removeEventListener('change', onRefresh);
     }
   }, []);
 
   return (
     <SafeAreaView style={{ flex: 1}} foctor={item => item.id} forceInset={{ bottom: 'never' }}>
-      <FlatList data={contacts} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
+      <FlatList data={contacts} extraData={refresh} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
     </SafeAreaView>
   );
 }
