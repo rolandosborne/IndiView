@@ -61,6 +61,7 @@ function LabelDrawerContent(props) {
   useEffect(() => {
     diatum.setListener(DiatumEvent.Labels, updateList);
     diatum.setListener(DiatumEvent.Subjects, updateSubject);
+    updateSubject(props.subject.subjectId);
     return () => {
       diatum.clearListener(DiatumEvent.Labels, updateList);
       diatum.clearListener(DiatumEvent.Subjects, updateSubject);
