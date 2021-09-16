@@ -33,7 +33,7 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-export function ContactVideo({item,navigation}) {
+export function ContactVideo({item,handle,navigation}) {
 
   const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});
@@ -41,6 +41,7 @@ export function ContactVideo({item,navigation}) {
   const [defaultSource, setDefaultSource] = React.useState(require('../assets/placeholder.png'));
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment');
+  const [thumb, setThumb] = React.useState(null);
 
   useEffect(() => {
     if(item.blocked) {
@@ -105,7 +106,8 @@ export function ContactVideo({item,navigation}) {
       setData(d);
       if(d.thumb != null) {
         setSource({ uri: item.asset(d.thumb), cache: 'force-cache' });
-      } 
+        setThumb(item.asset(d.thumb));
+      }
     } 
   }, []);
 
@@ -163,7 +165,7 @@ export function ContactVideo({item,navigation}) {
   }
 
   const onComment = () => {
-    navigation.navigate('Comment', { });
+    navigation.navigate('Comment', { handle: handle, thumb: thumb, subjectId: item.subjectId, amigoId: item.amigoId });
   }
 
   const onFull = () => {

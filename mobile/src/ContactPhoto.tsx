@@ -31,7 +31,7 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-export function ContactPhoto({item,navigation}) {
+export function ContactPhoto({item,handle,navigation}) {
 
   const [data, setData] = React.useState({});
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
@@ -39,6 +39,7 @@ export function ContactPhoto({item,navigation}) {
   const [index, setIndex] = React.useState(index);
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
+  const [thumb, setThumb] = React.useState(null);
 
   let images = useRef([]);
 
@@ -111,6 +112,7 @@ export function ContactPhoto({item,navigation}) {
   useEffect(() => {
     if(index != null && data.images != null && data.images.length > 0) {
       setSource({ uri: item.asset(data.images[index].thumb), cache: 'force-cache' });
+      setThumb(item.asset(data.images[index].thumb));
     } 
   }, [index]);
 
@@ -166,7 +168,7 @@ export function ContactPhoto({item,navigation}) {
   };
 
   const onComment = () => {
-    navigation.navigate('Comment', { });
+    navigation.navigate('Comment', { handle: handle, thumb: thumb, subjectId: item.subjectId, amigoId: item.amigoId });
   }
 
   const onFull = () => {

@@ -173,7 +173,7 @@ export function MyFeed({ route, navigation }) {
         <ProfileDrawer.Screen name="Contacts">{(props) => {
           return (
             <View style={{ flex: 1 }}>
-              <MyFeedPage navigation={navigation} labelId={labelId} />
+              <MyFeedPage navigation={navigation} handle={identity.handle} labelId={labelId} />
               <Working />
             </View>
           )
@@ -183,7 +183,7 @@ export function MyFeed({ route, navigation }) {
   )
 }
 
-function MyFeedPage({ navigation, labelId }) {
+function MyFeedPage({ navigation, handle, labelId }) {
 
   const [subjects, setSubjects] = React.useState([]);
   const [refresh, setRefresh] = React.useState(null);
@@ -216,10 +216,10 @@ function MyFeedPage({ navigation, labelId }) {
     <View style={{ flex: 1 }}>
       <FlatList data={subjects} extraData={refresh} keyExtractor={item => item.subjectId} renderItem={({item}) => {
         if(SubjectUtil.isPhoto(item)) {
-          return (<PhotoEntry navigation={navigation} item={item} />);
+          return (<PhotoEntry navigation={navigation} handle={handle} item={item} />);
         }
         if(SubjectUtil.isVideo(item)) {
-          return (<VideoEntry navigation={navigation} item={item} />);
+          return (<VideoEntry navigation={navigation} handle={handle} item={item} />);
         }
         return (<></>);
       }} />
@@ -245,13 +245,14 @@ function getTime(epoch: number): string {
   return Math.ceil(offset/31449600) + " y";
 }
 
-function PhotoEntry({navigation, item}) {
+function PhotoEntry({navigation, handle, item}) {
 
   const [source, setSource] = React.useState(require('../assets/placeholder.png'));
   const [index, setIndex] = React.useState(index);
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
   const [status, setStatus] = React.useState(<></>);
+  const [thumb, setThumb] = React.useState(null);
 
   const data = React.useRef({});
 
@@ -330,9 +331,11 @@ function PhotoEntry({navigation, item}) {
     if(index != null && data.current.images != null && data.current.images.length > 0) {
       if(index >= data.current.images.length) {
         setSource({ uri: item.asset(data.current.images[0].thumb), cache: 'force-cache' });
+        setThumb(item.asset(data.current.images[0].thumb));
       }
       else {
         setSource({ uri: item.asset(data.current.images[index].thumb), cache: 'force-cache' });
+        setThumb(item.asset(data.current.images[index].thumb));
       }
     }
     else {
@@ -392,7 +395,7 @@ function PhotoEntry({navigation, item}) {
   };
 
   const onComment = () => {
-    navigation.navigate('Comment', { });
+    navigation.navigate('Comment', { handle: handle, thumb: thumb, subjectId: item.subjectId });
   };
 
   const onFull = () => {
@@ -426,7 +429,7 @@ function PhotoEntry({navigation, item}) {
   );
 }
 
-function VideoEntry({navigation, item}) {
+function VideoEntry({navigation, handle, item}) {
 
   const [uri, setUri] = React.useState(null);
   const [data, setData] = React.useState({});
@@ -434,6 +437,7 @@ function VideoEntry({navigation, item}) {
   const [options, setOptions] = React.useState(<></>);
   const [comment, setComment] = React.useState('comment-o');
   const [status, setStatus] = React.useState(<></>);
+  const [thumb, setThumb] = React.useState(null);
 
   let dataRef = React.useRef(null);
 
@@ -508,6 +512,7 @@ function VideoEntry({navigation, item}) {
       dataRef.current = d;
       if(d.thumb != null) {
         setSource({ uri: item.asset(d.thumb), cache: 'force-cache' });
+        setThumb(item.asset(d.thumb));
       } 
     } 
     if(item.tagCount > 0) {
@@ -572,7 +577,7 @@ function VideoEntry({navigation, item}) {
   }
 
   const onComment = () => {
-    navigation.navigate('Comment', { });
+    navigation.navigate('Comment', { handle: handle, thumb: thumb, subjectId: item.subjectId });
   }
 
   const onFull = () => {

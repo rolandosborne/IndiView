@@ -9,7 +9,17 @@ import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 
-export function Comment({ navigation }) {
+export function Comment({ route,navigation }) {
+  console.log(route.params);
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: route.params.handle,
+      headerRight: () => (<Image style={{ flexGrow: 1, width: null, height: null, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={{ uri: route.params.thumb, cache: 'force-cache' }} />)
+    });
+  }, []);
+
+
   return (<></>);
 }
 
