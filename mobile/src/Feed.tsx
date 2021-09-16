@@ -223,6 +223,8 @@ function ContactRow({item}) {
 
 function IdentityEntry() {
   const [identity, setIdentity] = React.useState({});
+  const [flag, setFlag] = React.useState(false);
+  const [handle, setHandle] = React.useState(null);
   const [dim, setDim] = React.useState(64);
   const [source, setSource] = React.useState(null);
 
@@ -230,11 +232,15 @@ function IdentityEntry() {
   const updateIdentity = async () => {
     let i = await diatum.getIdentity();
     setIdentity(i);
-    if(i.imageUrl != null) {
-      setSource({ uri: i.imageUrl, cache: 'force-cache' });
-    }
-    else {
-      setSource(require('../assets/avatar.png'));
+    if(i != null) {
+      setFlag(i.errorFlag);
+      setHandle(i.handle);
+      if(i.imageUrl != null) {
+        setSource({ uri: i.imageUrl, cache: 'force-cache' });
+      }
+      else {
+        setSource(require('../assets/avatar.png'));
+      }
     }
   };
 
@@ -261,13 +267,13 @@ function IdentityEntry() {
   return (
     <View style={{ flex: 1, alignItems: 'center', padding: 16 }}>
       <TouchableOpacity activeOpacity={1} onPress={onIdentity}>
-        <Image style={{ width: dim, height: dim, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: identity.errorFlag ? '#ff8888' : '#00bb88' }} source={source} />
+        <Image style={{ width: dim, height: dim, marginBottom: 18, aspectRatio: 1, borderRadius: 32, borderWidth: 2, borderColor: flag ? '#ff8888' : '#00bb88' }} source={source} />
         <View style={{ position: 'absolute', bottom: 16, right: 0, alignItems: 'center', justifyContent: 'center', padding: 2 }}>
           <Icon name="cog" style={{ fontSize: 32, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 24, color: '#222200' }} />
           <Icon name="cog" style={{ position: 'absolute', fontSize: 28, color: '#ffffff' }} />
         </View>
-        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ identity.handle }</Text>
+        <Text style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center', fontSize: 12, paddingTop: 4, color: '#444444' }}>{ handle }</Text>
       </TouchableOpacity>
     </View>
   );

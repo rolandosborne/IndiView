@@ -146,7 +146,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v130.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v136.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 console.log("INIT", ctx);
 
     if(ctx.context == null) {
