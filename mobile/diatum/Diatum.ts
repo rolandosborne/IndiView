@@ -1493,7 +1493,7 @@ class _Diatum {
 
   // get subject tags
   public async getSubjectTags(subjectId: string): Promise<Tag[]> {
-    return await this.storage.getSubjectTags(this.session.amigoId, subjectid);
+    return await this.storage.getSubjectTags(this.session.amigoId, subjectId);
   }
 
   public async getContactSubjects(amigoId: string): Promise<SubjectItem[]> {

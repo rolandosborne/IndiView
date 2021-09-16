@@ -309,9 +309,12 @@ export class Storage {
     return labels;
   }
   public async getSubjectTags(id: string, subjectId: string): Promise<Tag[]> {
-    let res = await this.db.executeSql("SELECT tags FROM show_" + id + " WHERE subject_id=?;", [amigoId, subjectId]);
+    let res = await this.db.executeSql("SELECT tags FROM show_" + id + " WHERE subject_id=?;", [subjectId]);
     if(hasResult(res)) {
-      return decodeObject(res[0].rows.item(0));
+      if(res[0].rows.item(0).tags == null) {
+        return [];
+      }
+      return decodeObject(res[0].rows.item(0).tags);
     }
     return [];
   }
@@ -462,7 +465,10 @@ export class Storage {
   public async getConnectionSubjectTags(id: string, amigoId: string, subjectId: string): Promise<Tag[]> {
     let res = await this.db.executeSql("SELECT tags FROM view_" + id + " WHERE amigo_id=? AND subject_id=?;", [amigoId, subjectId]);
     if(hasResult(res)) {
-      return decodeObject(res[0].rows.item(0));
+      if(res[0].rows.item(0).tags == null) {
+        return [];
+      }
+      return decodeObject(res[0].rows.item(0).tags);
     }
     return [];
   }
