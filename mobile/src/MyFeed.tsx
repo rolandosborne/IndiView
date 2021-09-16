@@ -422,7 +422,7 @@ function PhotoEntry({navigation, handle, item}) {
           <Text style={{ paddingTop: 8, color: '#444444' }}>{ data.current.description }</Text>
         </View>
         <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onComment}>
-          <Icon name="comment-o" style={{ fontSize: 20, color: '#0072CC' }} />
+          <Icon name={comment} style={{ fontSize: 20, color: '#0072CC' }} />
         </TouchableOpacity>
       </View>
     </View>
