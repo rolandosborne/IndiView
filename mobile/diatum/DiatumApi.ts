@@ -166,7 +166,7 @@ export class DiatumApi {
   }
 
   public static async getSubjectTags(node: string, token: string, subjectId: string, schema: string): Promise<SubjectTag> {
-    let tagResponse = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=false&token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
+    let tagResponse = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=true&token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
     checkResponse(tagResponse);
     return await tagResponse.json();
   }
@@ -228,11 +228,15 @@ export class DiatumApi {
     return await response.json();
   }
   public static async getConnectionSubjectTags(node: string, token: string, agent: string, subjectId: string, filter: string): Promise<Subject> {
-    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags?token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter), { method: 'GET', timeout: FETCH_TIMEOUT });
+    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags?descending=true&token=" + encodeURIComponent(token) + "&agent=" + encodeURIComponent(agent) + "&schema=" + encodeURIComponent(filter), { method: 'GET', timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
-
+  public static async addConnectionSubjectTag(node: string, token: string, agent: string, subjectId: string, schema: string, data: string): Promsie<SubjectTag> {
+    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=true&token=" + token + "&agent=" + agent, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
 
   public static async getIdentityRevision(node: string, token: string): Promise<number> {
     let response = await fetchWithTimeout(node + "/identity/revision?token=" + encodeURIComponent(token), { method: 'GET', timeout: FETCH_TIMEOUT });
@@ -453,4 +457,11 @@ export class DiatumApi {
     checkResponse(response);
     return await response.json();
   }
+
+  public static async addSubjectTag(node: string, token: string, subjectId: string, schema: string, data: string): Promise<SubjectTag> {
+    let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=true&token=" + encodeURIComponent(token), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
 }

@@ -17,6 +17,7 @@ import { AppSupport, AppSupportProvider, useApp } from './src/AppSupport';
 import { Latch, LatchProvider, useLatch } from './src/LatchContext';
 import { AttributeUtil } from "./src/AttributeUtil";
 import { SubjectUtil } from "./src/SubjectUtil";
+import { TagUtil } from './src/TagUtil';
 
 import { Contacts } from "./src/Contacts";
 import { ContactProfile } from "./src/ContactProfile";
@@ -40,7 +41,6 @@ import { ContactRequests } from "./src/ContactRequests";
 import { BlockedItems } from "./src/BlockedItems";
 import { Settings } from "./src/Settings";
 
-const MESSAGE_TAG: string = '19fd19cbaaf31f5d9f744af3c1c52ff770c2830ab4a636a86473991f7fe9f962';
 const APP_CONFIG: string = 'INDIVIEW_CONFIG';
 
 const Stack = createStackNavigator(); 
@@ -143,7 +143,7 @@ function RootScreen({ navigation }) {
   
   let attributes = AttributeUtil.getSchemas();
   let subjects = SubjectUtil.getSchemas();
-  let tag = MESSAGE_TAG;
+  let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
   diatum.init("indiview_v129.db", attributes, subjects, tag, dataCallback).then(async ctx => {

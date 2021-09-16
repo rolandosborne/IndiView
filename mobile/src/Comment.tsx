@@ -9,6 +9,7 @@ import UserAvatar from 'react-native-user-avatar';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 
+import { TagUtil } from './TagUtil';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 
@@ -16,15 +17,37 @@ export function Comment({ route,navigation }) {
   const [tags, setTags] = React.useState([]);
   const [message, setMessage] = React.useState(null);
 
+  let busy = React.useRef(false);
+
   let diatum = useDiatum();
+
+  const UpdateAmigoTag = async (objectId: string) => {
+    if(objectId != null && objectId == route.params.amigoId) {
+      setTags(await diatum.getContactSubjectTags(route.params.amigoId, route.params.subjectId));
+    }
+  }
+
+  const UpdateMyTag = async (objectId: string) => {
+    if(objectId == route.params.subjectId) {
+      setTags(await diatum.getSubjectTags(route.params.subjectId));
+    }
+  }
+
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.View, UpdateAmigoTag);
+    diatum.setListener(DiatumEvent.Subjects, UpdateMyTag);
+    return () => {
+      diatum.clearListener(DiatumEvent.View, UpdateAmigoTag);
+      diatum.clearListener(DiatumEvent.Subjects, UpdateMyTag);
+    }
+  }, []);
+
   useEffect(async () => {
     if(route.params.amigoId == null) {
       setTags(await diatum.getSubjectTags(route.params.subjectId));
-      console.log(await diatum.getSubjectTags(route.params.subjectId));
     }
     else {
       setTags(await diatum.getContactSubjectTags(route.params.amigoId, route.params.subjectId));
-      console.log(await diatum.getContactSubjectTags(route.params.amigoId, route.params.subjectId));
     }
   }, []);
 
@@ -35,12 +58,33 @@ export function Comment({ route,navigation }) {
     });
   }, []);
 
+  const onSend = async () => {
+    if(message != null && busy.current == false) {
+      busy.current = true;
+      try {
+        if(route.params.amigoId == null) {
+          await diatum.addSubjectTag(route.params.subjectId, TagUtil.MESSAGE, JSON.stringify({ message: message }));
+        }
+        else {
+          await diatum.addContactSubjectTag(route.params.amigoId, route.params.subjectId, TagUtil.MESSAGE, JSON.stringify({ message: message }));
+        }
+        setMessage(null);
+      }
+      catch(err) {
+        console.log(err);
+        Alert.alert("failed to add comment");
+      }
+      busy.current = false;
+    }
+  }
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ padding: 12, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
         <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Comment'} placeholderTextColor={'#888888'} />
-        <Icon name="send-o" style={{ alignSelf: 'center', color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
+        <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onSend}>
+          <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
+        </TouchableOpacity>
       </View>
       <FlatList data={tags} keyExtractor={item => item.tagId} renderItem={({item}) => <CommentEntry tag={item} />} />
     </View>
@@ -63,15 +107,6 @@ function CommentEntry({tag}) {
     </View>
   );
 }
-
-
-
-
-
-
-
-
-
 
 function getTime(epoch: number): string {
   let d: Date = new Date();

@@ -194,11 +194,17 @@ export interface Diatum {
   // get subject tags
   getSubjectTags(subjectId: string): Promise<Tag[]>
 
+  // add subject tag
+  addSubjectTag(subjectId: string, schema: string, data: string): Promise<void>
+
   // get contact subjects
   getContactSubjects(amigoId: string): Promise<SubjctItem[]>
 
   // get contact subject tags
   getContactSubjectTags(amigoId: string, subjectId: string): Promise<Tag[]>
+
+  // add tag to contact's subject
+  addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void>
 
   // get blocked subjects
   getBlockedSubjects(): Promise<SubjectItem[]>
@@ -1491,10 +1497,14 @@ class _Diatum {
     return subject;
   }
 
-  // get subject tags
   public async getSubjectTags(subjectId: string): Promise<Tag[]> {
     return await this.storage.getSubjectTags(this.session.amigoId, subjectId);
   }
+
+  public async addSubjectTag(subjectId: stirng, schema: string, data: string): Promise<void> {
+    await DiatumApi.addSubjectTag(this.session.amigoNode, this.session.amigoToken, subjectId, schema, data);
+    await this.syncShow();
+  }  
 
   public async getContactSubjects(amigoId: string): Promise<SubjectItem[]> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
@@ -1509,6 +1519,12 @@ class _Diatum {
 
   public async getContactSubjectTags(amigoId: string, subjectId: string): Promsie<Tag[]> {
     return await this.storage.getConnectionSubjectTags(this.session.amigoId, amigoId, subjectId);
+  }
+
+  public async addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    await DiatumApi.addConnectionSubjectTag(connection.node, connection.token, this.authToken, subjectId, schema, data);
+    await this.syncAmigoConnection(connection);
   }
 
   public async getBlockedSubjects(): Promise<SubjectItem[]> {
@@ -1862,6 +1878,11 @@ async function getSubjectTags(subjectId: string): Promise<Tag[]> {
   return await diatum.getSubjectTags(subjectId);
 }
 
+async function addSubjectTag(subjectId: string, schema: string, data: string): Promsie<void> {
+  let diatum = await getInstance();
+  return await diatum.addSubjectTag(subjectId, schema, data);
+}
+
 async function getContactSubjects(amigoId: string): Promise<SubjectItem[]> { 
   let diatum = await getInstance();
   return await diatum.getContactSubjects(amigoId);
@@ -1870,6 +1891,11 @@ async function getContactSubjects(amigoId: string): Promise<SubjectItem[]> {
 async function getContactSubjectTags(amigoId: string, subjectId: string): Promsie<Tag[]> {
   let diatum = await getInstance();
   return await diatum.getContactSubjectTags(amigoId, subjectId);
+}
+
+async function addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.addContactSubjectTag(amigoId, subjectId, schema, data);
 }
 
 async function getBlockedSubjects(): Promise<BlockedSubject[]> {
@@ -1932,7 +1958,7 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, setContactSubjectData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getSubjects, getSubject, getSubjectTags, getContactSubjects, getContactSubjectTags, getBlockedSubjects, setBlockedSubject,
+    getSubjects, getSubject, getSubjectTags, addSubjectTag, getContactSubjects, getContactSubjectTags, addContactSubjectTag, getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
     syncContact };
 
