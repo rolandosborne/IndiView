@@ -105,7 +105,7 @@ function CommentEntry({amigoId, subjectId, tag}) {
   let diatum = useDiatum();
   const onDelete = async () => {
     if(amigoId == null || tag.amigoId == app.getAmigoId()) {
-      const title = 'Are you sure you want to delete the comment?';
+      const title = 'Do you want to delete this comment?';
       const message = '';
       const buttons = [
           { text: 'Yes, Delete', onPress: async () => {

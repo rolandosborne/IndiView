@@ -127,7 +127,7 @@ export function Feed({ navigation }) {
 function ContactList({ setListener, clearListener }) {
 
   const [refresh, setRefresh] = React.useState(null);
-  const [contacts, setContacts] = React.useState([]);
+  const [contacts, setContacts] = React.useState([{ id: "" }]);
   const labelIdRef = useRef(null);
   
   let diatum: Diatum = useDiatum();
@@ -224,7 +224,7 @@ function ContactRow({item}) {
 function IdentityEntry() {
   const [identity, setIdentity] = React.useState({});
   const [dim, setDim] = React.useState(64);
-  const [source, setSource] = React.useState(require('../assets/avatar.png'));
+  const [source, setSource] = React.useState(null);
 
   let diatum = useDiatum();
   const updateIdentity = async () => {
@@ -232,6 +232,9 @@ function IdentityEntry() {
     setIdentity(i);
     if(i.imageUrl != null) {
       setSource({ uri: i.imageUrl, cache: 'force-cache' });
+    }
+    else {
+      setSource(require('../assets/avatar.png'));
     }
   };
 
@@ -291,13 +294,13 @@ function ContactEntry({entry}) {
     }
   }, [entry]);
 
-  if(entry == null) {
-    return (<View style={{ flex: 1, alignItems: 'center', padding: 16 }}></View>);
-  }
-
   let navigation = useNavigation();
   const onContact = () => {
     navigation.navigate("ContactFeed", entry);
+  }
+
+  if(entry == null) {
+    return (<View style={{ flex: 1, alignItems: 'center', padding: 16 }}></View>);
   }
 
   const Star = () => {
