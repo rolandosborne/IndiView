@@ -232,10 +232,15 @@ export class DiatumApi {
     checkResponse(response);
     return await response.json();
   }
-  public static async addConnectionSubjectTag(node: string, token: string, agent: string, subjectId: string, schema: string, data: string): Promsie<SubjectTag> {
+  public static async addConnectionSubjectTag(node: string, token: string, agent: string, subjectId: string, schema: string, data: string): Promise<SubjectTag> {
     let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags?schema=" + schema + "&descending=true&token=" + token + "&agent=" + agent, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
+  }
+
+  public static async removeConnectionSubjectTag(node: string, token: string, agent: string, subjectId: string, tagId: string, schema: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/view/subjects/" + subjectId + "/tags/" + tagId + "?schema=" + schema + "&token=" + encodeURIComponent(token) + "&agent=" + agent, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
   }
 
   public static async getIdentityRevision(node: string, token: string): Promise<number> {
@@ -464,4 +469,8 @@ export class DiatumApi {
     return await response.json();
   }
 
+  public static async removeSubjectTag(node: string, token: string, subjectId: string, tagId: string, schema: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/tags/" + tagId + "?schema=" + schema + "&token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
 }

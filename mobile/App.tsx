@@ -158,6 +158,7 @@ console.log("INIT", ctx);
       try {
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
+        support.setAmigoId(l.amigoId);
         await syncConfig(diatum, support);
         navigation.replace('Main');
       }
@@ -227,6 +228,7 @@ function AgreeScreen({ route, navigation }) {
         let l = await IndiViewCom.attach(code);
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
         support.setToken(l.appToken);
+        support.setAmigoId(l.amigoId);
         await diatum.setAppContext(l);
         await syncConfig(diatum, support);
         navigation.replace("Main");

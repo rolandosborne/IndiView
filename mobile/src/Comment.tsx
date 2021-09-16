@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { TagUtil } from './TagUtil';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
+import { AppSupport, AppSupportProvider, useApp } from './AppSupport';
 
 export function Comment({ route,navigation }) {
   const [tags, setTags] = React.useState([]);
@@ -86,12 +87,12 @@ export function Comment({ route,navigation }) {
           <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
         </TouchableOpacity>
       </View>
-      <FlatList data={tags} keyExtractor={item => item.tagId} renderItem={({item}) => <CommentEntry tag={item} />} />
+      <FlatList data={tags} keyExtractor={item => item.tagId} renderItem={({item}) => <CommentEntry amigoId={route.params.amigoId} subjectId={route.params.subjectId} tag={item} />} />
     </View>
   );
 }
 
-function CommentEntry({tag}) {
+function CommentEntry({amigoId, subjectId, tag}) {
   const [message, setMessage] = React.useState(null);
 
   useEffect(() => {
@@ -100,11 +101,38 @@ function CommentEntry({tag}) {
     }
   }, []);
 
+  let app = useApp();
+  let diatum = useDiatum();
+  const onDelete = async () => {
+    if(amigoId == null || tag.amigoId == app.getAmigoId()) {
+      const title = 'Are you sure you want to delete the comment?';
+      const message = '';
+      const buttons = [
+          { text: 'Yes, Delete', onPress: async () => {
+            try {
+              if(amigoId == null) {
+                await diatum.removeSubjectTag(subjectId, tag.tagId, TagUtil.COMMENT);
+              }
+              else {
+                await diatum.removeContactSubjectTag(amigoId, subjectId, tag.tagId, TagUtil.COMMENT);
+              }
+            }
+            catch(err) {
+              console.log(err);
+              Alert.alert("failed to delete comment");
+            }
+          }},
+          { text: 'Cancel', type: 'cancel' }
+      ];
+      Alert.alert(title, message, buttons);
+    }
+  }
+
   return (
-    <View style={{ fontSize: 16, color: '#444444', padding: 8, margin: 8, borderColor: '#dddddd', borderRadius: 8, borderWidth: 1 }}>
+    <TouchableOpacity style={{ fontSize: 16, color: '#444444', padding: 8, margin: 8, borderColor: '#dddddd', borderRadius: 8, borderWidth: 1 }} onLongPress={onDelete} >
       <Text><Text style={{ fontWeight: 'bold' }}>{ tag.amigoName }&nbsp;&nbsp;&nbsp;</Text><Text>{ getTime(tag.created) }</Text></Text>
       <Text style={{ paddingTop: 4 }}>{ message }</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

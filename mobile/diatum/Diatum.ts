@@ -197,6 +197,9 @@ export interface Diatum {
   // add subject tag
   addSubjectTag(subjectId: string, schema: string, data: string): Promise<void>
 
+  // remove subject tag
+  removeSubjectTag(subjectId: string, tagId: string, schema: string): Promise<void>
+
   // get contact subjects
   getContactSubjects(amigoId: string): Promise<SubjctItem[]>
 
@@ -205,6 +208,9 @@ export interface Diatum {
 
   // add tag to contact's subject
   addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void>
+
+  // remove contact's subject tag
+  removeContactSubjectTag(amigoId: string, subjectId: string, tagId: string, schema: string): Promise<void>
 
   // get blocked subjects
   getBlockedSubjects(): Promise<SubjectItem[]>
@@ -1501,10 +1507,15 @@ class _Diatum {
     return await this.storage.getSubjectTags(this.session.amigoId, subjectId);
   }
 
-  public async addSubjectTag(subjectId: stirng, schema: string, data: string): Promise<void> {
+  public async addSubjectTag(subjectId: string, schema: string, data: string): Promise<void> {
     await DiatumApi.addSubjectTag(this.session.amigoNode, this.session.amigoToken, subjectId, schema, data);
     await this.syncShow();
   }  
+
+  public async removeSubjectTag(subjectId: string, tagId: string, schema: string): Promise<void> {
+    await DiatumApi.removeSubjectTag(this.session.amigoNode, this.session.amigoToken, subjectId, tagId, schema);
+    await this.syncShow();
+  }
 
   public async getContactSubjects(amigoId: string): Promise<SubjectItem[]> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
@@ -1524,6 +1535,12 @@ class _Diatum {
   public async addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     await DiatumApi.addConnectionSubjectTag(connection.node, connection.token, this.authToken, subjectId, schema, data);
+    await this.syncAmigoConnection(connection);
+  }
+
+  public async removeContactSubjectTag(amigoId: string, subjectId: string, tagId: string, schema: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    await DiatumApi.removeConnectionSubjectTag(connection.node, connection.token, this.authToken, subjectId, tagId, schema);
     await this.syncAmigoConnection(connection);
   }
 
@@ -1883,6 +1900,11 @@ async function addSubjectTag(subjectId: string, schema: string, data: string): P
   return await diatum.addSubjectTag(subjectId, schema, data);
 }
 
+async function removeSubjectTag(subjectId: string, tagId: string, schema: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeSubjectTag(subjectId, tagId, schema);
+}
+
 async function getContactSubjects(amigoId: string): Promise<SubjectItem[]> { 
   let diatum = await getInstance();
   return await diatum.getContactSubjects(amigoId);
@@ -1896,6 +1918,11 @@ async function getContactSubjectTags(amigoId: string, subjectId: string): Promsi
 async function addContactSubjectTag(amigoId: string, subjectId: string, schema: string, data: string): Promise<void> {
   let diatum = await getInstance();
   return await diatum.addContactSubjectTag(amigoId, subjectId, schema, data);
+}
+
+async function removeContactSubjectTag(amigoId: string, subjectId: string, tagId: string, schema: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeContactSubjectTag(amigoId, subjectId, tagId, schema);
 }
 
 async function getBlockedSubjects(): Promise<BlockedSubject[]> {
@@ -1958,7 +1985,9 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactLabels, setContactLabel, clearContactLabel, setContactAttributeData, setContactSubjectData,
     addContact, removeContact, openContactConnection, closeContactConnection, setContactNotes, clearContactNotes,
     getContactRequests, clearContactRequest, getBlockedContacts, setBlockedContact,
-    getSubjects, getSubject, getSubjectTags, addSubjectTag, getContactSubjects, getContactSubjectTags, addContactSubjectTag, getBlockedSubjects, setBlockedSubject,
+    getSubjects, getSubject, getSubjectTags, addSubjectTag, removeSubjectTag,
+    getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
+    getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
     syncContact };
 

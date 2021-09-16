@@ -5,6 +5,7 @@ import { Config } from 'IndiViewCom';
 export class AppSupport {
   private token: string;
   private config: Config;
+  private amigoId: string;
 
   public getToken(): string {
     return this.token;
@@ -12,6 +13,14 @@ export class AppSupport {
 
   public setToken(value: string) {
     this.token = value;
+  }
+
+  public getAmigoId(): string {
+    return this.amigoId;
+  }
+
+  public setAmigoId(value: string) {
+    this.amigoId = value;
   }
 
   public getConfig(): Config {
