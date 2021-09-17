@@ -115,7 +115,7 @@ export function Feed({ navigation }) {
         <FeedDrawer.Screen name="Feed">{(props) => { 
           return (
             <View style={{ flex: 1 }}>
-              <ContactList setListener={setCallback} clearListner={clearCallback} /> 
+              <ContactList setListener={setCallback} clearListener={clearCallback} /> 
             </View>
           )
         }}</FeedDrawer.Screen>
@@ -172,18 +172,14 @@ function ContactList({ setListener, clearListener }) {
   }
 
   useEffect(() => {
-    if(setListener != null) {
-      setListener(setLabel);
-    }
+    setListener(setLabel);
     diatum.setListener(DiatumEvent.Contact, updateContacts);
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
     diatum.setListener(DiatumEvent.View, updateContacts);
     Dimensions.addEventListener('change', onRefresh);
     return () => {
-      if(clearListener != null) {
-        clearListener();
-      }
+      clearListener();
       diatum.clearListener(DiatumEvent.Contact, updateContacts);
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
       diatum.clearListener(DiatumEvent.Share, updateContacts);

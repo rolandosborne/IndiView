@@ -115,7 +115,7 @@ export function Contacts({ navigation }) {
         <ContactDrawer.Screen name="Contacts">{(props) => { 
           return (
             <View style={{ flex: 1 }}>
-              <ContactList {...props} {...{setListener: setCallback, clearListner: clearCallback}}/> 
+              <ContactList {...props} {...{setListener: setCallback, clearListener: clearCallback}}/> 
             </View>
           )
         }}</ContactDrawer.Screen>
@@ -170,17 +170,13 @@ function ContactList(props) {
   };
 
   useEffect(() => {
-    if(props.setListener != null) {
-      props.setListener(setLabel);
-    }
+    props.setListener(setLabel);
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
     diatum.setListener(DiatumEvent.Contact, updateContacts);
     diatum.setListener(DiatumEvent.Amigos, updateContacts);
     diatum.setListener(DiatumEvent.Share, updateContacts);
     return () => {
-      if(props.clearListener != null) {
-        props.clearListener();
-      }
+      props.clearListener();
       diatum.clearListener(DiatumEvent.Identity, updateIdentity);
       diatum.clearListener(DiatumEvent.Contact, updateContacts);
       diatum.clearListener(DiatumEvent.Amigos, updateContacts);
