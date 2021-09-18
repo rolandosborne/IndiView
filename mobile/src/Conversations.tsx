@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
-import { DiatumSession, LabelEntry } from '../diatum/DiatumTypes';
+import { DiatumSession, LabelEntry, Conversation } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 
@@ -67,7 +67,7 @@ function ConversationDrawerContent(props) {
   );
 }
 
-export function Conversation({ navigation }) {
+export function Conversations({ navigation }) {
   
   const latchColorRef = useRef('#282827');
   const callbackRef = useRef(null);
@@ -128,10 +128,16 @@ function ConversationList({ setListener, clearListener }) {
 
   const [start, setStart] = React.useState(false);
   const [selector, setSelector] = React.useState(false);
+  const [conversations, setConversations] = React.useState([]);
 
   const labelIdRef = useRef(null);  
   
   let diatum: Diatum = useDiatum();
+
+  useEffect(async () => {
+    let c = await diatum.getConversations(null);
+    setConversations(c);
+  }, []);
 
   const onConversation = () => {
     setSelector(true);
@@ -161,6 +167,7 @@ function ConversationList({ setListener, clearListener }) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} forceInset={{ bottom: 'never' }}>
+      <FlatList style={{ padding: 16 }} data={conversations} keyExtractor={item => item.dialogueId} renderItem={({item}) => <ConversationEntry entry={item} />} />
       <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, margin: 16 }} onPress={onConversation}>
         <View opacity={0.8} style={{backgroundColor: '#0077CC', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, borderRadius: 16 }}>
           <Text style={{ fontSize: 18, color: '#ffffff' }}><Icon name="plus" style={{ fontSize: 14 }}/>&nbsp;Conversation</Text>
@@ -168,6 +175,26 @@ function ConversationList({ setListener, clearListener }) {
       </TouchableOpacity>
       <SelectContact active={selector} selected={onSelect} closed={onClose} />
     </SafeAreaView>
+  );
+}
+
+function ConversationEntry({ entry }) {
+  const [source, setSource] = React.useState(require("../assets/avatar.png"));
+
+  useEffect(() => {
+    if(entry.imageUrl != null) {
+      setSource({ uri: entry.imageUrl, cache: 'force-cache' });
+    }
+  }, []);
+
+  return (
+    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }}>
+      <Image style={{ width: 48, height: 48, marginLeft: 8, borderRadius: 4 }} source={source} />
+      <View style={{ marginLeft: 16 }}>
+        <Text style={{ fontSize: 18, color: '#444444' }}>{ entry.name }</Text>
+        <Text style={{ fontSize: 12, color: '#444444' }}>{ entry.handle }</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -213,14 +240,14 @@ function SelectContact({ active, selected, closed }) {
   return (
     <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={onClose}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
-        <View style={{ backgroundColor: '#ffffff', width: '80%', borderRadius: 8, maxHeight: '60%' }}>
+        <View style={{ backgroundColor: '#ffffff', width: '80%', borderRadius: 8, maxHeight: '70%' }}>
           <Text style={{ fontSize: 18, color: '#444444', paddingLeft: 16, paddingTop: 16 }}>Start a Conversation With:</Text>
           <FlatList style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }} data={contacts} keyExtractor={item => item.amigoId} renderItem={({item}) => <ConnectedContact item={item} amigo={amigo} selected={onSelected} />} />
           <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
-            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: '#888888' }} onPress={onClose}>
+            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#888888' }} onPress={onClose}>
               <Text style={{ color: '#ffffff', fontSize: 18 }}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: color }} onPress={onSelect}>
+            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: color }} onPress={onSelect}>
               <Text style={{ color: '#ffffff', fontSize: 18 }}>Select</Text>
             </TouchableOpacity>
           </View>

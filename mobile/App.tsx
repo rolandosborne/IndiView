@@ -33,7 +33,7 @@ import { FullScreenVideo } from "./src/FullScreenVideo"
 import { FullScreenPhoto } from "./src/FullScreenPhoto"
 import { Comment } from "./src/Comment"
 
-import { Conversation } from "./src/Conversation";
+import { Conversations } from "./src/Conversations";
 
 import { ContactSearch } from "./src/ContactSearch";
 import { ManageLabels } from "./src/ManageLabels";
@@ -146,7 +146,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v136.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v137.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 console.log("INIT", ctx);
 
     if(ctx.context == null) {
@@ -325,7 +325,7 @@ function HomeConversationScreen() {
 
   return (
     <ConversationStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
-      <ConversationStack.Screen name="Conversation" component={Conversation} options={{headerShown: false}} />
+      <ConversationStack.Screen name="Conversations" component={Conversations} options={{headerShown: false}} />
     </ConversationStack.Navigator>
   );
 }  
@@ -447,7 +447,7 @@ function HomeScreen({ navigation }) {
           options={{ tabBarIcon: ({ color, size }) => (
             <Icon name="picture-o" size={size} color={color} solid />
           )}} />
-      <Tab.Screen name="Conversation" component={HomeConversationScreen} 
+      <Tab.Screen name="Conversations" component={HomeConversationScreen} 
           listeners={({ navigation, route }) => ({
             tabPress: e => { tabbed(); }
           })}

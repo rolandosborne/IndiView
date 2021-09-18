@@ -371,3 +371,18 @@ export interface Topic {
     blurbs: Array<Blurb>;
 }
 
+export interface Conversation {
+  amigoId: string;
+  imageUrl: string;
+  handle: string;
+  name: string;
+  revision: number;
+  dialogueId: string;
+  modified: number;
+  connected: boolean; //if amigo is in connected state
+  active: boolean; //if conversation is paused
+  synced: boolean;  //if dialogue and insight are synced
+  hosting: boolean; //if dialogue is hosted by me
+  offsync: boolean; //if latest dialogue not retrieved
+}    
+

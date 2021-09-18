@@ -1,4 +1,4 @@
-import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectItem, SubjectRecord, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView, ContactReqeust } from './DiatumTypes';
+import { AppContext, DiatumSession, AmigoMessage, Amigo, AuthMessage, Auth, Revisions, LabelEntry, LabelView, PendingAmigo, PendingAmigoView, SubjectView, SubjectEntry, SubjectItem, SubjectRecord, SubjectTag, ShareView, ShareMessage, ShareStatus, ShareEntry, InsightView, DialogueView, ContactReqeust, Conversation } from './DiatumTypes';
 import { DiatumApi } from './DiatumApi';
 import { getAmigoObject, getAuthObject } from './DiatumUtil';
 import { AppState, AppStateStatus } from 'react-native';
@@ -238,6 +238,9 @@ export interface Diatum {
 
   // set sharing statue
   setSubjectShare(subjectId: string, share: boolean): Promise<void>;
+
+  // get conversations
+  getConversations(labelId: string): Promise<Conversation[]>;
 
   // create conversation
   addConversation(amigoId: string): Promise<void>;
@@ -1603,6 +1606,16 @@ class _Diatum {
     await this.syncShow();
   }
 
+  public async getConversations(labelId: string): Promise<Conversation[]> {
+    let c = await this.storage.getConversations(this.session.amigoId, labelId);
+    for(let i = 0; i < c.length; i++) {
+      if(c[i].imageUrl != null) {
+        c[i].imageUrl = this.session.amigoNode + "/index/amigos/" + c[i].amigoId + "/logo?token=" + this.session.amigoToken + "&revision=" + c[i].revision;
+      }
+    }
+    return c;  
+  }
+
   public async addConversation(amigoId: string): Promise<void> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     let dialogue = await DiatumApi.addConversation(this.session.amigoNode, this.session.amigoToken, amigoId);
@@ -1991,6 +2004,11 @@ async function setSubjectShare(subjectId: string, share: boolean): Promise<void>
   return await diatum.setSubjectShare(subjectId, share);
 }
 
+async function getConversations(labelId: string): Promise<Conversation[]> {
+  let diatum = await getInstance();
+  return await diatum.getConversations(labelId);
+}
+
 async function addConversation(amigoId: string): Promise<void> {
   let diatum = await getInstance();
   await diatum.addConversation(amigoId);
@@ -2010,6 +2028,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
-    addConversation,
+    getConversations, addConversation,
     syncContact };
 

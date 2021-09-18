@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 import { Alert, AppState, AppStateStatus } from "react-native";
 import base64 from 'react-native-base64'
-import { LabelEntry, LabelCount, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb, ContactRequest, SubjectItem, Tag } from './DiatumTypes';
+import { Conversation, LabelEntry, LabelCount, LabelView, AmigoView, ShareView, PendingAmigoView, AttributeView, SubjectView, Amigo, Attribute, Subject, SubjectTag, InsightView, Insight, DialogueView, Dialogue, TopicView, Topic, Blurb, ContactRequest, SubjectItem, Tag } from './DiatumTypes';
 
 // helper funtions
 function decodeObject(s: string): any {
@@ -100,8 +100,8 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
 
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, linked integer, synced integer, revision integer, insight integer, insight_revision integer, offsync integer, unique(amigo_id, dialogue_id, insight));");
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, insight integer, topic_id text, position integer, revision integer, blurbs text, unique(amigo_id, dialogue_id, insight, topic_id));");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, linked integer, synced integer, revision integer, insight integer, insight_revision integer, offsync integer);");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, insight integer, topic_id text, position integer, revision integer, blurbs text);");
   }
 
 
@@ -746,6 +746,24 @@ export class Storage {
       return { amigoId: a.amigo_id, node: a.node, registry: a.registry, token: a.token, identityRevision: a.identity_revision, attributeRevision: a.attribute_revision, subjectRevision: a.subject_revision, connectionError: a.connection_error!=0 };
     }
     return null;
+  }
+
+  public async getConversations(id: stirng, labelId: string): Promise<Conversation[]> {
+    let res;
+    if(labelId == null) {
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
+    }
+    else {
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id LEFT OUTER JOIN indexgroup_" + id + " ON dialogue_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id WHERE label_id=? ORDER BY modified DESC", [labelId]);
+    }
+    let conversations = [];
+    if(hasResult(res)) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight == false, offsync: item.offsync });
+      }
+    }
+    return conversations;
   }
 
 }
