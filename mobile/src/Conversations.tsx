@@ -178,8 +178,13 @@ function ConversationEntry({ entry }) {
     }
   }, []);
 
+  let nav = useNavigation();
+  const onConversation = () => {
+    nav.navigate("Chat", entry);;
+  }
+
   return (
-    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }}>
+    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>
       <Image style={{ width: 48, height: 48, marginLeft: 8, borderRadius: 4 }} source={source} />
       <View style={{ marginLeft: 16 }}>
         <Text style={{ fontSize: 18, color: '#444444' }}>{ entry.name }</Text>
