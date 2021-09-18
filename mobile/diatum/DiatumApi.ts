@@ -473,4 +473,36 @@ export class DiatumApi {
     let response = await fetchWithTimeout(node + "/show/subjects/" + subjectId + "/tags/" + tagId + "?schema=" + schema + "&token=" + encodeURIComponent(token), { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
   }
+  
+  public static async addConversation(node: string, token: string, amigoId: string): Promise<Dialogue> {
+    let response = await fetchWithTimeout(node + "/conversation/dialogue?token=" + encodeURIComponent(token) + "&amigoId=" + amigoId, { method: 'POST', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  } 
+
+  public static async updateConversation(node: stirng, token: string, dialogueId: string, linked: boolean, synced: boolean, active: boolean, revision: number): Promise<Dialog> {
+    let params = "";
+    if(linked != null) {
+      params += "&linked=" + linked;
+    }
+    if(synced != null) {
+      params += "&synced=" + synced;
+    }
+    if(active != null) {
+      params += "&active=" + active;
+    }
+    if(revision != null) {
+      params += "&revision=" + revision;
+    }
+    let response = await fetchWithTimeout(node + "/conversation/dialogue/" + dialogueId + "?token=" + token + params, { method: 'PUT', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return response.json();
+  }
+
+  public static async setConversationInsight(node: string, token: string, agent: string, dialogueId: string, revision: number): Promise<Insight> {
+    let response = await fetchWithTimeout(node + "/commentary/insight?token=" + token + "&agent=" + agent + "&dialogueId=" + dialogueId + "&revision=" + revision, { method: 'POST', FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }  
+
 }

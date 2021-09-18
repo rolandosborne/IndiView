@@ -130,16 +130,24 @@ function ConversationList({ setListener, clearListener }) {
   const [selector, setSelector] = React.useState(false);
 
   const labelIdRef = useRef(null);  
+  
+  let diatum: Diatum = useDiatum();
 
-  const onSelect = () => {
+  const onConversation = () => {
     setSelector(true);
+  }
+
+  const onSelect = async (amigoId: string) => {
+    setSelector(false);
+    if(amigoId != null) {
+      await diatum.addConversation(amigoId); 
+    } 
   }
 
   const onClose = () => {
     setSelector(false);
   }
 
-  let diatum: Diatum = useDiatum();
   const setLabel = (id: string) => {
     labelIdRef.current = id;
   };
@@ -153,7 +161,7 @@ function ConversationList({ setListener, clearListener }) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} forceInset={{ bottom: 'never' }}>
-      <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, margin: 16 }} onPress={onSelect}>
+      <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, margin: 16 }} onPress={onConversation}>
         <View opacity={0.8} style={{backgroundColor: '#0077CC', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, borderRadius: 16 }}>
           <Text style={{ fontSize: 18, color: '#ffffff' }}><Icon name="plus" style={{ fontSize: 14 }}/>&nbsp;Conversation</Text>
         </View>
@@ -167,6 +175,9 @@ function SelectContact({ active, selected, closed }) {
   const [contacts, setContacts] = React.useState([]);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [color, setColor] = React.useState('#444444');
+  const [amigo, setAmigo] = React.useState(null);
+
+  let id = React.useRef(null);
 
   let diatum = useDiatum();
   useEffect(async () => {
@@ -180,28 +191,36 @@ function SelectContact({ active, selected, closed }) {
     else {
       setModalVisible(false);
     }
+    setAmigo(null);
+    id.current = null;
+    setColor('#444444');
   }, [active]);
 
   const onClose = () => {
     closed();
   }
 
+  const onSelect = () => {
+    selected(id.current); 
+  }
+
   const onSelected = (amigoId) => {
     setColor('#0077CC');
-    console.log("SELECTED: " + amigoId);
+    setAmigo(amigoId);
+    id.current = amigoId;
   }
 
   return (
     <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={onClose}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
-        <View style={{ backgroundColor: '#ffffff', width: '80%', borderRadius: 8 }}>
+        <View style={{ backgroundColor: '#ffffff', width: '80%', borderRadius: 8, maxHeight: '60%' }}>
           <Text style={{ fontSize: 18, color: '#444444', paddingLeft: 16, paddingTop: 16 }}>Start a Conversation With:</Text>
-          <FlatList style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }} data={contacts} keyExtractor={item => item.amigoId} renderItem={({item}) => <ConnectedContact item={item} selected={onSelected} />} />
+          <FlatList style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }} data={contacts} keyExtractor={item => item.amigoId} renderItem={({item}) => <ConnectedContact item={item} amigo={amigo} selected={onSelected} />} />
           <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
             <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: '#888888' }} onPress={onClose}>
               <Text style={{ color: '#ffffff', fontSize: 18 }}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: color }} onPress={onClose}>
+            <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: color }} onPress={onSelect}>
               <Text style={{ color: '#ffffff', fontSize: 18 }}>Select</Text>
             </TouchableOpacity>
           </View>
@@ -211,20 +230,29 @@ function SelectContact({ active, selected, closed }) {
   );
 }
 
-function ConnectedContact({item, selected}) {
+function ConnectedContact({item, amigo, selected}) {
+
+  const [color, setColor] = React.useState('#eeeeee');
+
+  useEffect(() => {
+    if(item.amigoId == amigo) {
+      setColor('#aaddff');
+    }
+    else {
+      setColor('#eeeeee');
+    }
+  }, [item, amigo]);
 
   const onSelect = () => {
     selected(item.amigoId);
   }
 
   return (
-    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onSelect}>
-      <Image style={{ width: 32, height: 32, borderRadius: 4 }} source={{ uri: item.imageUrl, cache: 'force-cache' }} />
-      <View style={{ marginLeft: 6 }}>
-        <Text style={{ fontSize: 12, color: '#444444' }}>{ item.handle }</Text>
-      </View>
-      <View style={{ flexGrow: 1, alignItems: 'flex-end', marginLeft: 16 }}>
+    <TouchableOpacity activeOpacity={1} style={{ backgroundColor: color, width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onSelect}>
+      <Image style={{ width: 32, height: 32, marginLeft: 8, borderRadius: 4 }} source={{ uri: item.imageUrl, cache: 'force-cache' }} />
+      <View style={{ marginLeft: 16 }}>
         <Text style={{ fontSize: 18, color: '#444444' }}>{ item.name }</Text>
+        <Text style={{ fontSize: 12, color: '#444444' }}>{ item.handle }</Text>
       </View>
     </TouchableOpacity>
   );

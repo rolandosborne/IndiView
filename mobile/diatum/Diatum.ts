@@ -239,6 +239,9 @@ export interface Diatum {
   // set sharing statue
   setSubjectShare(subjectId: string, share: boolean): Promise<void>;
 
+  // create conversation
+  addConversation(amigoId: string): Promise<void>;
+
   // refresh contact
   syncContact(amigoId: string): Promise<void>
 }
@@ -1599,6 +1602,19 @@ class _Diatum {
     await DiatumApi.setSubjectShare(this.session.amigoNode, this.session.amigoToken, subjectId, share);
     await this.syncShow();
   }
+
+  public async addConversation(amigoId: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    let dialogue = await DiatumApi.addConversation(this.session.amigoNode, this.session.amigoToken, amigoId);
+    try {
+      await DiatumApi.setConversationInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision);  
+      await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogue.dialogueId, true, true, null, dialogue.revision);
+      await this.syncDialogue();
+    }
+    catch(err) {
+      console.log(err);
+    }
+  }
 }
 
 let instance: _Diatum | undefined;
@@ -1975,6 +1991,11 @@ async function setSubjectShare(subjectId: string, share: boolean): Promise<void>
   return await diatum.setSubjectShare(subjectId, share);
 }
 
+async function addConversation(amigoId: string): Promise<void> {
+  let diatum = await getInstance();
+  await diatum.addConversation(amigoId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -1989,5 +2010,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
+    addConversation,
     syncContact };
 
