@@ -69,8 +69,9 @@ function ConversationDrawerContent(props) {
 
 export function Conversations({ navigation }) {
   
+  const [label, setLabel] = React.useState(null);
+
   const latchColorRef = useRef('#282827');
-  const callbackRef = useRef(null);
 
   const latch = useLatch();
   const onLatch = () => {
@@ -96,17 +97,7 @@ export function Conversations({ navigation }) {
       latchColorRef.current = '#0072CC';
     }
     latch.setColor(latchColorRef.current);
-    if(callbackRef.current != null) {
-      callbackRef.current(id);
-    }
-  };
-
-  const setCallback = (cb: (id: string) => {}) => {
-    callbackRef.current = cb;
-  };
-
-  const clearCallback = () => {
-    callbackRef.current = null;
+    setLabel(id);
   };
 
   return (
@@ -115,7 +106,7 @@ export function Conversations({ navigation }) {
         <ConversationDrawer.Screen name="Conversation">{(props) => { 
           return (
             <View style={{ flex: 1 }}>
-              <ConversationList setListener={setCallback} clearListener={clearCallback} /> 
+              <ConversationList label={label} /> 
             </View>
           )
         }}</ConversationDrawer.Screen>
@@ -124,19 +115,30 @@ export function Conversations({ navigation }) {
   )
 }
 
-function ConversationList({ setListener, clearListener }) {
+function ConversationList({ label }) {
 
   const [start, setStart] = React.useState(false);
   const [selector, setSelector] = React.useState(false);
   const [conversations, setConversations] = React.useState([]);
 
-  const labelIdRef = useRef(null);  
+  const labelRef = useRef(label);  
   
   let diatum: Diatum = useDiatum();
 
-  useEffect(async () => {
-    let c = await diatum.getConversations(null);
-    setConversations(c);
+  const update = async () => {
+    setConversations(await diatum.getConversations(labelRef.current));
+  }
+
+  useEffect(() => {
+    labelRef.current = label;
+    update();
+  }, [label]);
+
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Conversation, update);
+    return () => {
+      diatum.clearListener(DiatumEvent.Conversation, update);
+    }
   }, []);
 
   const onConversation = () => {
@@ -153,17 +155,6 @@ function ConversationList({ setListener, clearListener }) {
   const onClose = () => {
     setSelector(false);
   }
-
-  const setLabel = (id: string) => {
-    labelIdRef.current = id;
-  };
-
-  useEffect(() => {
-    setListener(setLabel);
-    return () => {
-      clearListener();
-    }
-  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }} forceInset={{ bottom: 'never' }}>

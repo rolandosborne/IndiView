@@ -40,8 +40,7 @@ export enum DiatumEvent {
   Listing,
   Contact,
   View,
-  Insight,
-  Dialogue,
+  Conversation,
   COUNT
 }
 
@@ -1097,7 +1096,7 @@ class _Diatum {
     });
 
     if(notify) {
-      this.notifyListeners(DiatumEvent.Insight);
+      this.notifyListeners(DiatumEvent.Conversation);
     }
 
   }
@@ -1140,7 +1139,7 @@ class _Diatum {
     });
 
     if(notify) {
-      this.notifyListeners(DiatumEvent.Insight);
+      this.notifyListeners(DiatumEvent.Conversation);
     }
   }
 
@@ -1622,11 +1621,11 @@ class _Diatum {
     try {
       await DiatumApi.setConversationInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision);  
       await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogue.dialogueId, true, true, null, dialogue.revision);
-      await this.syncDialogue();
     }
     catch(err) {
       console.log(err);
     }
+    await this.syncDialogue();
   }
 }
 
