@@ -244,6 +244,12 @@ export interface Diatum {
   // create conversation
   addConversation(amigoId: string): Promise<void>;
 
+  // get topic views
+  getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]>
+
+  // get blurbs of topic
+  getTopicBlurbs(amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]>
+
   // refresh contact
   syncContact(amigoId: string): Promise<void>
 }
@@ -1627,6 +1633,24 @@ class _Diatum {
     }
     await this.syncDialogue();
   }
+
+  public async getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {
+    return await this.storage.getTopicViews(this.session.amigoId, amigoId, dialogueId, hosting);
+  }
+
+  public async getTopicBlurbs(amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]> {
+    return await this.storage.getTopicBlurbs(this.session.amigoId, amigoId, dialogueId, hosting, topicId);
+  }
+
+  public async addConversationBlurb(amigoId: string, dialogueId: string, hosting: string, schema: string, data: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    if(hosting) {
+      
+    }
+    else {
+    }
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -2013,6 +2037,16 @@ async function addConversation(amigoId: string): Promise<void> {
   await diatum.addConversation(amigoId);
 }
 
+async function getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {
+  let diatum = await getInstance();
+  return await diatum.getTopicViews(amigoId, dialogueId, hosting);
+}
+
+async function getTopicBlurbs(amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]> {
+  let diatum = await getInstance();
+  return await diatum.getTopicBlurbs(amigoId, dialogueId, hosting, topicId);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -2027,6 +2061,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
-    getConversations, addConversation,
+    getConversations, addConversation, getTopicViews, getTopicBlurbs,
     syncContact };
 

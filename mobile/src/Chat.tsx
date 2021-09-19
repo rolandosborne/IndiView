@@ -12,16 +12,19 @@ import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
 import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
-import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
+import { DiatumSession, LabelEntry, TopicView, Blurb } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 
 export function Chat({ route, navigation }) {
-  
+
+  const [topics, setTopics] = React.useState([]);  
+
   let diatum = useDiatum();
 
-  const update = () => {
-    console.log("UPDATE CHAT");
+  const update = async () => {
+    let conv = route.params;
+    setTopics(await diatum.getTopicViews(conv.amigoId, conv.dialogueId, conv.hosting));
   }
 
   useEffect(() => {

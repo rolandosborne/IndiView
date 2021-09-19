@@ -748,7 +748,7 @@ export class Storage {
     return null;
   }
 
-  public async getConversations(id: stirng, labelId: string): Promise<Conversation[]> {
+  public async getConversations(id: string, labelId: string): Promise<Conversation[]> {
     let res;
     if(labelId == null) {
       res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
@@ -760,10 +760,33 @@ export class Storage {
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight == false, offsync: item.offsync });
+        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight==0, offsync: item.offsync });
       }
     }
     return conversations;
+  }
+
+  public async getTopicViews(id: string, amigoId: string, dialogueId: string, hosting: number): Promise<TopicView[]> {
+    let res = await this.db.executeSql("SELECT topic_id, position, revision from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=?", [amigoId, dialogueId, hosting ? 0 : 1]);
+    let views = [];
+    if(hasResult) {
+      for(let i = 0; i < res[0].rows.length; i++) {
+        let item = res[0].rows.item(i);
+        views.push({ topicId: item.topicId, position: item.position, revision: item.revision });
+      }
+    }
+    return views;
+  }
+  
+  public async getTopicBlurbs(id: string, amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]> {
+    let res = await this.db.executeSql("SELECT blurbs from dialogue_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=? AND topicId=?;", [amigoId, dialogueId, hosting ? 0 : 1, topicId]);
+    if(hasResult) {
+      let item = res[0].rows.item(0);
+      if(item.blurbs != null) {
+        return decodeObject(item.blurbs);
+      }
+    }
+    return [];
   }
 
 }

@@ -308,11 +308,11 @@ function HomeFeedScreen() {
   return (
     <FeedStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <FeedStack.Screen name="Feed" component={Feed} options={{headerShown: false}} />
-      <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null, headerShow: true }} />
-      <FeedStack.Screen name="Post Photo" component={EditPhoto} options={{ headerBackTitle: null, headerShow: true }} />
-      <FeedStack.Screen name="Post Video" component={EditVideo} options={{ headerBackTitle: null, headerShow: true }} />
-      <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null, headerShow: true }} />
-      <FeedStack.Screen name="Comment" component={Comment} options={{ headerBackTitle: null, headerShow: true }} />
+      <FeedStack.Screen name="MyFeed" component={MyFeed} options={{ headerBackTitle: null }} />
+      <FeedStack.Screen name="Post Photo" component={EditPhoto} options={{ headerBackTitle: null }} />
+      <FeedStack.Screen name="Post Video" component={EditVideo} options={{ headerBackTitle: null }} />
+      <FeedStack.Screen name="ContactFeed" component={ContactFeed} options={{ headerBackTitle: null }} />
+      <FeedStack.Screen name="Comment" component={Comment} options={{ headerBackTitle: null }} />
     </FeedStack.Navigator>
   );
 }  
@@ -326,8 +326,8 @@ function HomeConversationScreen() {
 
   return (
     <ConversationStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
-      <ConversationStack.Screen name="Conversations" component={Conversations} options={{headerShow: false}} />
-      <ConversationStack.Screen name="Chat" component={Chat} options={{ headerBackTitle: null, headerShow: true}} />
+      <ConversationStack.Screen name="Conversations" component={Conversations} options={{headerShown: false}} />
+      <ConversationStack.Screen name="Chat" component={Chat} options={{ headerBackTitle: null }} />
     </ConversationStack.Navigator>
   );
 }  
@@ -470,9 +470,9 @@ function HomeContactScreen() {
   return (
     <ContactStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <ContactStack.Screen name="Contacts" component={Contacts} options={{headerShown: false}} />
-      <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{ headerBackTitle: null, headerShow: true }} />
-      <ContactStack.Screen name="MyProfile" component={MyProfile} options={{ headerBackTitle: null, headerShow: true }} />
-      <ContactStack.Screen name="MyAttribute" component={MyAttribute} options={{ headerBackTitle: null, headerShow: true }} />
+      <ContactStack.Screen name="ContactProfile" component={ContactProfile} options={{ headerBackTitle: null }} />
+      <ContactStack.Screen name="MyProfile" component={MyProfile} options={{ headerBackTitle: null }} />
+      <ContactStack.Screen name="MyAttribute" component={MyAttribute} options={{ headerBackTitle: null }} />
     </ContactStack.Navigator>
   );
 }  
