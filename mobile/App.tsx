@@ -34,7 +34,7 @@ import { FullScreenPhoto } from "./src/FullScreenPhoto"
 import { Comment } from "./src/Comment"
 
 import { Conversations } from "./src/Conversations";
-import { Chat } from "./src/Chat";
+import { Topics } from "./src/Topics";
 
 import { ContactSearch } from "./src/ContactSearch";
 import { ManageLabels } from "./src/ManageLabels";
@@ -327,7 +327,7 @@ function HomeConversationScreen() {
   return (
     <ConversationStack.Navigator initialRouteName="Contacts" headerMode="screen" screenOptions={{ cardStyleInterpolator: forFade }}>
       <ConversationStack.Screen name="Conversations" component={Conversations} options={{headerShown: false}} />
-      <ConversationStack.Screen name="Chat" component={Chat} options={{ headerBackTitle: null }} />
+      <ConversationStack.Screen name="Topics" component={Topics} options={{ headerBackTitle: null }} />
     </ConversationStack.Navigator>
   );
 }  

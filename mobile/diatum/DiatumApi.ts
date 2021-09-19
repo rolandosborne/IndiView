@@ -480,7 +480,13 @@ export class DiatumApi {
     return await response.json();
   } 
 
-  public static async updateConversation(node: stirng, token: string, dialogueId: string, linked: boolean, synced: boolean, active: boolean, revision: number): Promise<Dialog> {
+  public static async addInsight(node: string, token: string, agent: string, dialogueId: string, revision: number): Promise<Insight> {
+    let response = await fetchWithTimeout(node + "/commentary/insight?token=" + token + "&agent=" + agent + "&dialogueId=" + dialogueId + "&revision=" + revision, { method: 'POST', FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }  
+
+  public static async updateConversation(node: string, token: string, dialogueId: string, linked: boolean, synced: boolean, active: boolean, revision: number): Promise<Dialog> {
     let params = "";
     if(linked != null) {
       params += "&linked=" + linked;
@@ -499,10 +505,34 @@ export class DiatumApi {
     return response.json();
   }
 
-  public static async setConversationInsight(node: string, token: string, agent: string, dialogueId: string, revision: number): Promise<Insight> {
-    let response = await fetchWithTimeout(node + "/commentary/insight?token=" + token + "&agent=" + agent + "&dialogueId=" + dialogueId + "&revision=" + revision, { method: 'POST', FETCH_TIMEOUT });
+  public static async updateContactConversation(node: string, token: string, agent: string, dialogueId: string, synced: boolean, revision: number): Promise<Dialogue> {
+    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "?token=" + token + "&agent=" + agent + "&synced=" + synced + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();   
+  }
+
+  public static async updateInsight(node: string, token: string, dialogueId: string, revision: number): Promise<Insight> {
+    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
-  }  
+  }
+
+  public static async updateContactInsight(node: string, token: string, agent: string, dialogueId: string, revision: number): Promise<Insight> {
+    let response = await fetchWithTimeout(node + "/commentary/insight/" + dialogueId + "?token=" + token + "&agent=" + agent + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+   
+  public static async addBlurb(node: string, token: string, dialogueId: string, schema: string, data: string): Promise<Blurb> {
+    let response = await fetchWithTimeout(node + "/conversation/dialogue/" + dialogueId + "/blurb?token=" + token + "&schema=" + schema, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
+
+  public static async addContactBlurb(node: string, token: string, agent: string, dialogueId: string, schema: string, data: string): Promise<Blurb> {
+    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "/blurb?token=" + token + "&agent=" + agent + "&schema=" + schema, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+    return await response.json();
+  }
 
 }

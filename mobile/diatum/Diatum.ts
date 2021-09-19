@@ -245,10 +245,13 @@ export interface Diatum {
   addConversation(amigoId: string): Promise<void>;
 
   // get topic views
-  getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]>
+  getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]>;
 
   // get blurbs of topic
-  getTopicBlurbs(amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]>
+  getTopicBlurbs(amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]>;
+
+  // add blurb to conversation
+  addConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, schema: string, data: string): Promise<void>;
 
   // refresh contact
   syncContact(amigoId: string): Promise<void>
@@ -1625,7 +1628,7 @@ class _Diatum {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     let dialogue = await DiatumApi.addConversation(this.session.amigoNode, this.session.amigoToken, amigoId);
     try {
-      await DiatumApi.setConversationInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision);  
+      await DiatumApi.addInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision);  
       await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogue.dialogueId, true, true, null, dialogue.revision);
     }
     catch(err) {
@@ -1642,13 +1645,29 @@ class _Diatum {
     return await this.storage.getTopicBlurbs(this.session.amigoId, amigoId, dialogueId, hosting, topicId);
   }
 
-  public async addConversationBlurb(amigoId: string, dialogueId: string, hosting: string, schema: string, data: string): Promise<void> {
+  public async addConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, schema: string, data: string): Promise<void> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     if(hosting) {
-      
+      let blurb = await DiatumApi.addBlurb(this.session.amigoNode, this.session.amigoToken, dialogueId, schema, data);
+      try {
+        await DiatumApi.updateContactInsight(connection.node, connection.token, this.authToken, dialogueId, blurb.revision);
+        await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogueId, null, true, null, blurb.revision);
+      }
+      catch(err) {
+        console.log(err);
+      }
     }
     else {
+      let blurb = await DiatumApi.addContactBlurb(connection.node, connection.token, this.authToken, dialogueId, schema, data);
+      try {
+        await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, dialogueId, blurb.revision);
+        await DiatumApi.updateContactConversation(connection.node, connection.token, this.authToken, dialogueId, true, blurb.revision);
+      } 
+      catch(err) {
+        console.log(err);
+      }
     }
+    await this.syncDialogue();
   }
 
 }
@@ -2047,6 +2066,11 @@ async function getTopicBlurbs(amigoId: string, dialogueId: string, hosting: bool
   return await diatum.getTopicBlurbs(amigoId, dialogueId, hosting, topicId);
 }
 
+async function addConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, schema: string, data: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.addConversationBlurb(amigoId, dialogueId, hosting, schema, data);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -2061,6 +2085,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
-    getConversations, addConversation, getTopicViews, getTopicBlurbs,
+    getConversations, addConversation, getTopicViews, getTopicBlurbs, addConversationBlurb,
     syncContact };
 

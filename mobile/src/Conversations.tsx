@@ -180,7 +180,7 @@ function ConversationEntry({ entry }) {
 
   let nav = useNavigation();
   const onConversation = () => {
-    nav.navigate("Chat", entry);;
+    nav.navigate("Topics", entry);;
   }
 
   return (

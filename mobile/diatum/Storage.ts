@@ -767,19 +767,31 @@ export class Storage {
   }
 
   public async getTopicViews(id: string, amigoId: string, dialogueId: string, hosting: number): Promise<TopicView[]> {
-    let res = await this.db.executeSql("SELECT topic_id, position, revision from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=?", [amigoId, dialogueId, hosting ? 0 : 1]);
+    let res;
+    if(hosting) {
+      res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE dialogue_id=? AND insight=? ORDER BY position DESC", [dialogueId, 0]);
+    }
+    else {
+      res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? ORDER BY position DESC", [amigoId, dialogueId, 1]);
+    }
     let views = [];
     if(hasResult) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        views.push({ topicId: item.topicId, position: item.position, revision: item.revision });
+        views.push({ topicId: item.topic_id, position: item.position, revision: item.revision });
       }
     }
     return views;
   }
   
   public async getTopicBlurbs(id: string, amigoId: string, dialogueId: string, hosting: boolean, topicId: string): Promise<Blurb[]> {
-    let res = await this.db.executeSql("SELECT blurbs from dialogue_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=? AND topicId=?;", [amigoId, dialogueId, hosting ? 0 : 1, topicId]);
+    let res;
+    if(hosting) {
+      res = await this.db.executeSql("SELECT blurbs from topic_" + id + " WHERE dialogue_id=? AND insight=? AND topic_id=?;", [dialogueId, 0, topicId]);
+    }
+    else {
+      res = await this.db.executeSql("SELECT blurbs from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=? AND topic_id=?;", [amigoId, dialogueId, 1, topicId]);
+    }
     if(hasResult) {
       let item = res[0].rows.item(0);
       if(item.blurbs != null) {
