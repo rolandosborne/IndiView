@@ -21,6 +21,7 @@ export function Topics({ route, navigation }) {
   const [param, setParam] = React.useState(route.params);
   const [topics, setTopics] = React.useState([]);  
   const [message, setMessage] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
 
   let diatum = useDiatum();
 
@@ -65,23 +66,36 @@ export function Topics({ route, navigation }) {
   }, [navigation]);
 
   const onSend = async () => {
-    try {
-      await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, TagUtil.MESSAGE, JSON.stringify({ message: message }));
-      setMessage(null);
+    if(!busy && message != null && message != '') {
+      setBusy(true);
+      try {
+        await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, TagUtil.MESSAGE, JSON.stringify({ message: message }));
+        setMessage(null);
+      }
+      catch(err) {
+        console.log(err);
+        Alert.alert("Failed to send message");
+      }
+      setBusy(false);
     }
-    catch(err) {
-      console.log(err);
-      Alert.alert("Failed to send message");
+  }
+
+  const Control = () => {
+    if(busy) {
+      return (<ActivityIndicator style={{ alignSelf: 'center' }} animating={true} size="small" color="#777777" />)
     }
+    return (
+      <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onSend}>
+        <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
+      </TouchableOpacity>
+    )
   }
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ padding: 12, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
-        <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} />
-        <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onSend}>
-          <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
-        </TouchableOpacity>
+        <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
+        <Control />
       </View>
       <FlatList data={topics} keyExtractor={item => item.topicId} renderItem={({item}) => <TopicEntry amigoId={param.amigoId} dialogueId={param.dialogueId} hosting={param.hosting} topic={item} />} />
     </View>

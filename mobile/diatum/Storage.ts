@@ -529,8 +529,8 @@ export class Storage {
     await this.db.executeSql("UPDATE dialogue_" + id + " SET insight_revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [revision, s, amigoId, dialogueId, 0]);
   }
   public async removeInsight(id: string, amigoId: string, dialogueId: string): Promise<void> {
-    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
-    await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE amigo_id=?, dialogue_id=?, insight!=?;", [amigoId, dialogueId, 0]);
+    await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [amigoId, dialogueId, 0]);
+    await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [amigoId, dialogueId, 0]);
   }
   public async getInsightTopicViews(id: string, amigoId: string, dialogueId: string): Promise<TopicView[]> {
     let res = await this.db.executeSql("SELECT topic_id, position, revision FROM topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=? ORDER BY position ASC;", [amigoId, dialogueId, 0]);
