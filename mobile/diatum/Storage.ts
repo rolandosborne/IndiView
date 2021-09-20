@@ -522,7 +522,7 @@ export class Storage {
     await this.db.executeSql("INSERT INTO dialogue_" + id + " (amigo_id, dialogue_id, insight) values (?, ?, ?);", [amigoId, dialogueId, 1]);
   }
   public async updateInsight(id: string, amigoId: string, dialogue: Dialogue): Promise<void> {
-    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, 0, amigoId, dialogue.dialogueId, 0]);
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revision, 0, amigoId, dialogue.dialogueId, 0]);
   }
   public async updateInsightRevision(id: string, amigoId: string, dialogueId: string, revision: number, offsync: boolean): Promise<void> {
     let s = offsync ? 1 : 0;
@@ -565,7 +565,7 @@ export class Storage {
     await this.db.executeSql("INSERT INTO dialogue_" + id + " (dialogue_id, insight) values (?, ?);", [dialogueId, 0]);
   }
   public async updateDialogue(id: string, dialogue: Dialogue): Promise<void> {
-    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, amigo_id=? WHERE dialogue_id=? AND insight=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revison, dialogue.amigoId, dialogue.dialogueId, 0]);
+    await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, amigo_id=? WHERE dialogue_id=? AND insight=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revision, dialogue.amigoId, dialogue.dialogueId, 0]);
   }
   public async removeDialoge(id: string, dialogueId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);

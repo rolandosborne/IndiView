@@ -1154,6 +1154,9 @@ class _Diatum {
 
   private async syncDialogueConversation(dialogueId: string): Promsie<void> {
 
+    // update dialogue
+    let dialogue: Dialogue = await DiatumApi.getDialogue(this.session.amigoNode, this.session.amigoToken, dialogueId);
+    
     let remote: TopicView[] = await DiatumApi.getDialogueTopicViews(this.session.amigoNode, this.session.amigoToken, dialogueId);
     let remoteMap: Map<string, TopicView> = new Map<string, TopicView>();
     for(let i = 0; i < remote.length; i++) {
@@ -1186,12 +1189,14 @@ class _Diatum {
     });
 
     // update dialogue entry
-    let dialogue: Dialogue = await DiatumApi.getDialogue(this.session.amigoNode, this.session.amigoToken, dialogueId);
     await this.storage.updateDialogue(this.session.amigoId, dialogue);
   }
 
   private async syncInsightConversation(amigoId: string, dialogueId: string): Promise<void> {
 
+    // update dialogue
+    let dialogue: Dialogue = await DiatumApi.getInsight(path.node, path.token, dialogueId, this.authToken, this.authMessage);
+    
     // get amigo synchronization path
     let path: AmigoPath = await this.storage.getAmigoPath(this.session.amigoId, amigoId);
     if(path == null) {
@@ -1231,8 +1236,6 @@ class _Diatum {
     });
 
     // update dialogue entry
-    let dialogue: Dialogue = await DiatumApi.getInsight(path.node, path.token, dialogueId, this.authToken, this.authMessage);
-
     await this.storage.updateInsight(this.session.amigoId, amigoId, dialogue);
   }
 
