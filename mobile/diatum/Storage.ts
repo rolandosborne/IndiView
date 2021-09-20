@@ -766,7 +766,17 @@ export class Storage {
     return conversations;
   }
 
-  public async getTopicViews(id: string, amigoId: string, dialogueId: string, hosting: number): Promise<TopicView[]> {
+  public async getConversation(id: string, amigoId: string, dialogueId: string, hosting: boolean): Promise<Conversation> {
+    let res;
+    if(hosting) {
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE dialogue_id=? AND insight=?", [dialogue_id, 0]);
+    }
+    else {
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE amigoId=? AND dialogue_id=? AND insight=?", [amigoId, dialogue_id, 1]);
+    }
+  }
+
+  public async getTopicViews(id: string, amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {
     let res;
     if(hosting) {
       res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE dialogue_id=? AND insight=? ORDER BY position DESC", [dialogueId, 0]);

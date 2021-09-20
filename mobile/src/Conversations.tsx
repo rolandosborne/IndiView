@@ -145,11 +145,13 @@ function ConversationList({ label }) {
     setSelector(true);
   }
 
-  const onSelect = async (amigoId: string) => {
-    setSelector(false);
-    if(amigoId != null) {
-      await diatum.addConversation(amigoId); 
+  let nav = useNavigation();
+  const onSelect = async (amigo) => {
+    if(amigo != null) {
+      let dialogue = await diatum.addConversation(amigo.amigoId); 
+      nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
     } 
+    setSelector(false);
   }
 
   const onClose = () => {
@@ -200,7 +202,7 @@ function SelectContact({ active, selected, closed }) {
   const [color, setColor] = React.useState('#444444');
   const [amigo, setAmigo] = React.useState(null);
 
-  let id = React.useRef(null);
+  let item = React.useRef(null);
 
   let diatum = useDiatum();
   useEffect(async () => {
@@ -215,7 +217,7 @@ function SelectContact({ active, selected, closed }) {
       setModalVisible(false);
     }
     setAmigo(null);
-    id.current = null;
+    item.current = null;
     setColor('#444444');
   }, [active]);
 
@@ -224,13 +226,13 @@ function SelectContact({ active, selected, closed }) {
   }
 
   const onSelect = () => {
-    selected(id.current); 
+    selected(item.current); 
   }
 
-  const onSelected = (amigoId) => {
+  const onSelected = (contact) => {
     setColor('#0077CC');
-    setAmigo(amigoId);
-    id.current = amigoId;
+    setAmigo(contact.amigoId);
+    item.current = contact;
   }
 
   return (
@@ -267,7 +269,7 @@ function ConnectedContact({item, amigo, selected}) {
   }, [item, amigo]);
 
   const onSelect = () => {
-    selected(item.amigoId);
+    selected(item);
   }
 
   return (

@@ -242,7 +242,7 @@ export interface Diatum {
   getConversations(labelId: string): Promise<Conversation[]>;
 
   // create conversation
-  addConversation(amigoId: string): Promise<void>;
+  addConversation(amigoId: string): Promise<string>;
 
   // get topic views
   getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]>;
@@ -1622,7 +1622,7 @@ class _Diatum {
     return c;  
   }
 
-  public async addConversation(amigoId: string): Promise<void> {
+  public async addConversation(amigoId: string): Promise<string> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     let dialogue = await DiatumApi.addConversation(this.session.amigoNode, this.session.amigoToken, amigoId);
     try {
@@ -1633,6 +1633,7 @@ class _Diatum {
       console.log(err);
     }
     await this.syncDialogue();
+    return dialogue.dialogueId;
   }
 
   public async getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {
@@ -1654,18 +1655,19 @@ class _Diatum {
       catch(err) {
         console.log(err);
       }
+      await this.syncDialogue();
     }
     else {
       let blurb = await DiatumApi.addContactBlurb(connection.node, connection.token, this.authToken, dialogueId, schema, data);
       try {
-        await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, dialogueId, blurb.revision);
+        await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, amigoId, dialogueId, blurb.revision);
         await DiatumApi.updateContactConversation(connection.node, connection.token, this.authToken, dialogueId, true, blurb.revision);
       } 
       catch(err) {
         console.log(err);
       }
+      await this.syncInsight();
     }
-    await this.syncDialogue();
   }
 
 }
@@ -2049,9 +2051,9 @@ async function getConversations(labelId: string): Promise<Conversation[]> {
   return await diatum.getConversations(labelId);
 }
 
-async function addConversation(amigoId: string): Promise<void> {
+async function addConversation(amigoId: string): Promise<string> {
   let diatum = await getInstance();
-  await diatum.addConversation(amigoId);
+  return await diatum.addConversation(amigoId);
 }
 
 async function getTopicViews(amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {

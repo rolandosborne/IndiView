@@ -511,8 +511,8 @@ export class DiatumApi {
     return await response.json();   
   }
 
-  public static async updateInsight(node: string, token: string, dialogueId: string, revision: number): Promise<Insight> {
-    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+  public static async updateInsight(node: string, token: string, amigoId: string, dialogueId: string, revision: number): Promise<Insight> {
+    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&amigoId=" + amigoId + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
