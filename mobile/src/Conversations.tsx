@@ -120,6 +120,7 @@ function ConversationList({ label }) {
   const [start, setStart] = React.useState(false);
   const [selector, setSelector] = React.useState(false);
   const [conversations, setConversations] = React.useState([]);
+  const [busy, setBusy] = React.useState(false);
 
   const labelRef = useRef(label);  
   
@@ -145,13 +146,37 @@ function ConversationList({ label }) {
     setSelector(true);
   }
 
+  const Active = () => {
+    if(!busy) {
+      return (<></>);
+    }
+    return (
+      <View style={{ position: 'absolute', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ borderRadius: 8, padding: 16, backgroundColor: 'rgba(0, 0, 0, 0.5)', alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator animating={true} size="large" color="#ffffff" />
+        </View>
+      </View>
+    );
+  }
+
   let nav = useNavigation();
   const onSelect = async (amigo) => {
-    if(amigo != null) {
-      let dialogue = await diatum.addConversation(amigo.amigoId); 
-      nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
-    } 
     setSelector(false);
+    if(!busy) {
+      if(amigo != null) {
+        setBusy(true);
+        try {
+          let dialogue = await diatum.addConversation(amigo.amigoId); 
+          nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
+          setBusy(false);
+        }
+        catch(err) {
+          console.log(err);
+          setBusy(false);
+          Alert.alert("failed to create conversation");
+        }
+      }
+    }
   }
 
   const onClose = () => {
@@ -167,6 +192,7 @@ function ConversationList({ label }) {
         </View>
       </TouchableOpacity>
       <SelectContact active={selector} selected={onSelect} closed={onClose} />
+      <Active />
     </SafeAreaView>
   );
 }
