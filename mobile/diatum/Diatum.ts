@@ -1076,11 +1076,11 @@ class _Diatum {
         await this.storage.addInsight(this.session.amigoId, value.amigoId, value.dialogueId);
         try {
           await this.syncInsightConversation(value.amigoId, value.dialogueId);
-          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, false);
+          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, false);
         }
         catch(err) {
           console.log(err);
-          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
+          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
         }
         notify = true;
       }
@@ -1090,7 +1090,7 @@ class _Diatum {
         }
         catch(err) {
           console.log(err);
-          this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
+          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
         }
         notify = true;
       }
@@ -1204,7 +1204,6 @@ class _Diatum {
       remoteMap.set(remote[i].topicId, remote[i]);
     }
 
-
     let local: TopicView[] = await this.storage.getInsightTopicViews(this.session.amigoId, amigoId, dialogueId);
     let localMap: Map<string, TopicView> = new Map<string, TopicView>();
     for(let i = 0; i < local.length; i++) {
@@ -1216,12 +1215,11 @@ class _Diatum {
 
       if(!localMap.has(key)) {
         let topic: Topic = await DiatumApi.getInsightTopic(path.node, path.token, dialogueId, key, this.authToken, this.authMessage);
-
         await this.storage.addInsightTopic(this.session.amigoId, amigoId, dialogueId, topic, value.position);
       }
       else if(localMap.get(key).revision != value.revision || localMap.get(key).position != value.position) {
         let topic: Topic = await DiatumApi.getInsightTopic(path.node, path.token, dialogueId, key, this.authToken, this.authMessage);
-        await this.storage.updateInsightTopic(this.session.amigoId, dialogueId, topic, value.position);
+        await this.storage.updateInsightTopic(this.session.amigoId, amigoId, dialogueId, topic, value.position);
       }
     });
 
