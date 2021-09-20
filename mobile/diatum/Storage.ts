@@ -782,7 +782,7 @@ export class Storage {
       res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE dialogue_id=? AND insight=? ORDER BY position DESC", [dialogueId, 0]);
     }
     else {
-      res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? ORDER BY position DESC", [amigoId, dialogueId, 1]);
+      res = await this.db.executeSql("SELECT DISTINCT topic_id, position, revision from topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight=? ORDER BY position DESC", [amigoId, dialogueId, 1]);
     }
     let views = [];
     if(hasResult) {
