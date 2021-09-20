@@ -1194,15 +1194,15 @@ class _Diatum {
 
   private async syncInsightConversation(amigoId: string, dialogueId: string): Promise<void> {
 
-    // update dialogue
-    let dialogue: Dialogue = await DiatumApi.getInsight(path.node, path.token, dialogueId, this.authToken, this.authMessage);
-    
     // get amigo synchronization path
     let path: AmigoPath = await this.storage.getAmigoPath(this.session.amigoId, amigoId);
     if(path == null) {
       throw new Error("cannot update dialogue without connection");
     }
 
+    // update dialogue
+    let dialogue: Dialogue = await DiatumApi.getInsight(path.node, path.token, dialogueId, this.authToken, this.authMessage);
+    
     let remote: TopicView[] = await DiatumApi.getInsightTopicViews(path.node, path.token, dialogueId, this.authToken, this.authMessage);
     let remoteMap: Map<string, TopicView> = new Map<string, TopicView>();
     for(let i = 0; i < remote.length; i++) {
