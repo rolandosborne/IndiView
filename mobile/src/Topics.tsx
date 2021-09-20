@@ -16,6 +16,7 @@ import { DiatumSession, LabelEntry, TopicView, Blurb } from '../diatum/DiatumTyp
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { TagUtil } from './TagUtil';
+import { AppSupport, useApp } from './AppSupport';
 
 export function Topics({ route, navigation }) {
   const [param, setParam] = React.useState(route.params);
@@ -110,12 +111,65 @@ function TopicEntry({ amigoId, dialogueId, hosting, topic }) {
     let b = await diatum.getTopicBlurbs(amigoId, dialogueId, hosting, topic.topicId);
     let m = [];
     for(let i = 0; i < b.length; i++) {
-      m.unshift(<Text key={i}>{ b[i].data }</Text>);
+      let data;
+      if(b[i].data != null) {
+        data = JSON.parse(b[i].data);
+      }
+      else {
+        data = {};
+      }
+      m.unshift(<BlurbEntry key={i} blurb={b[i]} data={data} />)
     }
     setBlurbs(m);
   }, [topic]);
-    
 
   return ( <View>{ blurbs }</View> );
+}
+
+function BlurbEntry({ blurb, data }) {
+
+  let app = useApp();
+  if(blurb.amigoId == app.getAmigoId()) {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
+        <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, left: 0 }} />
+        <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, left: 0 }} />
+        <Text style={{ position: 'absolute', marginLeft: 40, marginBottom: 2, bottom: 0, left: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
+        <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
+          <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
+        </View>
+      </View>
+    );
+  }
+  else {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, right: 0 }} />
+        <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, right: 0 }} />
+        <Text style={{ position: 'absolute', marginRight: 40, marginBottom: 2, bottom: 0, right: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
+        <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
+          <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
+        </View>
+      </View>
+    );
+  }
+}
+
+function getTime(epoch: number): string {
+  let d: Date = new Date();
+  let offset = d.getTime() / 1000 - epoch;
+  if(offset < 3600) {
+    return Math.ceil(offset/60) + " min";
+  }
+  if(offset < 86400) {
+    return Math.ceil(offset/3600) + " hr";
+  }
+  if(offset < 2592000) {
+    return Math.ceil(offset/86400) + " d";
+  }
+  if(offset < 31536000) {
+    return Math.ceil(offset/2592000) + " mth";
+  }
+  return Math.ceil(offset/31449600) + " y";
 }
 
