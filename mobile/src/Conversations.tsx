@@ -215,16 +215,33 @@ function ConversationEntry({ entry }) {
     nav.navigate("Topics", entry);
   }
 
+  const Offsync = () => {
+    if(entry.offsync) {
+      return (<Icon name={ 'flag' } style={{ paddingLeft: 8, color: '#ffffff' }}/>);
+    }
+    else {
+      return (<></>);
+    }
+  }
+
   return (
     <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>
       <Image style={{ width: 48, height: 48, marginLeft: 8, borderRadius: 4 }} source={source} />
       <View style={{ marginLeft: 16, height: '100%' }}>
         <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.name }</Text>
         <Text style={{ fontSize: 12, color: '#444444' }}>{ entry.handle }</Text>
-        <Text style={{ fontSize: 12, color: '#444444' }}><Icon name={ entry.hosting ? 'home' : 'user' } />&nbsp;{ getTime(entry.modified) }</Text>
+        <Text style={{ fontSize: 12, color: '#444444' }}>{ getTime(entry.modified) }</Text>
       </View>
-      <View style={{ marginLeft: 64, alignSelf: 'center', width: 1, flexGrow: 1, borderColor: '#aaaaaa' }}>
-          <Text style={{ textAlign: 'right', color: '#444444', fontSize: 14 }} numberOfLines={2} >{ message }</Text>
+      <View style={{ marginLeft: 64, alignSelf: 'center', width: 1, flexGrow: 1, height: '100%' }}>
+          <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
+            <TouchableOpacity style={{ flexDirection: 'row', borderRadius: 4, paddingBottom: 2, paddingTop: 2, paddingLeft: 4, paddingRight: 4, backgroundColor: '#0077CC' }}>
+                <Icon name={ entry.hosting ? 'home' : 'user' } style={{ color: '#ffffff' }}/>
+                <Offsync />
+            </TouchableOpacity>
+          </View>
+          <View style={{ flexGrow: 1, justifyContent: 'flex-end' }}>
+            <Text style={{ textAlign: 'right', color: '#444444', fontSize: 12 }} numberOfLines={2} >{ message }</Text>
+          </View>
       </View>
     </TouchableOpacity>
   );
