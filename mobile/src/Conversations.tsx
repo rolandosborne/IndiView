@@ -200,6 +200,8 @@ function ConversationList({ label }) {
 function ConversationEntry({ entry }) {
   const [source, setSource] = React.useState(require("../assets/avatar.png"));
   const [message, setMessage] = React.useState(null);
+  const [options, setOptions] = React.useState(['Close Menu' ]);
+  const [actions, setActions] = React.useState([]);
 
   useEffect(() => {
     if(entry.imageUrl != null) {
@@ -208,6 +210,8 @@ function ConversationEntry({ entry }) {
     if(entry.blurbData != null) {
       setMessage(entry.blurbData.message);
     }
+    setOptions(['Sync Conversation', 'End Conversation', 'Delete Conversation', 'Close Menu' ]);
+    setActions([() => {}, () => {}, () => {}]);
   }, [entry]);
 
   let nav = useNavigation();
@@ -217,12 +221,28 @@ function ConversationEntry({ entry }) {
 
   const Offsync = () => {
     if(entry.offsync) {
-      return (<Icon name={ 'flag' } style={{ paddingLeft: 8, color: '#ffffff' }}/>);
+      return (<Icon name='flag' style={{ paddingRight: 8, color: 'red' }}/>);
+    }
+    return (<></>);
+  }
+
+  const Closed = () => {
+    if(!entry.active) {
+      return (<Icon name='ban' style={{ paddingRight: 8, color: 'red' }} />);
+    }
+    return (<></>);
+  }
+
+  const Location = () => {
+    if(entry.hosting) {
+      return (<Icon name='home' style={{ paddingRight: 8, color: '#888888' }} />);
     }
     else {
-      return (<></>);
+      return (<Icon name='user' style={{ paddingRight: 8, color: '#888888' }} />);
     }
   }
+
+  const dots = (<Icon name='ellipsis-h' style={{ paddingLeft: 16, paddingBottom: 4, color: '#0077CC' }}/>);
 
   return (
     <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>
@@ -230,14 +250,16 @@ function ConversationEntry({ entry }) {
       <View style={{ marginLeft: 16, height: '100%' }}>
         <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.name }</Text>
         <Text style={{ fontSize: 12, color: '#444444' }}>{ entry.handle }</Text>
-        <Text style={{ fontSize: 12, color: '#444444' }}>{ getTime(entry.modified) }</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Location />
+          <Closed />
+          <Offsync />
+          <Text style={{ fontSize: 12, color: '#444444' }}>{ getTime(entry.modified) }</Text>
+        </View>
       </View>
       <View style={{ marginLeft: 64, alignSelf: 'center', width: 1, flexGrow: 1, height: '100%' }}>
           <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
-            <TouchableOpacity style={{ flexDirection: 'row', borderRadius: 4, paddingBottom: 2, paddingTop: 2, paddingLeft: 4, paddingRight: 4, backgroundColor: '#0077CC' }}>
-                <Icon name={ entry.hosting ? 'home' : 'user' } style={{ color: '#ffffff' }}/>
-                <Offsync />
-            </TouchableOpacity>
+            <OptionsMenu customButton={dots} options={options} actions={actions} />
           </View>
           <View style={{ flexGrow: 1, justifyContent: 'flex-end' }}>
             <Text style={{ textAlign: 'right', color: '#444444', fontSize: 12 }} numberOfLines={2} >{ message }</Text>
