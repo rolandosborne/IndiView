@@ -62,12 +62,26 @@ let homeNav = null;
 function RootScreen({ navigation }) {
   logoutNav = navigation;
 
-  const dataCallback = async (type: DiatumDataType, objectId: string) => {
+  const dataCallback = async (type: DiatumDataType, object: any) => {
     try {
+
+      if(type == DiatumDataType.Message) {
+
+        let message: string;
+        let t: TopicView[] = await diatum.getTopicViews(object.amigoId, object.dialogueId, object.hosting);
+        if(t.length > 0) {
+          let b: Blurb[] = await diatum.getTopicBlurbs(object.amigoId, object.dialogueId, object.hosting, t[0].topicId);
+          if(b.length > 0 && b[0].data != null) {
+            message = JSON.parse(b[b.length-1].data).message;
+          }
+        }
+        await diatum.setConversationBlurbData(object.amigoId, object.dialogueId, object.hosting, { message: message });
+      }
+
       if(type == DiatumDataType.AmigoSubject) {
 
         // compute revision of retrieved subjects
-        let s: Subject[] = await diatum.getContactSubjects(objectId);
+        let s: Subject[] = await diatum.getContactSubjects(object);
         let rev: number = null;
         let mod: number = null;
         for(let i = 0; i < s.length; i++) {
@@ -80,18 +94,18 @@ function RootScreen({ navigation }) {
         }
 
         // update subject revision
-        let c: ContactEntry = await diatum.getContact(objectId);
+        let c: ContactEntry = await diatum.getContact(object);
         let feed: number = null;
         if(c.appSubject != null) {
           feed = c.appSubject.feedRevision;
         }
-        await diatum.setContactSubjectData(objectId, { feedRevision: feed, subjectRevision: rev, subjectModified: mod });
+        await diatum.setContactSubjectData(object, { feedRevision: feed, subjectRevision: rev, subjectModified: mod });
       }
 
       if(type == DiatumDataType.AmigoAttribute) {
         let phoneNumbers = [];
         let textNumbers = [];
-        let a: Attribute[] = await diatum.getContactAttributes(objectId);
+        let a: Attribute[] = await diatum.getContactAttributes(object);
         for(let i = 0; i < a.length; i++) {
           if(AttributeUtil.isPhone(a[i])) {
             let obj = AttributeUtil.getDataObject(a[i]);
@@ -134,7 +148,7 @@ function RootScreen({ navigation }) {
           }
             let obj = AttributeUtil.getDataObject(a[i]);
         }
-        await diatum.setContactAttributeData(objectId, { phone: phoneNumbers, text: textNumbers });
+        await diatum.setContactAttributeData(object, { phone: phoneNumbers, text: textNumbers });
       }
     }
     catch(err) {
@@ -147,8 +161,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v139.db", attributes, subjects, tag, dataCallback).then(async ctx => {
-console.log("INIT", ctx);
+  diatum.init("indiview_v146.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 
     if(ctx.context == null) {
       navigation.replace('Login');

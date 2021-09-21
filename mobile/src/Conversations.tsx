@@ -199,24 +199,32 @@ function ConversationList({ label }) {
 
 function ConversationEntry({ entry }) {
   const [source, setSource] = React.useState(require("../assets/avatar.png"));
+  const [message, setMessage] = React.useState(null);
 
   useEffect(() => {
     if(entry.imageUrl != null) {
       setSource({ uri: entry.imageUrl, cache: 'force-cache' });
     }
-  }, []);
+    if(entry.blurbData != null) {
+      setMessage(entry.blurbData.message);
+    }
+  }, [entry]);
 
   let nav = useNavigation();
   const onConversation = () => {
-    nav.navigate("Topics", entry);;
+    nav.navigate("Topics", entry);
   }
 
   return (
-    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>
+    <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>
       <Image style={{ width: 48, height: 48, marginLeft: 8, borderRadius: 4 }} source={source} />
-      <View style={{ marginLeft: 16 }}>
-        <Text style={{ fontSize: 18, color: '#444444' }}>{ entry.name }</Text>
+      <View style={{ marginLeft: 16, height: '100%' }}>
+        <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.name }</Text>
         <Text style={{ fontSize: 12, color: '#444444' }}>{ entry.handle }</Text>
+        <Text style={{ fontSize: 12, color: '#444444' }}><Icon name={ entry.hosting ? 'home' : 'user' } />&nbsp;{ getTime(entry.modified) }</Text>
+      </View>
+      <View style={{ marginLeft: 64, alignSelf: 'center', width: 1, flexGrow: 1, borderColor: '#aaaaaa' }}>
+          <Text style={{ textAlign: 'right', color: '#444444', fontSize: 14 }} numberOfLines={2} >{ message }</Text>
       </View>
     </TouchableOpacity>
   );
@@ -307,5 +315,23 @@ function ConnectedContact({item, amigo, selected}) {
       </View>
     </TouchableOpacity>
   );
+}
+
+function getTime(epoch: number): string {
+  let d: Date = new Date();
+  let offset = d.getTime() / 1000 - epoch;
+  if(offset < 3600) {
+    return Math.ceil(offset/60) + " min";
+  }
+  if(offset < 86400) {
+    return Math.ceil(offset/3600) + " hr";
+  }
+  if(offset < 2592000) {
+    return Math.ceil(offset/86400) + " d";
+  }
+  if(offset < 31536000) {
+    return Math.ceil(offset/2592000) + " mth";
+  }
+  return Math.ceil(offset/31449600) + " y";
 }
 

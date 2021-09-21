@@ -384,5 +384,7 @@ export interface Conversation {
   synced: boolean;  //if dialogue and insight are synced
   hosting: boolean; //if dialogue is hosted by me
   offsync: boolean; //if latest dialogue not retrieved
+  appData: any;
+  blurbData: any;
 }    
 

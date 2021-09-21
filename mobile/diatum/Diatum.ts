@@ -25,6 +25,7 @@ export enum DiatumDataType {
   AmigoIdentity,
   AmigoAttribute,
   AmigoSubject,
+  Message,
   COUNT
 }
   
@@ -47,7 +48,7 @@ export enum DiatumEvent {
 export interface Diatum {
   // initialize SDK and retrive previous context
   init(path: string, attributes: string[], subjects: string[], tag: string,
-    callback: (type: DiatumDataType, objectId: string) => {}): Promise<AppContext>;
+    callback: (type: DiatumDataType, object: any) => {}): Promise<AppContext>;
 
   // set context for next init
   setAppContext(ctx: AppContext): Promise<void>;
@@ -252,6 +253,12 @@ export interface Diatum {
 
   // add blurb to conversation
   addConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, schema: string, data: string): Promise<void>;
+
+  // set conversation app data
+  setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void>;
+
+  // set conversation blurb data
+  setConversationBlurbData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void>;
 
   // refresh contact
   syncContact(amigoId: string): Promise<void>
@@ -1082,16 +1089,19 @@ class _Diatum {
           console.log(err);
           await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
         }
+        await this.callback(DiatumDataType.Message, { amigoId: value.amigoId, dialogueId: value.dialogueId, hosting: false }); 
         notify = true;
       }
       else if(localMap.get(key).revision != value.revision) {
         try {
           await this.syncInsightConversation(value.amigoId, value.dialogueId);
+          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
         }
         catch(err) {
           console.log(err);
           await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
         }
+        await this.callback(DiatumDataType.Message, { amigoId: value.amigoId, dialogueId: value.dialogueId, hosting: false }); 
         notify = true;
       }
     });
@@ -1131,10 +1141,12 @@ class _Diatum {
       if(!localMap.has(key)) {
         await this.storage.addDialogue(this.session.amigoId, key);
         await this.syncDialogueConversation(key);
+        await this.callback(DiatumDataType.Message, { dialogueId: key, hosting: true }); 
         notify = true;
       }
       else if(localMap.get(key) != value) {
         await this.syncDialogueConversation(key);
+        await this.callback(DiatumDataType.Message, { dialogueId: key, hosting: true }); 
         notify = true;
       }
     });
@@ -1673,6 +1685,16 @@ class _Diatum {
     }
   }
 
+  public async setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
+    await this.storage.setConversationAppData(this.session.amigoId, amigoId, dialogueId, hosting, data);
+    this.notifyListeners(DiatumEvent.Conversation);
+  }
+
+  public async setConversationBlurbData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
+    await this.storage.setConversationBlurbData(this.session.amigoId, amigoId, dialogueId, hosting, data);
+    this.notifyListeners(DiatumEvent.Conversation);
+  }
+
 }
 
 let instance: _Diatum | undefined;
@@ -2074,6 +2096,16 @@ async function addConversationBlurb(amigoId: string, dialogueId: string, hosting
   return await diatum.addConversationBlurb(amigoId, dialogueId, hosting, schema, data);
 }
 
+async function setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setConversationAppData(amigoId, dialogueId, hosting, data);
+}
+
+async function setConversationBlurbData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.setConversationBlurbData(amigoId, dialogueId, hosting, data);
+}
+
 export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, setSession, clearSession,
     getAccountData, setAccountData, setListener, clearListener, 
     getRegistryAmigo, getRegistryImage, 
@@ -2088,6 +2120,6 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
-    getConversations, addConversation, getTopicViews, getTopicBlurbs, addConversationBlurb,
+    getConversations, addConversation, getTopicViews, getTopicBlurbs, addConversationBlurb, setConversationAppData, setConversationBlurbData,
     syncContact };
 

@@ -100,7 +100,7 @@ export class Storage {
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS contact_" + id + " (amigo_id text, attribute_id text, revision integer, schema text, data text, unique(amigo_id, attribute_id));");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS view_" + id + " (amigo_id text, subject_id text, revision integer, tag_revision integer, created integer, modified integer, expires integer, schema text, data text, tags text, tag_count integer, hide integer, app_subject text, searchable text, unique(amigo_id, subject_id));");
 
-    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, linked integer, synced integer, revision integer, insight integer, insight_revision integer, offsync integer);");
+    await this.db.executeSql("CREATE TABLE IF NOT EXISTS dialogue_" + id + " (amigo_id text, dialogue_id text, modified integer, created integer, active integer, linked integer, synced integer, revision integer, insight integer, insight_revision integer, app_data text, blurb_data text, offsync integer);");
     await this.db.executeSql("CREATE TABLE IF NOT EXISTS topic_" + id + " (amigo_id text, dialogue_id text, insight integer, topic_id text, position integer, revision integer, blurbs text);");
   }
 
@@ -720,7 +720,7 @@ export class Storage {
     await this.db.executeSql("UPDATE index_" + id + " SET app_subject=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }
   public async setContactAppData(id: string, amigoId: string, obj: any): Promise<void> {
-    await this.db.executeSql("UPDATE index_" + id + " SET app_data=? WHERE amigo_id=?;", [encodeOjbect(obj), amigoId]);
+    await this.db.executeSql("UPDATE index_" + id + " SET app_data=? WHERE amigo_id=?;", [encodeObject(obj), amigoId]);
   }
 
   public async getContactShareId(id: string, amigoId: string): Promsie<string> {
@@ -751,16 +751,24 @@ export class Storage {
   public async getConversations(id: string, labelId: string): Promise<Conversation[]> {
     let res;
     if(labelId == null) {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
     }
     else {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id LEFT OUTER JOIN indexgroup_" + id + " ON dialogue_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id WHERE label_id=? ORDER BY modified DESC", [labelId]);
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id LEFT OUTER JOIN indexgroup_" + id + " ON dialogue_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id WHERE label_id=? ORDER BY modified DESC", [labelId]);
     }
     let conversations = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight==0, offsync: item.offsync });
+        let appData = null;
+        if(item.app_data != null) {
+          appData = decodeObject(item.app_data);
+        }
+        let blurbData = null;
+        if(item.blurb_data != null) {
+          blurbData = decodeObject(item.blurb_data);
+        }
+        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight==0, offsync: item.offsync, appData: appData, blurbData: blurbData });
       }
     }
     return conversations;
@@ -809,6 +817,24 @@ export class Storage {
       }
     }
     return [];
+  }
+
+  public async setConversationAppData(id: string, amigoId: string, dialogueId: string, hosting: boolean, obj: any): Promise<void> {
+    if(hosting) {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET app_data=? WHERE dialogue_id=? AND insight=?;", [encodeObject(obj), dialogueId, 0]);
+    }
+    else {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET app_data=? WHERE amigo_id=? AND dialogue_id=? AND insight=?;", [encodeObject(obj), amigoId, dialogueId, 1]);
+    }
+  }
+
+  public async setConversationBlurbData(id: string, amigoId: string, dialogueId: string, hosting: boolean, obj: any): Promise<void> {
+    if(hosting) {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET blurb_data=? WHERE dialogue_id=? AND insight=?;", [encodeObject(obj), dialogueId, 0]);
+    }
+    else {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET blurb_data=? WHERE amigo_id=? AND dialogue_id=? AND insight=?;", [encodeObject(obj), amigoId, dialogueId, 1]);
+    }
   }
 
 }

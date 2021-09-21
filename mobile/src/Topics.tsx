@@ -60,8 +60,14 @@ export function Topics({ route, navigation }) {
       imgSrc = { uri: route.params.imageUrl, cache: 'force-cache' };
     }
 
+    let name;
+    if(route.params.hosting) {
+    }
+    else {
+    }
+
     navigation.setOptions({
-      title: route.params.handle,
+      title: <Text><Icon name={ route.params.hosting ? 'home' : 'user'} style={{ fontSize: 18, color: '#555555' }} />&nbsp;&nbsp;{ route.params.handle }</Text>,
       headerRight: () => (<Image style={{ flexGrow: 1, width: null, height: null, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
     });
   }, [navigation]);
