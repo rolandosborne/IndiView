@@ -211,7 +211,7 @@ function ConversationEntry({ entry }) {
       setMessage(entry.blurbData.message);
     }
     setOptions(['Sync Conversation', 'End Conversation', 'Delete Conversation', 'Close Menu' ]);
-    setActions([() => {}, () => {}, () => {}]);
+    setActions([() => {}, () => {}, () => { onDelete() }]);
   }, [entry]);
 
   let nav = useNavigation();
@@ -243,6 +243,25 @@ function ConversationEntry({ entry }) {
   }
 
   const dots = (<Icon name='ellipsis-h' style={{ paddingLeft: 16, paddingBottom: 4, color: '#0077CC' }}/>);
+
+  let diatum = useDiatum();
+  const onDelete = () => {
+    const title = 'Are you sure you want to delete the converstaion?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Delete', onPress: async () => {
+          try {
+            await diatum.removeConversation(entry.amigoId, entry.dialogueId, entry.hosting);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to delete converstation");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
+  }
 
   return (
     <TouchableOpacity activeOpacity={1} style={{ width: '100%', padding: 8, flexDirection: 'row', borderRadius: 8, borderBottomWidth: 1, borderColor: '#dddddd' }} onPress={onConversation}>

@@ -505,20 +505,31 @@ export class DiatumApi {
     return response.json();
   }
 
-  public static async updateContactConversation(node: string, token: string, agent: string, dialogueId: string, synced: boolean, revision: number): Promise<Dialogue> {
-    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "?token=" + token + "&agent=" + agent + "&synced=" + synced + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+  public static async updateContactConversation(node: string, token: string, agent: string, dialogueId: string, active: boolean, synced: boolean, revision: number): Promise<Dialogue> {
+    let params = "";
+    if(synced != null) {
+      params += "&synced=" + synced;
+    }
+    if(active != null) {
+      params += "&active=" + active;
+    }
+    if(revision != null) {
+      params += "&revision=" + revision;
+    }
+
+    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "?token=" + token + "&agent=" + agent + params, { method: 'PUT', FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();   
   }
 
   public static async updateInsight(node: string, token: string, amigoId: string, dialogueId: string, revision: number): Promise<Insight> {
-    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&amigoId=" + amigoId + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&amigoId=" + amigoId + "&revision=" + revision, { method: 'PUT', timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
 
   public static async updateContactInsight(node: string, token: string, agent: string, dialogueId: string, revision: number): Promise<Insight> {
-    let response = await fetchWithTimeout(node + "/commentary/insight/" + dialogueId + "?token=" + token + "&agent=" + agent + "&revision=" + revision, { method: 'PUT', FETCH_TIMEOUT });
+    let response = await fetchWithTimeout(node + "/commentary/insight/" + dialogueId + "?token=" + token + "&agent=" + agent + "&revision=" + revision, { method: 'PUT', timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
   }
@@ -533,6 +544,26 @@ export class DiatumApi {
     let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "/blurb?token=" + token + "&agent=" + agent + "&schema=" + schema, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: FETCH_TIMEOUT });
     checkResponse(response);
     return await response.json();
+  }
+
+  public static async removeInsight(node: string, token: string, amigoId: string, dialogueId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&amigoId=" + amigoId, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
+  public static async removeContactInsight(node: string, token: string, agent: string, dialogueId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/commentary/insight/" + dialogueId + "?token=" + token + "&agent=" + agent, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
+  public static async removeConversation(node: string, token: string, dialogueId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/conversation/dialogue/" + dialogueId + "?token=" + token, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
+  public static async removeContactConversation(node: string, token: string, agent: string, dialogueId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "?token=" + token + "&agent=" + agent, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
   }
 
 }

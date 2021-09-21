@@ -567,7 +567,7 @@ export class Storage {
   public async updateDialogue(id: string, dialogue: Dialogue): Promise<void> {
     await this.db.executeSql("UPDATE dialogue_" + id + " SET modified=?, created=?, active=?, linked=?, synced=?, revision=?, amigo_id=? WHERE dialogue_id=? AND insight=?;", [dialogue.modified, dialogue.created, dialogue.active, dialogue.linked, dialogue.synced, dialogue.revision, dialogue.amigoId, dialogue.dialogueId, 0]);
   }
-  public async removeDialoge(id: string, dialogueId: string): Promise<void> {
+  public async removeDialogue(id: string, dialogueId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM topic_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
     await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE dialogue_id=? and insight=?;", [dialogueId, 0]);
   }
