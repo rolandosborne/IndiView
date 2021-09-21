@@ -1104,7 +1104,7 @@ class _Diatum {
       else if(localMap.get(key).revision != value.revision) {
         try {
           await this.syncInsightConversation(value.amigoId, value.dialogueId);
-          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, true);
+          await this.storage.updateInsightRevision(this.session.amigoId, value.amigoId, value.dialogueId, value.revision, false);
         }
         catch(err) {
           console.log(err);
@@ -1705,9 +1705,36 @@ class _Diatum {
   }
 
   public async syncConversation(amigoId: string, dialogueId: string, hosting: boolean): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    if(hosting) {
+      let dialogue = await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogueId, null, null, null, null);
+      await DiatumApi.updateContactInsight(connection.node, connection.token, this.authToken, dialogueId, dialogue.revision);
+      await this.syncDialogue();
+    }
+    else {
+      let dialogue = await DiatumApi.updateContactConversation(connection.node, connection.token, this.authToken, dialogueId, null, null, null);
+      await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, amigoId, dialogueId, dialogue.revision);
+    } 
+    await this.syncInsight();
   }
 
   public async closeConversation(amigoId: string, dialogueId: string, hosting: boolean): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    if(hosting) {
+      let dialogue = await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogueId, null, null, false, null);
+      try {
+        await DiatumApi.updateContactInsight(connection.node, connection.token, this.authToken, dialogueId, dialogue.revision);
+      }
+      catch(err) {
+        console.log(err);
+      }
+      await this.syncDialogue();
+    }
+    else {
+      let dialogue = await DiatumApi.updateContactConversation(connection.node, connection.token, this.authToken, dialogueId, false, null, null);
+      await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, amigoId, dialogueId, dialogue.revision);
+    } 
+    await this.syncInsight();
   }
 
   public async removeConversation(amigoId: string, dialogueId: string, hosting: boolean): Promise<void> {

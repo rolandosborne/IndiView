@@ -211,7 +211,7 @@ function ConversationEntry({ entry }) {
       setMessage(entry.blurbData.message);
     }
     setOptions(['Sync Conversation', 'End Conversation', 'Delete Conversation', 'Close Menu' ]);
-    setActions([() => {}, () => {}, () => { onDelete() }]);
+    setActions([() => { onSync() }, () => { onClose() }, () => { onDelete() }]);
   }, [entry]);
 
   let nav = useNavigation();
@@ -228,7 +228,7 @@ function ConversationEntry({ entry }) {
 
   const Closed = () => {
     if(!entry.active) {
-      return (<Icon name='ban' style={{ paddingRight: 8, color: 'red' }} />);
+      return (<Icon name='ban' style={{ paddingRight: 8, color: 'orange' }} />);
     }
     return (<></>);
   }
@@ -245,6 +245,7 @@ function ConversationEntry({ entry }) {
   const dots = (<Icon name='ellipsis-h' style={{ paddingLeft: 16, paddingBottom: 4, color: '#0077CC' }}/>);
 
   let diatum = useDiatum();
+
   const onDelete = () => {
     const title = 'Are you sure you want to delete the converstaion?';
     const message = '';
@@ -261,6 +262,32 @@ function ConversationEntry({ entry }) {
         { text: 'Cancel', type: 'cancel' }
     ];
     Alert.alert(title, message, buttons);
+  }
+
+  const onClose = () => {
+    const title = 'Are you sure you want to end the converstaion?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, End', onPress: async () => {
+          try {
+            await diatum.closeConversation(entry.amigoId, entry.dialogueId, entry.hosting);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to end converstation");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
+  }
+  const onSync = async () => {
+    try {
+      await diatum.syncConversation(entry.amigoId, entry.dialogueId, entry.hosting);
+    }
+    catch(err) {
+      Alert.alert("failed to sync converstation");
+    }
   }
 
   return (
