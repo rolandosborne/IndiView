@@ -69,5 +69,10 @@ export class IndiViewCom {
           { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       checkResponse(response);
     }
+
+    static async setAlert(token: string, amigoId: string): Promise<void> {
+      let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/report?token=" + encodeURIComponent(token) + "&amigoId=" + amigoId, { method: 'PUT' });
+      checkResponse(response);
+    }
 }
 

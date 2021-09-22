@@ -15,6 +15,7 @@ import { DiatumSession, LabelEntry, Attribute } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { AttributeUtil } from './AttributeUtil';
+import { AppSupport, useApp } from './AppSupport';
 
 const ProfileDrawer = createDrawerNavigator();
 let contactNav = null;
@@ -223,6 +224,7 @@ export function ContactProfilePage({ contact, navigation, names }) {
   const [attributes, setAttributes] = React.useState([]);
   const [profileColor, setProfileColor] = React.useState('#aaaaaa');
 
+  let app = useApp();
   let diatum = useDiatum();
   const disconnectContact = async () => {
     const title = 'Are you sure you want to disconnect?';
@@ -300,7 +302,21 @@ export function ContactProfilePage({ contact, navigation, names }) {
     }
   }
   const reportContact = () => {
-    console.log("report");
+    const title = 'Do you want to flag this account for review?';
+    const message = '';
+    const buttons = [
+        { text: 'Yes, Flag', onPress: async () => {
+          try {
+            await IndiViewCom.setAlert(app.getToken(), contact.amigoId);
+          }
+          catch(err) {
+            console.log(err);
+            Alert.alert("failed to flag account");
+          }
+        }},
+        { text: 'Cancel', type: 'cancel' }
+    ];
+    Alert.alert(title, message, buttons);
   }
   const blockContact = async () => {
     const title = 'Are you sure you want to block this contact?';
