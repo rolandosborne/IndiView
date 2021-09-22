@@ -342,9 +342,20 @@ function SelectContact({ active, selected, closed }) {
 
   let item = React.useRef(null);
 
+  const update = async () => {
+    setContacts(await diatum.getContacts(null, "connected"));
+  }
+
   let diatum = useDiatum();
   useEffect(async () => {
-    setContacts(await diatum.getContacts(null, "connected"));
+    diatum.setListener(DiatumEvent.Contact, update);
+    diatum.setListener(DiatumEvent.Amigos, update);
+    diatum.setListener(DiatumEvent.Share, update);
+    return () => {
+      diatum.clearListener(DiatumEvent.Contact, update);
+      diatum.clearListener(DiatumEvent.Amigos, update);
+      diatum.clearListener(DiatumEvent.Share, update);
+    }
   }, []);
 
   useEffect(() => {
