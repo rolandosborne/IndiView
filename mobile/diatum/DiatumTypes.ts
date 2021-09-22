@@ -382,6 +382,7 @@ export interface Conversation {
   connected: boolean; //if amigo is in connected state
   active: boolean; //if conversation is paused
   synced: boolean;  //if dialogue and insight are synced
+  linked: boolean;  //if dialogue has been linked to insight
   hosting: boolean; //if dialogue is hosted by me
   offsync: boolean; //if latest dialogue not retrieved
   appData: any;

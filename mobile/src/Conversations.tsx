@@ -185,7 +185,7 @@ function ConversationList({ label }) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} forceInset={{ bottom: 'never' }}>
-      <FlatList style={{ padding: 16 }} data={conversations} keyExtractor={item => item.dialogueId} renderItem={({item}) => <ConversationEntry entry={item} />} />
+      <FlatList style={{ paddingLeft: 16, paddingRight: 16 }} data={conversations} keyExtractor={item => item.dialogueId} renderItem={({item}) => <ConversationEntry entry={item} />} />
       <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, margin: 16 }} onPress={onConversation}>
         <View opacity={0.8} style={{backgroundColor: '#0077CC', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, borderRadius: 16 }}>
           <Text style={{ fontSize: 18, color: '#ffffff' }}><Icon name="plus" style={{ fontSize: 14 }}/>&nbsp;Conversation</Text>
@@ -210,8 +210,19 @@ function ConversationEntry({ entry }) {
     if(entry.blurbData != null) {
       setMessage(entry.blurbData.message);
     }
-    setOptions(['Sync Conversation', 'End Conversation', 'Delete Conversation', 'Close Menu' ]);
-    setActions([() => { onSync() }, () => { onClose() }, () => { onDelete() }]);
+    let opt = [];
+    let act = [];
+    opt.push('Refresh Converstation');
+    act.push(() => { onSync() });
+    if(entry.active) {
+      opt.push('End Converstation');
+      act.push(() => { onClose() });
+    }
+    opt.push('Delete Converstation');
+    act.push(() => { onDelete() });
+    opt.push('Close Menu');
+    setOptions(opt);
+    setActions(act);
   }, [entry]);
 
   let nav = useNavigation();
@@ -221,6 +232,13 @@ function ConversationEntry({ entry }) {
 
   const Offsync = () => {
     if(entry.offsync) {
+      return (<Icon name='flag' style={{ paddingRight: 8, color: 'orange' }}/>);
+    }
+    return (<></>);
+  }
+
+  const Connected = () => {
+    if(!entry.linked) {
       return (<Icon name='flag' style={{ paddingRight: 8, color: 'red' }}/>);
     }
     return (<></>);
@@ -242,7 +260,7 @@ function ConversationEntry({ entry }) {
     }
   }
 
-  const dots = (<Icon name='ellipsis-h' style={{ paddingLeft: 16, paddingBottom: 4, color: '#0077CC' }}/>);
+  const dots = (<Icon name='ellipsis-h' style={{ fontSize: 20, paddingLeft: 16, paddingTop: 1, paddingBottom: 1, color: '#0077CC' }}/>);
 
   let diatum = useDiatum();
 
@@ -300,6 +318,7 @@ function ConversationEntry({ entry }) {
           <Location />
           <Closed />
           <Offsync />
+          <Connected />
           <Text style={{ fontSize: 12, color: '#444444' }}>{ getTime(entry.modified) }</Text>
         </View>
       </View>

@@ -528,6 +528,14 @@ export class Storage {
     let s = offsync ? 1 : 0;
     await this.db.executeSql("UPDATE dialogue_" + id + " SET insight_revision=?, offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [revision, s, amigoId, dialogueId, 0]);
   }
+  public async setConversationOffsync(id: string, amigoId: string, dialogueId: string, hosting: boolean): Promise<void> {
+    if(hosting) {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET offsync=? WHERE dialogue_id=? AND insight=?;", [1, dialogueId, 0]);
+    }
+    else {
+      await this.db.executeSql("UPDATE dialogue_" + id + " SET offsync=? WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [1, amigoId, dialogueId, 0]);
+    }
+  }
   public async removeInsight(id: string, amigoId: string, dialogueId: string): Promise<void> {
     await this.db.executeSql("DELETE FROM topic_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [amigoId, dialogueId, 0]);
     await this.db.executeSql("DELETE FROM dialogue_" + id + " WHERE amigo_id=? AND dialogue_id=? AND insight!=?;", [amigoId, dialogueId, 0]);
@@ -768,20 +776,10 @@ export class Storage {
         if(item.blurb_data != null) {
           blurbData = decodeObject(item.blurb_data);
         }
-        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, synced: item.linked && item.synced, hosting: item.insight==0, offsync: item.offsync, appData: appData, blurbData: blurbData });
+        conversations.push({ amigoId: item.amigo_id, imageUrl: item.logo_flag ? "" : null, revision: item.revision, handle: item.handle, name: item.name, dialogueId: item.dialogue_id, modified: item.modified, connected: item.status == 'connected', active: item.active, linked: item.linked != 0, synced: item.synced != 0, hosting: item.insight==0, offsync: item.offsync, appData: appData, blurbData: blurbData });
       }
     }
     return conversations;
-  }
-
-  public async getConversation(id: string, amigoId: string, dialogueId: string, hosting: boolean): Promise<Conversation> {
-    let res;
-    if(hosting) {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE dialogue_id=? AND insight=?", [dialogue_id, 0]);
-    }
-    else {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id WHERE amigoId=? AND dialogue_id=? AND insight=?", [amigoId, dialogue_id, 1]);
-    }
   }
 
   public async getTopicViews(id: string, amigoId: string, dialogueId: string, hosting: boolean): Promise<TopicView[]> {

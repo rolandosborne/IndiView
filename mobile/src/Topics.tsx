@@ -24,6 +24,7 @@ export function Topics({ route, navigation }) {
   const [message, setMessage] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
+console.log(route.params);
   let diatum = useDiatum();
 
   const update = async () => {
@@ -66,8 +67,19 @@ export function Topics({ route, navigation }) {
     else {
     }
 
+    let closed;
+    if(route.params.active) {
+      closed = (<></>);
+    }
+    else {
+      closed = (<Icon name={'ban'} style={{ fontSize: 18, color: 'orange' }} />);
+    }
+
     navigation.setOptions({
-      title: <Text><Icon name={ route.params.hosting ? 'home' : 'user'} style={{ fontSize: 18, color: '#555555' }} />&nbsp;&nbsp;{ route.params.handle }</Text>,
+      title: <Text>
+        <Icon name={ route.params.hosting ? 'home' : 'user'} style={{ fontSize: 18, color: '#555555' }} />&nbsp;&nbsp;
+        { route.params.handle }&nbsp;&nbsp;{ closed }
+      </Text>,
       headerRight: () => (<Image style={{ flexGrow: 1, width: null, height: null, marginRight: 8, marginTop: 4, marginBottom: 4, aspectRatio: 1, borderRadius: 8 }} source={ imgSrc } />)
     });
   }, [navigation]);
