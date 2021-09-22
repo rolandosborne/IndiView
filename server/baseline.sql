@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `account` (
   `gps_latitude` FLOAT NULL,
   `gps_altitude` FLOAT NULL,
   `gps_timestamp` BIGINT(64) NULL,
+  `alert_timestamp` BIGINT(64) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `token_UNIQUE` (`token` ASC),
   UNIQUE INDEX `emigo_UNIQUE` (`amigo_id` ASC),

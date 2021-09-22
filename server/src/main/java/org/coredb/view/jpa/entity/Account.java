@@ -31,6 +31,7 @@ public class Account implements Serializable {
   private Float gpsLatitude;
   private Float gpsAltitude;
   private Long gpsTimestamp;
+  private Long alertTimestamp;
 
   public Account() {
   }
@@ -220,6 +221,14 @@ public class Account implements Serializable {
   }
   public void setGpsTimestamp(Long value) {
     this.gpsTimestamp = value;
+  }
+
+  @JsonIgnore
+  public Long getAlertTimestamp() {
+    return this.alertTimestamp;
+  }
+  public void setAlertTimestamp(Long value) {
+    this.alertTimestamp = value;
   }
 }
 
