@@ -254,6 +254,9 @@ export interface Diatum {
   // add blurb to conversation
   addConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, schema: string, data: string): Promise<void>;
 
+  // remove blurb from conversation
+  removeConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, blurbId: string): Promise<void>;
+
   // set conversation app data
   setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void>;
 
@@ -1695,6 +1698,33 @@ class _Diatum {
     }
   }
 
+  public async removeConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, blurbId: string): Promise<void> {
+    let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
+    if(hosting) {
+      let blurb = await DiatumApi.removeBlurb(this.session.amigoNode, this.session.amigoToken, dialogueId, blurbId);
+      try {
+        let dialogue = await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogueId, null, null, null, null);
+        await DiatumApi.updateContactInsight(connection.node, connection.token, this.authToken, dialogueId, dialogue.revision);
+        await this.syncDialogue();
+      }
+      catch(err) {
+        console.log(err);
+      }
+      await this.syncDialogue();
+    }
+    else {
+      let blurb = await DiatumApi.removeContactBlurb(connection.node, connection.token, this.authToken, dialogueId, blurbId);
+      try {
+        let dialogue = await DiatumApi.updateContactConversation(connection.node, connection.token, this.authToken, dialogueId, null, null, null);
+        await DiatumApi.updateInsight(this.session.amigoNode, this.session.amigoToken, amigoId, dialogueId, dialogue.revision);
+      } 
+      catch(err) {
+        console.log(err);
+      }
+      await this.syncInsight();
+    }
+  }
+
   public async setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
     await this.storage.setConversationAppData(this.session.amigoId, amigoId, dialogueId, hosting, data);
     this.notifyListeners(DiatumEvent.Conversation);
@@ -2163,6 +2193,11 @@ async function addConversationBlurb(amigoId: string, dialogueId: string, hosting
   return await diatum.addConversationBlurb(amigoId, dialogueId, hosting, schema, data);
 }
 
+async function removeConversationBlurb(amigoId: string, dialogueId: string, hosting: boolean, blurbId: string): Promise<void> {
+  let diatum = await getInstance();
+  return await diatum.removeConversationBlurb(amigoId, dialogueId, hosting, blurbId);
+}
+
 async function setConversationAppData(amigoId: string, dialogueId: string, hosting: boolean, data: any): Promise<void> {
   let diatum = await getInstance();
   return await diatum.setConversationAppData(amigoId, dialogueId, hosting, data);
@@ -2202,7 +2237,7 @@ export const diatumInstance: Diatum = { init, setAppContext, clearAppContext, se
     getContactSubjects, getContactSubjectTags, addContactSubjectTag, removeContactSubjectTag, 
     getBlockedSubjects, setBlockedSubject,
     addSubject, removeSubject, getSubjectLabels, setSubjectLabel, clearSubjectLabel, setSubjectData, setSubjectShare,
-    getConversations, addConversation, getTopicViews, getTopicBlurbs, addConversationBlurb,
+    getConversations, addConversation, getTopicViews, getTopicBlurbs, addConversationBlurb, removeConversationBlurb,
     setConversationAppData, setConversationBlurbData, syncConversation, closeConversation, removeConversation,
     syncContact };
 

@@ -24,7 +24,6 @@ export function Topics({ route, navigation }) {
   const [message, setMessage] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
-console.log(route.params);
   let diatum = useDiatum();
 
   const update = async () => {
@@ -136,7 +135,7 @@ function TopicEntry({ amigoId, dialogueId, hosting, topic }) {
       else {
         data = {};
       }
-      m.unshift(<BlurbEntry key={i} blurb={b[i]} data={data} />)
+      m.unshift(<BlurbEntry key={i} blurb={b[i]} data={data} amigoId={amigoId} dialogueId={dialogueId} hosting={hosting} />)
     }
     setBlurbs(m);
   }, [topic]);
@@ -144,31 +143,60 @@ function TopicEntry({ amigoId, dialogueId, hosting, topic }) {
   return ( <View>{ blurbs }</View> );
 }
 
-function BlurbEntry({ blurb, data }) {
+function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
+
+  const [editable, setEditable] = React.useState(false);
+
+  let diatum = useDiatum();
+  const onRemove = () => {
+    if(editable) {
+      const title = 'Do you want to delete this message?';
+      const message = '';
+      const buttons = [
+          { text: 'Yes, Delete', onPress: async () => {
+            try {
+              await diatum.removeConversationBlurb(amigoId, dialogueId, hosting, blurb.blurbId);
+            }
+            catch(err) {
+              console.log(err);
+              Alert.alert("failed to delete message");
+            }
+          }},
+          { text: 'Cancel', type: 'cancel' }
+      ];
+      Alert.alert(title, message, buttons);
+    }
+  }
 
   let app = useApp();
+  useEffect(() => {
+    if(app.getAmigoId() == blurb.amigoId || hosting) {
+      setEditable(true);
+    }
+  }, []);
+
   if(blurb.amigoId == app.getAmigoId()) {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
+      <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-start' }} onLongPress={onRemove}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, left: 0 }} />
         <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, left: 0 }} />
         <Text style={{ position: 'absolute', marginLeft: 40, marginBottom: 2, bottom: 0, left: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
         <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
           <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
   else {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-end' }} onLongPress={onRemove}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, right: 0 }} />
         <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, right: 0 }} />
         <Text style={{ position: 'absolute', marginRight: 40, marginBottom: 2, bottom: 0, right: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
         <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
           <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 }

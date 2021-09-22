@@ -546,6 +546,16 @@ export class DiatumApi {
     return await response.json();
   }
 
+  public static async removeBlurb(node: string, token: string, dialogueId: string, blurbId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/conversation/dialogue/" + dialogueId + "/blurb/" + blurbId + "?token=" + token, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  }
+
+  public static async removeContactBlurb(node: string, token: string, agent: string, dialogueId: string, blurbId: string): Promise<void> {
+    let response = await fetchWithTimeout(node + "/commentary/dialogue/" + dialogueId + "/blurb/" + blurbId + "?token=" + token + "&agent=" + agent, { method: 'DELETE', timeout: FETCH_TIMEOUT });
+    checkResponse(response);
+  } 
+
   public static async removeInsight(node: string, token: string, amigoId: string, dialogueId: string): Promise<void> {
     let response = await fetchWithTimeout(node + "/conversation/insight/" + dialogueId + "?token=" + token + "&amigoId=" + amigoId, { method: 'DELETE', timeout: FETCH_TIMEOUT });
     checkResponse(response);
