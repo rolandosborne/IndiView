@@ -322,7 +322,7 @@ function ConversationEntry({ entry }) {
           <Text style={{ fontSize: 12, color: '#444444' }}>{ getTime(entry.modified) }</Text>
         </View>
       </View>
-      <View style={{ marginLeft: 64, alignSelf: 'center', width: 1, flexGrow: 1, height: '100%' }}>
+      <View style={{ marginLeft: 32, alignSelf: 'center', width: 1, flexGrow: 1, height: '100%' }}>
           <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
             <OptionsMenu customButton={dots} options={options} actions={actions} />
           </View>

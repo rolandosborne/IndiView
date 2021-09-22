@@ -164,7 +164,7 @@ function RootScreen({ navigation }) {
   diatum.init("indiview_v146.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 
     if(ctx.context == null) {
-      navigation.replace('Login');
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }]});
     }
     else {
       let l = ctx.context;
@@ -174,11 +174,11 @@ function RootScreen({ navigation }) {
         support.setToken(l.appToken);
         support.setAmigoId(l.amigoId);
         await syncConfig(diatum, support);
-        navigation.replace('Main');
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }]});
       }
       catch(err) {
         console.log(err);
-        navigation.replace('Login');
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }]});
       }
     }
   });
@@ -200,7 +200,7 @@ function LoginScreen({ navigation }) {
         onBusy(true);
         getAttachCode(username, password).then(c => {
           onBusy(false);
-          navigation.replace("Agree", { code: c });
+          navigation.reset({ index: 0, routes: [{ name: 'Agree', params: { code: c }}]});
         }).catch(err => {
           onBusy(false);
           Alert.alert("failed to retrieve attachment code");
@@ -245,7 +245,7 @@ function AgreeScreen({ route, navigation }) {
         support.setAmigoId(l.amigoId);
         await diatum.setAppContext(l);
         await syncConfig(diatum, support);
-        navigation.replace("Main");
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }]});
       }
       catch(err) {
         console.log(err);
@@ -255,7 +255,7 @@ function AgreeScreen({ route, navigation }) {
     }
   });
 
-  const cancel = (() => { navigation.replace("Login") });
+  const cancel = (() => { navigation.reset({ index: 0, routes: [{ name: 'Login' }]}) });
   const terms = (() => { Linking.openURL('https://diatum.org/terms-of-service') });
   const policy = (() => { Linking.openURL('https://diatum.org/policies-introduction') });
 
@@ -367,7 +367,7 @@ function HomeDrawerContent(props) {
           catch(err) {
             console.log("clear context failed");
           }
-          logoutNav.replace("Login");
+          logoutNav.reset({ index: 0, routes: [{ name: 'Login' }]});
         }}
     ];
     Alert.alert(title, message, buttons);
