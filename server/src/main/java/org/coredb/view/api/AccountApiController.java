@@ -137,17 +137,18 @@ public class AccountApiController implements AccountApi {
     }
 
     public ResponseEntity<String> report(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of reported account" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<String>(objectMapper.readValue("\"\"", String.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<String>(HttpStatus.NOT_IMPLEMENTED);
+      try {
+        String result = accountService.setAlert(token, amigoId);
+        return new ResponseEntity<String>(result, HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 
     public ResponseEntity<Integer> setIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "registry holding public profile" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "registry", required = true) String registry) {

@@ -95,7 +95,6 @@ public class AccountService {
     return "OK";
   }
 
-  @Transactional
   public List<Contact> getMatching(String token, String match) throws IllegalArgumentException {
   
     // lookup account token
@@ -106,7 +105,8 @@ public class AccountService {
 
     // get list of matching accounts
     Pageable limit = new PageRequest(0,32);
-    Specifications<Account> spec = Specifications.where(new AccountSpecificationMatch(account.getAmigoId(), match));
+    Long alerted = Instant.now().getEpochSecond() - (long)7200;
+    Specifications<Account> spec = Specifications.where(new AccountSpecificationMatch(account.getAmigoId(), match, alerted));
     Page<Account> page = accountRepository.findAll(spec, limit);
 
     // extract contact attributes
@@ -126,6 +126,25 @@ public class AccountService {
     return contacts;
   }
 
+  public String setAlert(String token, String amigoId) throws IllegalArgumentException, NotFoundException {
+
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new IllegalArgumentException("login token not found");
+    }
+
+    Account report = accountRepository.findOneByAmigoId(amigoId);
+    if(report == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    report.setAlertTimestamp(Instant.now().getEpochSecond());
+    accountRepository.save(report);
+    return amigoId;    
+  } 
+
+  @Transactional
   public Login attach(AmigoMessage msg, String code) throws NotAcceptableException, IllegalArgumentException, Exception {
 
     // extract node params
