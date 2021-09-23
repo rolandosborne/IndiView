@@ -205,6 +205,8 @@ function ConversationList({ label }) {
 function ConversationEntry({ entry }) {
   const [source, setSource] = React.useState(require("../assets/avatar.png"));
   const [message, setMessage] = React.useState(null);
+  const [blurbRevision, setBlurbRevision] = React.useState(null);
+  const [appRevision, setAppRevision] = React.useState(null);
   const [options, setOptions] = React.useState(['Close Menu' ]);
   const [actions, setActions] = React.useState([]);
 
@@ -214,6 +216,10 @@ function ConversationEntry({ entry }) {
     }
     if(entry.blurbData != null) {
       setMessage(entry.blurbData.message);
+      setBlurbRevision(entry.blurbData.revision);
+    }
+    if(entry.appData != null) {
+      setAppRevision(entry.appData.revision);
     }
     let opt = [];
     let act = [];
@@ -263,6 +269,13 @@ function ConversationEntry({ entry }) {
     else {
       return (<Icon name='user' style={{ paddingRight: 8, color: '#888888' }} />);
     }
+  }
+
+  const Read = () => {
+    if((blurbRevision != null && appRevision == null) || appRevision < blurbRevision) {
+      return (<Icon name='star' style={{ paddingRight: 8, color: '#0077cc' }} />);
+    }
+    return (<></>);
   }
 
   const dots = (<Icon name='ellipsis-h' style={{ fontSize: 20, paddingLeft: 16, paddingTop: 1, paddingBottom: 1, color: '#0077CC' }}/>);
@@ -320,6 +333,7 @@ function ConversationEntry({ entry }) {
         <Text style={{ fontSize: 16, color: '#444444' }}>{ entry.name }</Text>
         <Text style={{ fontSize: 12, color: '#444444' }}>{ entry.handle }</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Read />
           <Location />
           <Closed />
           <Offsync />

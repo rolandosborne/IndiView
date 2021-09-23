@@ -24,6 +24,7 @@ export function Topics({ route, navigation }) {
   const [message, setMessage] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
+  let revision = React.useRef(null);
   let diatum = useDiatum();
 
   const update = async () => {
@@ -32,11 +33,29 @@ export function Topics({ route, navigation }) {
   }
 
   useEffect(() => {
+    let conv = route.params;
+    if(conv.appData != null) {
+      revision.current = conv.appData.revision;
+    }
+    if(conv.blurbData != null && conv.blurbData.revision != null) {
+      if(revision.current == null || conv.blurbData.revision > revision.current) {
+        revision.current = conv.blurbData.revision;
+        diatum.setConversationAppData(conv.amigoId, conv.dialogueId, conv.hosting, { revision: revision.current });
+      }
+    }
     diatum.setListener(DiatumEvent.Conversation, update);
     return () => {
       diatum.clearListener(DiatumEvent.Conversation, update);
     }
   }, []);
+
+  const setRevision  = (r: number) => {
+    if(revision.current == null || revision.current < r) {
+      let conv = route.params;
+      revision.current = r;
+      diatum.setConversationAppData(conv.amigoId, conv.dialogueId, conv.hosting, { revision: revision.current });
+    }
+  }
 
   let latch: Latch = useLatch();
   const onLatch = () => { };
@@ -115,12 +134,12 @@ export function Topics({ route, navigation }) {
         <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
         <Control />
       </View>
-      <FlatList data={topics} keyExtractor={item => item.topicId} renderItem={({item}) => <TopicEntry amigoId={param.amigoId} dialogueId={param.dialogueId} hosting={param.hosting} topic={item} />} />
+      <FlatList data={topics} keyExtractor={item => item.topicId} renderItem={({item}) => <TopicEntry amigoId={param.amigoId} dialogueId={param.dialogueId} hosting={param.hosting} topic={item} setRevision={setRevision} />} />
     </View>
   );
 }
 
-function TopicEntry({ amigoId, dialogueId, hosting, topic }) {
+function TopicEntry({ amigoId, dialogueId, hosting, topic, setRevision }) {
   const [blurbs, setBlurbs] = React.useState([]);
 
   diatum = useDiatum();
@@ -136,6 +155,9 @@ function TopicEntry({ amigoId, dialogueId, hosting, topic }) {
         data = {};
       }
       m.unshift(<BlurbEntry key={i} blurb={b[i]} data={data} amigoId={amigoId} dialogueId={dialogueId} hosting={hosting} />)
+    }
+    if(b.length > 0) {
+      setRevision(b[b.length-1].revision);
     }
     setBlurbs(m);
   }, [topic]);

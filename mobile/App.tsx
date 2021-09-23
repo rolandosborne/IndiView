@@ -67,15 +67,17 @@ function RootScreen({ navigation }) {
 
       if(type == DiatumDataType.Message) {
 
+        let revision: number;
         let message: string;
         let t: TopicView[] = await diatum.getTopicViews(object.amigoId, object.dialogueId, object.hosting);
         if(t.length > 0) {
           let b: Blurb[] = await diatum.getTopicBlurbs(object.amigoId, object.dialogueId, object.hosting, t[0].topicId);
           if(b.length > 0 && b[0].data != null) {
             message = JSON.parse(b[b.length-1].data).message;
+            revision = b[b.length-1].revision 
           }
         }
-        await diatum.setConversationBlurbData(object.amigoId, object.dialogueId, object.hosting, { message: message });
+        await diatum.setConversationBlurbData(object.amigoId, object.dialogueId, object.hosting, { message: message, revision: revision });
       }
 
       if(type == DiatumDataType.AmigoSubject) {
@@ -161,7 +163,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v146.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v148.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 
     if(ctx.context == null) {
       navigation.reset({ index: 0, routes: [{ name: 'Login' }]});
