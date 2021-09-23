@@ -166,8 +166,13 @@ function ConversationList({ label }) {
       if(amigo != null) {
         setBusy(true);
         try {
-          let dialogue = await diatum.addConversation(amigo.amigoId); 
-          nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
+          let dialogue = await diatum.addConversation(amigo.amigoId);
+          if(dialogue == null) {
+            Alert.alert("failed to link conversation");
+            setBusy(false);
+            return;
+          } 
+          nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, active: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
           setBusy(false);
         }
         catch(err) {

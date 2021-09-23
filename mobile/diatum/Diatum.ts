@@ -1652,7 +1652,14 @@ class _Diatum {
   public async addConversation(amigoId: string): Promise<string> {
     let connection = await this.storage.getAmigoConnection(this.session.amigoId, amigoId);
     let dialogue = await DiatumApi.addConversation(this.session.amigoNode, this.session.amigoToken, amigoId);
-    await DiatumApi.addInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision);  
+    try {
+      await DiatumApi.addInsight(connection.node, connection.token, this.authToken, dialogue.dialogueId, dialogue.revision); 
+    }
+    catch(err) {
+      console.log(err);
+      await this.syncDialogue();
+      return null;
+    } 
     try {
       await DiatumApi.updateConversation(this.session.amigoNode, this.session.amigoToken, dialogue.dialogueId, true, true, null, dialogue.revision);
     }
