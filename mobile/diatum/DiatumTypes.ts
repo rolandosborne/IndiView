@@ -65,6 +65,7 @@ export interface Amigo {
 
 export interface ContactRequest {
   shareId: string;
+  revision: number;
   amigo: Amigo;
 }
 

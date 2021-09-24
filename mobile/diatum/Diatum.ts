@@ -1883,7 +1883,7 @@ async function getAccountData(key: string): Promise<any> {
 
 async function setAccountData(key: string, data: any): Promise<void> {
   let diatum = await getInstance();
-  return await diatum.setAccountData(key);
+  return await diatum.setAccountData(key, data);
 }
 
 async function setListener(event: DiatumEvent, callback: (objectId: string) => void): Promise<void> {

@@ -163,7 +163,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v148.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v151.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 
     if(ctx.context == null) {
       navigation.reset({ index: 0, routes: [{ name: 'Login' }]});
@@ -348,6 +348,13 @@ function HomeConversationScreen() {
 }  
 
 function HomeDrawerContent(props) {
+  const [requested, setRequested] = React.useState(false);
+
+  let curShare = React.useRef(0);
+  let curPending = React.useRef(0);
+  let setShare = React.useRef(0);
+  let setPending = React.useRef(0);
+
   homeNav = props.navigation;
 
   let diatum: Diatum = useDiatum();
@@ -375,6 +382,54 @@ function HomeDrawerContent(props) {
     Alert.alert(title, message, buttons);
   });
 
+  const updateShare = async () => {
+    let s = await diatum.getContacts(null, "received");
+    for(let i = 0; i < s.length; i++) {
+      if(curShare.current == null || curShare.current < s[i].revision) {
+        curShare.current = s[i].revision;
+      }
+    }
+    let share = await diatum.getAccountData("SHARE_REVISION");
+    if(share != null) {
+      setShare.current = share;
+    }
+    setRequest();
+  }
+
+  const updatePending = async () => {
+    let p = await diatum.getContactRequests();
+    for(let i = 0; i < p.length; i++) {
+      if(curPending.current == null || curPending.current < p[i].revision) {
+        curPending.current = p[i].revision;
+      }
+    }
+    let pending = await diatum.getAccountData("PENDING_REVISION");
+    if(pending != null) {
+      setPending.current = pending;
+    }
+    setRequest();
+  }
+
+  const setRequest = () => {
+    if(setPending.current < curPending.current || setShare.current < curShare.current) {
+      setRequested(true);
+      props.setLatch('#0077CC');
+    }
+    else {
+      setRequested(false);
+      props.setLatch('#272728');
+    }
+  }
+
+  useEffect(() => {
+    diatum.setListener(DiatumEvent.Share, updateShare);
+    diatum.setListener(DiatumEvent.Pending, updatePending);
+    return () => {
+      diatum.clearListener(DiatumEvent.Share, updateShare);
+      diatum.clearListener(DiatumEvent.Pending, updatePending);
+    }
+  }, []);
+
   return (
     
     <View style={{ flex: 1 }}>
@@ -387,7 +442,12 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
         props.navigate('Contact Search');
       }} />
-      <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18, color: requested ? '#0077cc' : '#444444' }} onPress={() => {
+        setShare.current = curShare.current;
+        setPending.current = curPending.current;
+        diatum.setAccountData("PENDING_REVISION", curPending.current);
+        diatum.setAccountData("SHARE_REVISION", curShare.current);
+        setRequest();
         props.navigation.closeDrawer();
         props.navigate("Contact Requests");
       }} />
@@ -407,6 +467,7 @@ function HomeDrawerContent(props) {
 function HomeNavScreen({ navigation }) {
  
   const [labelLatch, setLabelLatch] = React.useState('#272728');
+  const [latchColor, setLatchColor] = React.useState('#277728');
   let latch: Latch = useLatch();
   const onLatch = (color: string) => {
     setLabelLatch(color);
@@ -427,16 +488,20 @@ function HomeNavScreen({ navigation }) {
     latch.toggle();
   }
 
+  const setLatch = (c) => {
+    setLatchColor(c);
+  }
+
   return (
     <View style={{ flex: 1 }}>
-      <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} />}>
+      <HomeDrawer.Navigator navigationOptions={{title: 'ro'}} drawerPosition={'left'} drawerContent={(props) => <HomeDrawerContent {...props} {...navigation} {...{setLatch: setLatch}} />}>
         <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} initialParams={{ callback: 'ro' }} />
       </HomeDrawer.Navigator>
       <TouchableOpacity style={{ top: '50%', marginTop: -32, alignItems: 'center', position: "absolute", right: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleLabels}>
         <View style={{ width: 16, height: 64, backgroundColor: labelLatch, borderRadius: 8 }}></View>
       </TouchableOpacity>
       <TouchableOpacity style={{ top: '50%', marginTop: -32, alignItems: 'center', position: "absolute", left: -24, width: 48, height: 64, borderRadius: 8 }} onPress={toggleControl}>
-        <View style={{ width: 16, height: 64, backgroundColor: '#282827', borderRadius: 8 }}></View>
+        <View style={{ width: 16, height: 64, backgroundColor: latchColor, borderRadius: 8 }}></View>
       </TouchableOpacity>
     </View>
   )

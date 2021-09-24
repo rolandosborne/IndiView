@@ -105,7 +105,6 @@ export class Storage {
   }
 
 
-
   // app object storage
   private async getAccountObject(id: string, configId: string): Promise<any> {
     res = await this.db.executeSql("SELECT * FROM _account_" + id + " WHERE key=?;", [configId]);
@@ -211,12 +210,12 @@ export class Storage {
     return views;
   }
   public async getPendingAmigos(id: string): Promise<ContactRequest> {
-    let res = await this.db.executeSql("SELECT share_id, amigo from pending_" + id + ";");
+    let res = await this.db.executeSql("SELECT share_id, revision, amigo from pending_" + id + ";");
     let req: ContactRequest[] = [];
     if(hasResult(res)) {
       for(let i = 0; i < res[0].rows.length; i++) {
         let item = res[0].rows.item(i);
-        req.push({ shareId: item.share_id, amigo: decodeObject(item.amigo) });
+        req.push({ shareId: item.share_id, revision: item.revision, amigo: decodeObject(item.amigo) });
       }
     }
     return req;
