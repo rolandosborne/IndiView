@@ -152,6 +152,17 @@ function ContactList(props) {
     updateLabelContacts(labelIdRef.current);
   };
 
+  const Instructions = () => {
+    if(labelIdRef.current == null && contacts.length == 1) {
+      return (
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <Text style={{ color: '#444444', fontSize: 16 }}>Use the 'Contact Search' page from the left menu to find and connect with others</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
   const updateLabelContacts = (id: string) => {
     diatum.getContacts(id).then(c => {
       for(let i = 0; i < c.length; i++) {
@@ -187,6 +198,7 @@ function ContactList(props) {
   return (
     <SafeAreaView style={{ flex: 1}} forceInset={{ bottom: 'never'}} >
       <FlatList data={identity.concat(contacts)} keyExtractor={item => item.amigoId} renderItem={({item}) => <ContactEntry item={item} /> } />
+      <Instructions />
     </SafeAreaView>
   )
 }

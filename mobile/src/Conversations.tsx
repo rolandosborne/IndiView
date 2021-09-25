@@ -403,12 +403,27 @@ function SelectContact({ active, selected, closed }) {
     item.current = contact;
   }
 
+  const ContactList = () => {
+    if(contacts.length == 0) {
+      return (
+        <View style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }}>
+          <Text style={{ textAlign: 'center', fontSize: 16, color: '#444444' }}>You have no connected contacts</Text>
+        </View>
+      );
+    }
+    else {
+      return (
+        <FlatList style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }} data={contacts} keyExtractor={item => item.amigoId} renderItem={({item}) => <ConnectedContact item={item} amigo={amigo} selected={onSelected} />} />
+      );
+    }
+  }
+
   return (
     <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={onClose}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
         <View style={{ backgroundColor: '#ffffff', width: '80%', borderRadius: 8, maxHeight: '70%' }}>
           <Text style={{ fontSize: 18, color: '#444444', paddingLeft: 16, paddingTop: 16 }}>Start a Conversation With:</Text>
-          <FlatList style={{ alignSelf: 'center', marginTop: 8, marginBottom: 8, padding: 8, borderRadius: 4, width: '90%', backgroundColor: '#eeeeee' }} data={contacts} keyExtractor={item => item.amigoId} renderItem={({item}) => <ConnectedContact item={item} amigo={amigo} selected={onSelected} />} />
+          <ContactList />
           <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
             <TouchableOpacity style={{ margin: 8, borderRadius: 4, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#888888' }} onPress={onClose}>
               <Text style={{ color: '#ffffff', fontSize: 18 }}>Cancel</Text>

@@ -163,7 +163,7 @@ function RootScreen({ navigation }) {
   let tag = TagUtil.MESSAGE;
   let diatum: Diatum = useDiatum();
   let support: AppSupport = useApp();
-  diatum.init("indiview_v151.db", attributes, subjects, tag, dataCallback).then(async ctx => {
+  diatum.init("indiview_v153.db", attributes, subjects, tag, dataCallback).then(async ctx => {
 
     if(ctx.context == null) {
       navigation.reset({ index: 0, routes: [{ name: 'Login' }]});
@@ -195,6 +195,7 @@ function LoginScreen({ navigation }) {
   const [username, onChangeUsername] = React.useState("");
   const [password, onChangePassword] = React.useState("");
   const [busy, onBusy] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
 
   const attach = (() => {
     if(!busy) {
@@ -222,7 +223,10 @@ function LoginScreen({ navigation }) {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
       <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
-      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" secureTextEntry={true} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
+      <View style={{ height: 40, width: '90%', margin: 16, justifyContent: 'center' }}>
+        <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: '100%' }} autoCapitalize="none" secureTextEntry={!visible} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
+        <Icon name={ visible ? 'eye' : 'eye-slash' } style={{ position: 'absolute', right: 0, fontSize: 18, color: '#444444', marginRight: 12 }} onPress={ () => setVisible(!visible) } />
+      </View>
       <TouchableOpacity onPress={attach}><Text style={{ color: attachColor(), fontSize: 24, padding: 32 }} >Attach App</Text></TouchableOpacity>
       <ActivityIndicator animating={busy} size="large" color="#ffffff" />
     </KeyboardAvoidingView>

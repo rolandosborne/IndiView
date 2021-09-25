@@ -171,6 +171,17 @@ function ContactList({ setListener, clearListener }) {
     setRefresh(JSON.parse('{}'));
   }
 
+  const Instructions = () => {
+    if(labelIdRef.current == null && contacts.length == 1 && contacts[0].middle == null) {
+      return (
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <Text style={{ color: '#444444', fontSize: 16 }}>Use the 'Contact Search' page from the left menu to find and connect with others</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
   useEffect(() => {
     setListener(setLabel);
     diatum.setListener(DiatumEvent.Contact, updateContacts);
@@ -191,6 +202,7 @@ function ContactList({ setListener, clearListener }) {
   return (
     <SafeAreaView style={{ flex: 1}} foctor={item => item.id} forceInset={{ bottom: 'never' }}>
       <FlatList data={contacts} extraData={refresh} keyExtractor={item => item.id} renderItem={({item}) => <ContactRow item={item} />} />
+      <Instructions />
     </SafeAreaView>
   );
 }
