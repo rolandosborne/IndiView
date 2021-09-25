@@ -190,7 +190,7 @@ function ConversationList({ label }) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} forceInset={{ bottom: 'never' }}>
-      <FlatList style={{ paddingLeft: 16, paddingRight: 16 }} data={conversations} keyExtractor={item => item.dialogueId} renderItem={({item}) => <ConversationEntry entry={item} />} />
+      <FlatList style={{ paddingLeft: 16, paddingRight: 16, padding: 8 }} data={conversations} keyExtractor={item => item.dialogueId} renderItem={({item}) => <ConversationEntry entry={item} />} />
       <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, margin: 16 }} onPress={onConversation}>
         <View opacity={0.8} style={{backgroundColor: '#0077CC', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, borderRadius: 16 }}>
           <Text style={{ fontSize: 18, color: '#ffffff' }}><Icon name="plus" style={{ fontSize: 14 }}/>&nbsp;Conversation</Text>

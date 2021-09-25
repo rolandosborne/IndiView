@@ -17,8 +17,7 @@ import { AppSupport, AppSupportProvider, useApp } from './AppSupport';
 export function Comment({ route,navigation }) {
   const [tags, setTags] = React.useState([]);
   const [message, setMessage] = React.useState(null);
-
-  let busy = React.useRef(false);
+  const [busy, setBusy] = React.useState(false);
 
   let diatum = useDiatum();
 
@@ -60,8 +59,8 @@ export function Comment({ route,navigation }) {
   }, []);
 
   const onSend = async () => {
-    if(message != null && busy.current == false) {
-      busy.current = true;
+    if(message != null) {
+      setBusy(true);
       try {
         if(route.params.amigoId == null) {
           await diatum.addSubjectTag(route.params.subjectId, TagUtil.MESSAGE, JSON.stringify({ message: message }));
@@ -75,17 +74,26 @@ export function Comment({ route,navigation }) {
         console.log(err);
         Alert.alert("failed to add comment");
       }
-      busy.current = false;
+      setBusy(false);
     }
+  }
+
+  const Control = () => {
+    if(busy) {
+      return (<ActivityIndicator style={{ alignSelf: 'center' }} animating={true} size="small" color="#777777" />)
+    }
+    return (
+      <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onSend}>
+        <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
+      </TouchableOpacity>
+    )
   }
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ padding: 12, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
-        <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Comment'} placeholderTextColor={'#888888'} />
-        <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onSend}>
-          <Icon name="send-o" style={{ color: '#0072CC', fontSize: 24, paddingLeft: 16 }} />
-        </TouchableOpacity>
+        <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Comment'} placeholderTextColor={'#888888'} editable={!busy} />
+        <Control />
       </View>
       <FlatList data={tags} keyExtractor={item => item.tagId} renderItem={({item}) => <CommentEntry amigoId={route.params.amigoId} subjectId={route.params.subjectId} tag={item} />} />
     </View>

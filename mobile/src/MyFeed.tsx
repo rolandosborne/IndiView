@@ -211,6 +211,16 @@ function MyFeedPage({ navigation, handle, labelId }) {
     updateSubjects();
   }, [labelId]);
 
+  const Instructions = () => {
+    if(label.current == null && subjects.length == 0) {
+      return (
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <Text style={{ color: '#444444', fontSize: 16 }}>Use the plus icon in the top right to add posts to your feed.</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -223,6 +233,7 @@ function MyFeedPage({ navigation, handle, labelId }) {
         }
         return (<></>);
       }} />
+      <Instructions />
     </View>
   );
 }

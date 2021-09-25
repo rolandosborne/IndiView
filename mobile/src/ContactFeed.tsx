@@ -74,6 +74,19 @@ export function ContactFeed({ route, navigation }) {
     });
   }, [navigation, contact]);
 
+  const Instructions = () => {
+    if(subjects.length == 0) {
+      return (
+        <View style={{ position: 'absolute', flexDirection: 'row', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ color: '#444444', fontSize: 16, textAlign: 'center' }}>This contact has not shared any posts.</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <FlatList data={subjects} keyExtractor={item => item.subjectId} renderItem={({item}) => {
@@ -85,6 +98,7 @@ export function ContactFeed({ route, navigation }) {
         }
         return (<></>);
       }} />
+      <Instructions />
     </View>
   );
 }

@@ -80,6 +80,17 @@ export function ManageLabels({ navigation }) {
     });
   }, [navigation]);
 
+  const Instructions = () => {
+    if(labels.length == 0) {
+      return (
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <Text style={{ color: '#444444', fontSize: 16 }}>Use the plus icon in the top right to add labels for your contacts and data.</Text>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+
   return (
     <View style={{ flex: 1, width: '100%' }}>
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end', paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, borderBottomWidth: 2, borderColor: '#dddddd', backgroundColor: '#dddddd' }}>
@@ -95,6 +106,7 @@ export function ManageLabels({ navigation }) {
         </View>
       </View>
       <FlatList style={{ paddingLeft: 16, paddingRight: 16 }} data={labels} keyExtractor={item => item.labelId} renderItem={({item}) => <LabelName item={item} set={onEdit} clear={onDelete} /> } />
+      <Instructions />
       <PromptLabel prompt={prompt} label={label} saved={onSave} closed={onClose} />
     </View>
   )

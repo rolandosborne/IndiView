@@ -54,16 +54,32 @@ export function ContactRequests({ navigation }) {
     req.sort((a, b) => (a.name < b.name) ? -1 : 1);
     setRequests(req);
   };
-  
+ 
+  const Instructions = () => {
+    if(requests.length == 0) {
+      return (
+        <View style={{ position: 'absolute', flexDirection: 'row', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ color: '#444444', fontSize: 16, textAlign: 'center' }}>You have no pending requests.</Text>
+          </View>
+        </View>
+      );
+    }
+    return (<></>);
+  }
+ 
   return (
-    <FlatList style={{ paddingTop: 16, flex: 1 }} data={requests} keyExtractor={item => item.id} renderItem={({item}) => { 
-      if(item.pending) {
-        return (<PendingEntry item={item} />);
-      }
-      else {
-        return (<SavedEntry item={item} />);
-      }
-    }} /> 
+    <View style={{ paddingTop: 16, flex: 1 }}>
+      <FlatList data={requests} keyExtractor={item => item.id} renderItem={({item}) => { 
+        if(item.pending) {
+          return (<PendingEntry item={item} />);
+        }
+        else {
+          return (<SavedEntry item={item} />);
+        }
+      }} /> 
+      <Instructions />
+    </View>
   );
 }
 

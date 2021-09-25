@@ -270,6 +270,19 @@ function MyProfilePage({ navigation, labelId }) {
     });
   }
 
+  const Instructions = () => {
+    if(labelIdRef.current == null && attributes.length == 0) {
+      return (
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#eeeeee', borderRadius: 8, bottom: 0 }}>
+          <Text style={{ color: '#444444', fontSize: 16 }}>Use the plus icon in the top right to add your contact info.</Text>
+        </View>
+      );
+    }
+    return (
+      <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
+    );
+  }
+
   useEffect(() => {
     diatum.setListener(DiatumEvent.Identity, updateIdentity);
     diatum.setListener(DiatumEvent.Attributes, updateAttributes);
@@ -435,7 +448,7 @@ function MyProfilePage({ navigation, labelId }) {
       <View style={{ flex: 1, width: '100%' }}>
         <FlatList style={{ marginLeft: 32, marginRight: 32, paddingTop: 16 }} showsVerticalScrollIndicator={false} data={attributes} keyExtractor={item => item.attributeId} renderItem={({item,index}) => <AttributeEntry item={item} index={index}  last={attributes.length==(index+1)}/> } />
       </View>
-      <LinearGradient colors={['rgba(176,176,176,0)', 'rgba(176,176,176,1)']} style={{ position: 'absolute', width: '100%', height: 32, left: 0, bottom: 0 }} />
+      <Instructions />
       <PromptText mode={mode} value={text} saved={onSave} closed={onClosed} />
     </View>
   );

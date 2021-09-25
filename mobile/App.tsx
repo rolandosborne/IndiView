@@ -438,15 +438,15 @@ function HomeDrawerContent(props) {
     
     <View style={{ flex: 1 }}>
       <Image source={require('./logo.png')} style={{ width: '100%', marginBottom: 16 }} />
-      <DrawerItem label={'Manage Labels'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Manage Labels'} labelStyle={{ fontSize: 18, color: '#555555' }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Manage Labels");
       }} />
-      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Contact Search'} labelStyle={{ fontSize: 18, color: '#555555' }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate('Contact Search');
       }} />
-      <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18, color: requested ? '#0077cc' : '#444444' }} onPress={() => {
+      <DrawerItem label={'Contact Requests'} labelStyle={{ fontSize: 18, color: requested ? '#0077cc' : '#555555' }} onPress={() => {
         setShare.current = curShare.current;
         setPending.current = curPending.current;
         diatum.setAccountData("PENDING_REVISION", curPending.current);
@@ -455,15 +455,15 @@ function HomeDrawerContent(props) {
         props.navigation.closeDrawer();
         props.navigate("Contact Requests");
       }} />
-      <DrawerItem label={'Blocked Items'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Blocked Items'} labelStyle={{ fontSize: 18, color: '#555555' }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Blocked Items");
       }} />
-      <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18 }} onPress={() => {
+      <DrawerItem label={'Settings'} labelStyle={{ fontSize: 18, color: '#555555' }} onPress={() => {
         props.navigation.closeDrawer();
         props.navigate("Settings");
       }} />
-      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18 }} onPress={logout} />
+      <DrawerItem label={'Logout'} labelStyle={{ fontSize: 18, color: '#555555' }} onPress={logout} />
     </View>
   );
 }
