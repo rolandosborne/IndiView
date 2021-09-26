@@ -145,6 +145,33 @@ public class AccountService {
   } 
 
   @Transactional
+  public Integer setIdentity(String token) throws IllegalArgumentException, NotAcceptableException, Exception {
+    
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new IllegalArgumentException("login token not found");
+    }
+  
+    RestTemplate rest = new RestTemplate();
+    ResponseEntity<AmigoMessage> response = rest.getForEntity(account.getRegistry() + "/amigo/messages?amigoId=" + account.getAmigoId(), AmigoMessage.class);
+    Amigo amigo = getObject(response.getBody());
+
+    account.setRevision(amigo.getRevision());
+    account.setRegistry(amigo.getRegistry());
+    account.setNode(amigo.getNode());
+    account.setVersion(amigo.getVersion());
+    account.setHandle(amigo.getHandle());
+    account.setLocation(amigo.getLocation());
+    account.setDescription(amigo.getDescription());
+    account.setName(amigo.getName());
+    account.setLogoSet(amigo.getLogo() != null);
+    account = accountRepository.save(account);
+
+    return amigo.getRevision();
+  }
+
+  @Transactional
   public Login attach(AmigoMessage msg, String code) throws NotAcceptableException, IllegalArgumentException, Exception {
 
     // extract node params

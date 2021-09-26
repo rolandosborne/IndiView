@@ -129,7 +129,7 @@ public interface AccountApi {
     @RequestMapping(value = "/account/identity",
         produces = { "application/json" }, 
         method = RequestMethod.PUT)
-    ResponseEntity<Integer> setIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token, @NotNull @Parameter(in = ParameterIn.QUERY, description = "registry holding public profile" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "registry", required = true) String registry);
+    ResponseEntity<Integer> setIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token);
 
 
     @Operation(summary = "", description = "Update cached identity", tags={ "account" })

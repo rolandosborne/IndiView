@@ -86,12 +86,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: registry
-          in: query
-          description: registry holding public profile
-          required: true
-          schema:
-            type: string
       responses:
         '201':
           description: successful operation

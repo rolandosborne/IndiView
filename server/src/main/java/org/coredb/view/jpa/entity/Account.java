@@ -34,6 +34,7 @@ public class Account implements Serializable {
   private Long alertTimestamp;
 
   public Account() {
+    this.alertTimestamp = (long)0;
   }
 
   @Id

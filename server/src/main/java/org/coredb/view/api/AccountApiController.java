@@ -151,18 +151,23 @@ public class AccountApiController implements AccountApi {
       }
     }
 
-    public ResponseEntity<Integer> setIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "registry holding public profile" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "registry", required = true) String registry) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Integer>(objectMapper.readValue("0", Integer.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Integer>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Integer>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Integer> setIdentity(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
+      try {
+        Integer revision = accountService.setIdentity(token);
+        return new ResponseEntity<Integer>(revision, HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Integer>(HttpStatus.NOT_FOUND);
+      }
+      catch(NotAcceptableException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Integer>(HttpStatus.NOT_ACCEPTABLE); //406
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<Integer>(HttpStatus.SERVICE_UNAVAILABLE);
+      }
     }
 
     public ResponseEntity<Void> setSettings(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Settings body) {
