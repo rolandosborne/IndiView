@@ -205,29 +205,38 @@ function MyWebsite({params, navigation}) {
   const [schema, setSchema] = React.useState(params.schema);
   const [name, setName] = React.useState(params.data.name);
   const [url, setUrl] = React.useState(params.data.url);
+  const [busy, setBusy] = React.useState(false);
 
   let nameRef = useRef(params.data.name);
   let urlRef = useRef(params.data.url);
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, url: urlRef.current }));
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, url: urlRef.current }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    let save;
+    if(busy) {
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Website', headerRight: () => save });
-  }, [navigation]);
+  }, [navigation, busy]);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
@@ -242,27 +251,36 @@ function MySocial({params, navigation}) {
   const [schema, setSchema] = React.useState(params.schema);
   const [category, setCategory] = React.useState(params.data.category);
   const [link, setLink] = React.useState(params.data.link);
+  const [busy, setBusy] = React.useState(false);
 
   let categoryRef = useRef(params.data.category);
   let linkRef = useRef(params.data.link);
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, link: linkRef.current }));
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, link: linkRef.current }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    let save;
+    if(busy) {
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
   }, [navigation]);
 
@@ -279,29 +297,38 @@ function MyEmail({params, navigation}) {
   const [schema, setSchema] = React.useState(params.schema);
   const [category, setCategory] = React.useState(params.data.category);
   const [email, setEmail] = React.useState(params.data.email);
+  const [busy, setBusy] = React.useState(false);
 
   let categoryRef = useRef(params.data.category);
   let emailRef = useRef(params.data.email);
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, email: emailRef.current }));
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, email: emailRef.current }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    let save;
+    if(busy) {
+      return (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Email Address', headerRight: () => save });
-  }, [navigation]);
+  }, [navigation, busy]);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
@@ -318,6 +345,7 @@ function MyPhone({params, navigation}) {
   const [category, setCategory] = React.useState(params.data.category);
   const [phone, setPhone] = React.useState(params.data.phone);
   const [sms, setSms] = React.useState(params.data.phoneSms);
+  const [busy, setBusy] = React.useState(false);
 
   let categoryRef = useRef(params.data.category);
   let phoneRef = useRef(params.data.phone);
@@ -325,15 +353,16 @@ function MyPhone({params, navigation}) {
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, phone: phoneRef.current, phoneSms: smsRef.current }));
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ category: categoryRef.current, phone: phoneRef.current, phoneSms: smsRef.current }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
-
 
   const PhoneSms = () => {
     if(sms) {
@@ -357,13 +386,19 @@ function MyPhone({params, navigation}) {
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    let save;
+    if(busy) {
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Phone Number', headerRight: () => save });
-  }, [navigation]);
+  }, [navigation, busy]);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
@@ -387,6 +422,7 @@ function MyHome({params, navigation}) {
   const [state, setState] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.provinceStateCounty);
   const [code, setCode] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.postalCode);
   const [country, setCountry] = React.useState(params.data.homeAddress==null?null:params.data.homeAddress.country);
+  const [busy, setBusy] = React.useState(false);
 
   let nameRef = useRef(name);
   let phoneRef = useRef(phone);
@@ -399,14 +435,16 @@ function MyHome({params, navigation}) {
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, phoneNumber: phoneRef.current, phoneNumberSms: smsRef.current, homeAddress: {
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ name: nameRef.current, phoneNumber: phoneRef.current, phoneNumberSms: smsRef.current, homeAddress: {
         streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current } }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
 
   const PhoneSms = () => {
@@ -431,13 +469,19 @@ function MyHome({params, navigation}) {
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    let save;
+    if(busy) {
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Home Location', headerRight: () => save });
-  }, [navigation]);
+  }, [navigation, busy]);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
@@ -475,6 +519,7 @@ function MyCard({params, navigation}) {
   const [state, setState] = React.useState(params.data.provinceStateCounty);
   const [code, setCode] = React.useState(params.data.postalCode);
   const [country, setCountry] = React.useState(params.data.country);
+  const [busy, setBusy] = React.useState(false);
 
   let nameRef = useRef(name);
   let titleRef = useRef(title);
@@ -496,13 +541,15 @@ function MyCard({params, navigation}) {
 
   let diatum = useDiatum();
   const onSave = async () => {
+    setBusy(true);
     try {
-      diatum.setAttribute(attributeId, schema, JSON.stringify({ companyName: nameRef.current, companyDescription: descriptionRef.current, title: titleRef.current, professionName: formalRef.current, mainPhone: mainRef.current, mainPhoneSms: mainSmsRef.current, mobilePhone: mobileRef.current, mobilePhoneSms: mobileSmsRef.current, directPhone: directRef.current, directPhoneSms: directSmsRef.current, streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current, email: emailRef.current, website: websiteRef.current }));
+      await diatum.setAttribute(attributeId, schema, JSON.stringify({ companyName: nameRef.current, companyDescription: descriptionRef.current, title: titleRef.current, professionName: formalRef.current, mainPhone: mainRef.current, mainPhoneSms: mainSmsRef.current, mobilePhone: mobileRef.current, mobilePhoneSms: mobileSmsRef.current, directPhone: directRef.current, directPhoneSms: directSmsRef.current, streetPo: streetRef.current, cityTown: cityRef.current, provinceStateCounty: stateRef.current, postalCode: codeRef.current, country: countryRef.current, email: emailRef.current, website: websiteRef.current }));
     }
     catch(err) {
       console.log(err);
       Alert.alert("Failed to save attribute");
     }
+    setBusy(false);
   };
 
   const MainPhoneSms = () => {
@@ -569,13 +616,19 @@ function MyCard({params, navigation}) {
   };
 
   React.useLayoutEffect(() => {
-    const save = (
-      <TouchableOpacity onPress={onSave}>
-        <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
-      </TouchableOpacity>
-    );
+    const save;
+    if(busy) {
+      return (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+    }
+    else {
+      save = (
+        <TouchableOpacity onPress={onSave}>
+          <Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />
+        </TouchableOpacity>
+      );
+    }
     navigation.setOptions({ title: 'Business Card', headerRight: () => save });
-  }, [navigation]);
+  }, [navigation, busy]);
 
   return (
       <ScrollView style={{ paddingTop: 16 }}>
@@ -605,48 +658,4 @@ function MyCard({params, navigation}) {
       <View style={{ width: '100%', height: 128 }} />
       </ScrollView>
   );
-}
-
-
-function MyAttributePage({params, navigation}) {
-  const [data, setData] = React.useState(params.data);
-
-  React.useLayoutEffect(() => {
-    const save = (<Icon name="save" style={{ color: '#0077CC', fontSize: 24, width: 48, textAlign: 'center' }} />);
-    if(AttributeUtil.isCard(params)) {
-      navigation.setOptions({ title: 'Business Card', headerRight: () => save });
-    }
-    else if(AttributeUtil.isEmail(params)) {
-      navigation.setOptions({ title: 'Email Address', headerRight: () => save });
-    }
-    else if(AttributeUtil.isPhone(params)) {
-      navigation.setOptions({ title: 'Phone Number', headerRight: () => save });
-    }
-    else if(AttributeUtil.isHome(params)) {
-      navigation.setOptions({ title: 'Home Address', headerRight: () => save });
-    }
-    else if(AttributeUtil.isSocial(params)) {
-      navigation.setOptions({ title: 'Social & Messaging', headerRight: () => save });
-    }
-    else {
-      navigation.setOptions({ title: 'Attribute', headerRight: () => save });
-    }
-  }, [navigation]);
-
-  if(AttributeUtil.isCard(params)) {
-    return (<></>);
-  }
-  if(AttributeUtil.isEmail(params)) {
-    return (<></>);
-  }
-  if(AttributeUtil.isPhone(params)) {
-    return (<></>);
-  }
-  if(AttributeUtil.isHome(params)) {
-    return (<></>);
-  }
-  if(AttributeUtil.isSocial(params)) {
-    return (<></>);
-  }
-  return (<></>);
 }
