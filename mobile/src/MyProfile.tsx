@@ -19,6 +19,7 @@ import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
 import { AttributeUtil } from './AttributeUtil';
 import { AttributeParams } from './MyAttribute';
+import { AppSupport, useApp } from './AppSupport';
 
 const ProfileDrawer = createDrawerNavigator();
 let profileNav = null;
@@ -171,6 +172,7 @@ function MyProfilePage({ navigation, labelId }) {
         setBusy(true);
         try {
           await diatum.setProfileImage(image.data);
+          await IndiViewCom.setIdentity(app.getToken());
         }
         catch(err) {
           console.log(err);
@@ -225,6 +227,7 @@ function MyProfilePage({ navigation, labelId }) {
     });
   }, [navigation, identity]);
 
+  let app: AppSupport = useApp();
   let diatum: Diatum = useDiatum();
 
   const updateIdentity = () => {
@@ -414,6 +417,7 @@ function MyProfilePage({ navigation, labelId }) {
       else {
         throw new Error("unknown profile mode");
       }
+      await IndiViewCom.setIdentity(app.getToken());
     }
     catch(err) {
       console.log(err);

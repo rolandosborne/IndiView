@@ -83,8 +83,10 @@ export function ManageLabels({ navigation }) {
   const Instructions = () => {
     if(labels.length == 0) {
       return (
-        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0 }}>
-          <Text style={{ color: '#444444', fontSize: 16 }}>Use the plus icon in the top right to add labels for your contacts and data.</Text>
+        <View style={{ position: 'absolute', marginLeft: 32, marginRight: 32, marginBottom: 16, padding: 16, backgroundColor: '#dddddd', borderRadius: 8, bottom: 0, flexDirection: 'row' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#444444', fontSize: 16 }}>Use the plus icon in the top right to add labels for your contacts and data.</Text>
+          </View>
         </View>
       );
     }

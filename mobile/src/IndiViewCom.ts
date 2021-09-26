@@ -57,6 +57,11 @@ export class IndiViewCom {
       return await response.json();
     }
 
+    static async setIdentity(token: string): Promise<Integer> {
+      let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/identity?token=" + encodeURIComponent(token), { method: 'PUT' });
+      checkResponse(response);
+      return await response.json();
+    }
 
     static async getSettings(token: string): Promise<Config> {
       let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/settings?token=" + encodeURIComponent(token));
