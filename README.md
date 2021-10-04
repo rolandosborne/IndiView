@@ -2,7 +2,7 @@
   <img src="/docs/photos/logo.png" />
 </p>
 
-IndiView is a social media alternative app designed to work with the self-hosted network [Diatum](https://diatum.org). With IndiView, you can maintian a contact list, share pictures and videos, and chat all while having full privacy and control of your data. Your data is transmitted only between self-hosted nodes and  mobile devices. Within the app you seletively share your contact info, photos and videos so your contacts will not all see your identity in the same way. Family may have access to photos or phone numbers that a coworker may not. Most importantly, since all of the data resides in your node, if you move to another Diatum app, your data goes with you.
+IndiView is a social media alternative app designed to work with the self-hosted network [Diatum](https://diatum.org). With IndiView, you can maintian a contact list, share pictures and videos, and chat all while having full privacy and control of your data. Your data is transmitted only between self-hosted nodes and  mobile devices. Within the app you seletively share your contact info, photos and videos, so your contacts will not all see your identity in the same way. Family may have access to photos or phone numbers that a coworker may not. Most importantly, since all of the data resides in your node, if you move to another Diatum app, your data goes with you.
 
 <p align="center">
   <img src="/docs/photos/login.png" width="15%"/>
