@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "481061211409",
+    "project_id": "indiview-ac467",
+    "storage_bucket": "indiview-ac467.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:481061211409:android:613ca457436ae47ccd50b0",
+        "android_client_info": {
+          "package_name": "com.indiview"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "481061211409-ps2jeb1ibhkjuhf0pvu554d82rvvnfbn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUXzONDQUJS8EiL1AmzlJBPpvERaBmBSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "481061211409-ps2jeb1ibhkjuhf0pvu554d82rvvnfbn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
