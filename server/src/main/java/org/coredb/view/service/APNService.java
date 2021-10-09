@@ -77,7 +77,7 @@ public class APNService {
         HttpRequest request = HttpRequest.newBuilder(new URI("https://api.push.apple.com/3/device/" + token))
             .version(HttpClient.Version.HTTP_2)
             .headers("apns-push-type", "alert", "apns-priority", "10")
-            .POST(BodyPublishers.ofString("{ \"aps\" : { \"alert\" : \"" + alert + "\" } }"))
+            .POST(BodyPublishers.ofString("{ \"aps\" : { \"alert\" : \"" + alert + "\", \"thread-id\" : \"" + event + "\" } }"))
             .build();
         HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
         String responseBody = response.body();
