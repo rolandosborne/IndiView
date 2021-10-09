@@ -7,9 +7,9 @@ export function setToken(data) {
 
 let config: string;
 export function setConfig(data, channel) {
-  fetch(INDIVIEW_SERVER + "account/notifications?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: data, channel: 'apn' }) }).then(response => {
-    console.log(response);
-    console.log(response.status);
+  fetch(INDIVIEW_SERVER + "account/notifications?token=" + encodeURIComponent(token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ token: data, channel: channel }) }).then(response => {
+    console.log("push notification response: " + response.status);
   }).catch(err => {
     console.log(err);
   });

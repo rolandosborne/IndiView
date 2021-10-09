@@ -14,9 +14,7 @@ import PushNotification from "react-native-push-notification";
 PushNotification.configure({
   // (optional) Called when Token is generated (iOS and Android)
   onRegister: function (token) {
-  setConfig(JSON.stringify(token), "CHANNEL");
-    //fetch("https://indiview.coredb.org/test/account/token",
-      //    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: token.token });
+  setConfig(token.token, token.os == 'android' ? 'fcm' : 'apn' );
   },
 
   // (required) Called when a remote is received or opened, or local notification is opened
