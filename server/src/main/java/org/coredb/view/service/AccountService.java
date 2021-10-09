@@ -249,6 +249,7 @@ public class AccountService {
     account.setLogoSet(amigo.getLogo() != null);
     account.setEnabled(true);
     account.setSearchable(true);
+    account.setNotifications(false);
     account.setAudioMute(false);
     account.setVideoMute(false);
     account.setAudioQuality("sd");
@@ -278,6 +279,7 @@ public class AccountService {
     // extract settings
     Settings settings = new Settings();
     settings.setSearchable(account.getSearchable());
+    settings.setNotifications(account.getNotifications());
     settings.setVideoQuality(account.getVideoQuality());
     settings.setAudioQuality(account.getAudioQuality());
     settings.setVideoMute(account.getVideoMute());
@@ -296,6 +298,7 @@ public class AccountService {
 
     // store settings
     account.setSearchable(settings.isSearchable());
+    account.setNotifications(settings.isNotifications());
     account.setVideoQuality(settings.getVideoQuality());
     account.setAudioQuality(settings.getAudioQuality());
     account.setVideoMute(settings.isVideoMute());

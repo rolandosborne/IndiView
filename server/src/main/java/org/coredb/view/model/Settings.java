@@ -30,6 +30,9 @@ public class Settings   {
   @JsonProperty("audioMute")
   private Boolean audioMute = null;
 
+  @JsonProperty("notifications")
+  private Boolean notifications = null;
+
   public Settings searchable(Boolean searchable) {
     this.searchable = searchable;
     return this;
@@ -130,6 +133,26 @@ public class Settings   {
     this.audioMute = audioMute;
   }
 
+  public Settings notifications(Boolean notifications) {
+    this.notifications = notifications;
+    return this;
+  }
+
+  /**
+   * Get notifications
+   * @return notifications
+   **/
+  @Schema(required = true, description = "")
+      @NotNull
+
+    public Boolean isNotifications() {
+    return notifications;
+  }
+
+  public void setNotifications(Boolean notifications) {
+    this.notifications = notifications;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -144,12 +167,13 @@ public class Settings   {
         Objects.equals(this.videoQuality, settings.videoQuality) &&
         Objects.equals(this.audioQuality, settings.audioQuality) &&
         Objects.equals(this.videoMute, settings.videoMute) &&
-        Objects.equals(this.audioMute, settings.audioMute);
+        Objects.equals(this.audioMute, settings.audioMute) &&
+        Objects.equals(this.notifications, settings.notifications);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(searchable, videoQuality, audioQuality, videoMute, audioMute);
+    return Objects.hash(searchable, videoQuality, audioQuality, videoMute, audioMute, notifications);
   }
 
   @Override
@@ -162,6 +186,7 @@ public class Settings   {
     sb.append("    audioQuality: ").append(toIndentedString(audioQuality)).append("\n");
     sb.append("    videoMute: ").append(toIndentedString(videoMute)).append("\n");
     sb.append("    audioMute: ").append(toIndentedString(audioMute)).append("\n");
+    sb.append("    notifications: ").append(toIndentedString(notifications)).append("\n");
     sb.append("}");
     return sb.toString();
   }

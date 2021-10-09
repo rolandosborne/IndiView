@@ -199,17 +199,6 @@ public class AccountApiController implements AccountApi {
       return new ResponseEntity<String>(s, HttpStatus.OK);
     }
 
-   public ResponseEntity<Void> setNotification(@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody String token) {
-      try {
-        apnService.setToken(token);
-        return new ResponseEntity<Void>(HttpStatus.OK);
-      }
-      catch(Exception e) {
-        System.out.println(e.toString());
-        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    }
-
     public ResponseEntity<Notifications> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {

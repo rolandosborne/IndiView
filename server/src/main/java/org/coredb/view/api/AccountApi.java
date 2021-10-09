@@ -159,16 +159,6 @@ public interface AccountApi {
     ResponseEntity<String> status(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token);
 
 
-      @Operation(summary = "", description = "Set FCM token", tags={ "account" })
-    @ApiResponses(value = { 
-        @ApiResponse(responseCode = "201", description = "successful operation"),
-        @ApiResponse(responseCode = "500", description = "internal server error") })
-    @RequestMapping(value = "/account/token",
-        consumes = { "application/json" }, 
-        method = RequestMethod.PUT)
-   ResponseEntity<Void> setNotification(@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody String token);
-
-
     @Operation(summary = "", description = "Update notification parameters", tags={ "account" })
     @ApiResponses(value = { 
         @ApiResponse(responseCode = "201", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Notifications.class))),
