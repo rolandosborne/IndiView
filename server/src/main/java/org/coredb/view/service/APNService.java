@@ -63,22 +63,28 @@ public class APNService {
     httpClient = HttpClient.newBuilder().sslContext(sslContextBuilder.build()).version(HttpClient.Version.HTTP_2).build();
   }
 
-  public void setToken(String token) {
-    System.out.println("APN TOKEN: " + token);
+  public void notify(String token, String event) {
 
     try {
 
+        String alert = "";
+        if(event != null && event.equals("blurb")) {
+          alert = "You have a new message.";
+        }
+        if(event != null && event.equals("dialogue")) {
+          alert = "You have a new conversation.";
+        }
         HttpRequest request = HttpRequest.newBuilder(new URI("https://api.push.apple.com/3/device/" + token))
             .version(HttpClient.Version.HTTP_2)
             .headers("apns-push-type", "alert", "apns-priority", "10")
-            .POST(BodyPublishers.ofString("{ \"aps\" : { \"alert\" : \"OHHAI\" } }"))
+            .POST(BodyPublishers.ofString("{ \"aps\" : { \"alert\" : \"" + alert + "\" } }"))
             .build();
         HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
         String responseBody = response.body();
         System.out.println("httpPostRequest : " + responseBody);
     }
     catch(Exception e) {
-      System.out.println(e.toString());
+      log.error("APN: " + e.toString());
     }
 
   }

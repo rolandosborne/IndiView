@@ -216,7 +216,17 @@ public class AccountApiController implements AccountApi {
 
     public ResponseEntity<Void> setEvent(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of contact" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId,@NotNull @Parameter(in = ParameterIn.QUERY, description = "type of event" ,required=true,schema=@Schema(allowableValues={ "dialogue", "blurb" }
 )) @Valid @RequestParam(value = "event", required = true) String event) {
-        String accept = request.getHeader("Accept");
-        return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
+      try {
+        accountService.notify(token, amigoId, event);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 }

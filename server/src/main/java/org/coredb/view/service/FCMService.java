@@ -30,16 +30,8 @@ public class FCMService {
   private final String FIREBASE_CONFIG = "/opt/etc/default/indiview/firebase.json";
 
   public FCMService() throws FileNotFoundException, IOException {
-
-    System.out.println("FIREBASE!!!!! " + FIREBASE_CONFIG);  
-
-    FileInputStream serviceAccount =
-      new FileInputStream(FIREBASE_CONFIG);
-
-    FirebaseOptions options = new FirebaseOptions.Builder()
-      .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-      .build();
-
+    FileInputStream serviceAccount = new FileInputStream(FIREBASE_CONFIG);
+    FirebaseOptions options = new FirebaseOptions.Builder().setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
     FirebaseApp.initializeApp(options);
   }
 
@@ -57,18 +49,26 @@ public class FCMService {
                 .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build()).build();
     }
 
-  public void setToken(String token) throws InterruptedException, ExecutionException {
+  public void notify(String token, String event) {
 
-    System.out.println("FIREBASE: " + token);
-    
-    AndroidConfig androidConfig = getAndroidConfig("");
-    ApnsConfig apnsConfig = getApnsConfig("");
-    Notification notification = Notification.builder().setTitle("TITLE: ROLAND").setBody("BODY: ROLAND").build();
-    Message.Builder builder = Message.builder().setApnsConfig(apnsConfig).setAndroidConfig(androidConfig).setNotification(notification);
-    Message message = builder.setToken(token).build();
-    String response = FirebaseMessaging.getInstance().sendAsync(message).get();
-
-    System.out.println("FIREBASE: " + token + " :: " + response);
+    try {
+      String title = "";
+      if(event != null && event.equals("blurb")) {
+        title = "You have a new message.";
+      }
+      if(event != null && event.equals("dialogue")) {
+        title = "You have a new conversation.";
+      }
+      AndroidConfig androidConfig = getAndroidConfig("");
+      ApnsConfig apnsConfig = getApnsConfig("");
+      Notification notification = Notification.builder().setTitle(title).build();
+      Message.Builder builder = Message.builder().setApnsConfig(apnsConfig).setAndroidConfig(androidConfig).setNotification(notification);
+      Message message = builder.setToken(token).build();
+      String response = FirebaseMessaging.getInstance().sendAsync(message).get();
+    }
+    catch(Exception e) {
+      log.error("FCM: " + e.toString());
+    }
   }
 
 }

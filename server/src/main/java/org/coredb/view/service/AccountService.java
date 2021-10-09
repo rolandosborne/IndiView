@@ -80,6 +80,12 @@ public class AccountService {
   @Autowired
   private ConfigRepository configRepository;
 
+  @Autowired
+  private FCMService fcmService;
+
+  @Autowired
+  private APNService apnService;
+
   public String getStatus(String token) {
   
     Config appToken = configRepository.findOneByConfigId(APP_TOKEN);
@@ -89,9 +95,6 @@ public class AccountService {
       System.out.println("not configured");
       return "FAIL";
     }
-
-    System.out.println(appNode.getStrValue());
-    System.out.println(appToken.getStrValue());
 
     return "OK";
   }
@@ -305,6 +308,30 @@ public class AccountService {
     account.setVideoMute(settings.isVideoMute());
     account.setAudioMute(settings.isAudioMute());
     accountRepository.save(account);
+  }
+
+  public void notify(String token, String amigoId, String event) throws NotFoundException {
+ 
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // look up contact
+    Account contact = accountRepository.findOneByAmigoId(amigoId);
+    if(contact != null && contact.getNotifications() && contact.getPushChannel() != null && contact.getPushToken() != null) {
+    
+      // if message for ios device
+      if(contact.getPushChannel().equals("apn")) {
+        apnService.notify(contact.getPushToken(), event);
+      }
+
+      // if message for android device
+      if(contact.getPushChannel().equals("fcm")) {
+        fcmService.notify(contact.getPushToken(), event);
+      }  
+    }
   }
 
   @Transactional
