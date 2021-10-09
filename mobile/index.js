@@ -5,7 +5,7 @@
 import {Alert, AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
-import {setNotifications} from './src/IndiViewCom';
+import {setConfig} from './src/NotificationConfig';
 
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from "react-native-push-notification";
@@ -14,7 +14,7 @@ import PushNotification from "react-native-push-notification";
 PushNotification.configure({
   // (optional) Called when Token is generated (iOS and Android)
   onRegister: function (token) {
-  setNotifications(token);
+  setConfig(JSON.stringify(token), "CHANNEL");
     //fetch("https://indiview.coredb.org/test/account/token",
       //    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: token.token });
   },

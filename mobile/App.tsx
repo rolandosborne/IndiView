@@ -13,6 +13,7 @@ import { DiatumSession, LabelEntry, Attribute, Subject } from './diatum/DiatumTy
 import { DiatumProvider, useDiatum } from "./diatum/DiatumContext";
 import { IndiViewCom } from "./src/IndiViewCom";
 
+import {setToken} from './src/NotificationConfig';
 import PushNotification from "react-native-push-notification";
 
 import { AppSupport, AppSupportProvider, useApp } from './src/AppSupport';
@@ -175,6 +176,7 @@ function RootScreen({ navigation }) {
       console.log("APP TOKEN: " + l.appToken);
       try {
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        setToken(l.appToken);
         support.setToken(l.appToken);
         support.setAmigoId(l.amigoId);
         await syncConfig(diatum, support);
@@ -249,6 +251,7 @@ function AgreeScreen({ route, navigation }) {
       try {
         let l = await IndiViewCom.attach(code);
         await diatum.setSession({ amigoId: l.amigoId, amigoNode: l.accountNode, amigoToken: l.accountToken, appNode: l.serviceNode, appToken: l.serviceToken });
+        setToken(l.appToken);
         support.setToken(l.appToken);
         support.setAmigoId(l.amigoId);
         await diatum.setAppContext(l);
