@@ -21,7 +21,6 @@ PushNotification.configure({
   onNotification: function (notification) {
     console.log("NOTIFICATION:", notification);
 
-    Alert.alert(notification.message);
     // process the notification
 
     // (required) Called when a remote is received or opened, or local notification is opened
