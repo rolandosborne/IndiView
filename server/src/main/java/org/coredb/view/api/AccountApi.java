@@ -10,6 +10,7 @@ import org.coredb.view.model.GpsLocation;
 import org.coredb.view.model.Login;
 import org.coredb.view.model.AmigoMessage;
 import org.coredb.view.model.Settings;
+import org.coredb.view.model.Notifications;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -166,6 +167,34 @@ public interface AccountApi {
         consumes = { "application/json" }, 
         method = RequestMethod.PUT)
    ResponseEntity<Void> setNotification(@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody String token);
+
+
+    @Operation(summary = "", description = "Update notification parameters", tags={ "account" })
+    @ApiResponses(value = { 
+        @ApiResponse(responseCode = "201", description = "successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Notifications.class))),
+        
+        @ApiResponse(responseCode = "404", description = "token not found"),
+        
+        @ApiResponse(responseCode = "500", description = "internal server error") })
+    @RequestMapping(value = "/account/notifications",
+        produces = { "application/json" }, 
+        consumes = { "application/json" }, 
+        method = RequestMethod.PUT)
+    ResponseEntity<Notifications> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token, @Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body);
+
+
+    @Operation(summary = "", description = "Notify contact of event", tags={ "account" })
+    @ApiResponses(value = { 
+        @ApiResponse(responseCode = "201", description = "successful operation"),
+        
+        @ApiResponse(responseCode = "404", description = "token not found"),
+        
+        @ApiResponse(responseCode = "500", description = "internal server error") })
+    @RequestMapping(value = "/account/notify",
+        method = RequestMethod.PUT)
+    ResponseEntity<Void> setEvent(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token, @NotNull @Parameter(in = ParameterIn.QUERY, description = "id of contact" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId, @NotNull @Parameter(in = ParameterIn.QUERY, description = "type of event" ,required=true,schema=@Schema(allowableValues={ "dialogue", "blurb" }
+)) @Valid @RequestParam(value = "event", required = true) String event);
+
 
 }
 

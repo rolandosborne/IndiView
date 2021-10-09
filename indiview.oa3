@@ -49,6 +49,72 @@ paths:
         description: updated configuration
         required: true
           
+  /account/notifications:
+    put:
+      tags:
+        - account
+      description: Update notification parameters
+      operationId: set-notifications
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+        '404':
+          description: token not found
+        '500':
+          description: internal server error      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notifications'
+        description: updated configuration
+        required: true
+        
+  /account/notify:
+    put:
+      tags:
+        - account
+      description: Notify contact of event
+      operationId: set-event
+      parameters:
+        - name: token
+          in: query
+          description: app token
+          required: true
+          schema:
+            type: string
+        - name: amigoId
+          in: query
+          description: id of contact
+          required: true
+          schema:
+            type: string
+        - name: event
+          in: query
+          description: type of event
+          required: true
+          schema:
+            type: string
+            enum: [dialogue, blurb]
+      responses:
+        '201':
+          description: successful operation
+        '404':
+          description: token not found
+        '500':
+          description: internal server error
+        
   /account/identity:
     get:
       tags:
@@ -312,6 +378,18 @@ components:
           type: number
           format: float
           
+    Notifications:
+      type: object
+      required:
+        - token
+        - channel
+      properties:
+        token:
+          type: string
+        channel:
+          type: string
+          enum: [apn, fcm]
+          
     Login:
       type: object
       required:
@@ -347,6 +425,7 @@ components:
         - audioQuality
         - videoMute
         - audioMute
+        - notifications
       properties:
         searchable:
           type: boolean
@@ -357,6 +436,8 @@ components:
         videoMute:
           type: boolean
         audioMute:
+          type: boolean
+        notifications:
           type: boolean
           
     Contact:
