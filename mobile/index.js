@@ -5,6 +5,7 @@
 import {Alert, AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
+import {setConfig} from './src/NotificationConfig';
 
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from "react-native-push-notification";
@@ -13,14 +14,7 @@ import PushNotification from "react-native-push-notification";
 PushNotification.configure({
   // (optional) Called when Token is generated (iOS and Android)
   onRegister: function (token) {
-	console.log("TOKEN");
-    if(token == null) {
-	   Alert.alert("NULL TOKEN");
-	    	}
-	  	else {
-    fetch("https://indiview.coredb.org/test/account/token",
-          { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: token.token });
-				}
+  setConfig(token.token, token.os == 'android' ? 'fcm' : 'apn' );
   },
 
   // (required) Called when a remote is received or opened, or local notification is opened
@@ -45,7 +39,6 @@ PushNotification.configure({
   // (optional) Called when the user fails to register for remote notifications. Typically occurs when APNS is having issues, or the device is a simulator. (iOS)
   onRegistrationError: function(err) {
     console.error(err.message, err);
-	  	Alert.alert("ERROR");
   },
 
   // IOS ONLY (optional): default: all - Permissions to register.

@@ -42,13 +42,13 @@ async function fetchWithTimeout(url, options) {
     ]);
 }
 
-export class IndiViewCom {
+let token: string;
+export function setNotifications(data) {
+  console.log(data);
+  token = JSON.stringify(data);
+}
 
-    static async setNotification(token: string): Promise<void> {
-      let response = await fetchWithTimeout("https://indiview.coredb.org/test/account/token", 
-          { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(token) });
-      checkResponse(response);
-    }
+export class IndiViewCom {
 
     static async attach(attachCode: AttachCode): Promise<Login> {
       let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/attach?code=" + attachCode.code, 
