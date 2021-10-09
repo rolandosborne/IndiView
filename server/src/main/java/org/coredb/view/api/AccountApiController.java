@@ -199,18 +199,19 @@ public class AccountApiController implements AccountApi {
       return new ResponseEntity<String>(s, HttpStatus.OK);
     }
 
-    public ResponseEntity<Notifications> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Notifications>(objectMapper.readValue("{\n  \"channel\" : \"apn\",\n  \"token\" : \"token\"\n}", Notifications.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Notifications>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Notifications>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Void> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body) {
+      try {
+        accountService.setNotifications(token, body);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 
     public ResponseEntity<Void> setEvent(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of contact" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId,@NotNull @Parameter(in = ParameterIn.QUERY, description = "type of event" ,required=true,schema=@Schema(allowableValues={ "dialogue", "blurb" }

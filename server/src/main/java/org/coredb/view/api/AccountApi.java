@@ -167,10 +167,9 @@ public interface AccountApi {
         
         @ApiResponse(responseCode = "500", description = "internal server error") })
     @RequestMapping(value = "/account/notifications",
-        produces = { "application/json" }, 
         consumes = { "application/json" }, 
         method = RequestMethod.PUT)
-    ResponseEntity<Notifications> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token, @Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body);
+    ResponseEntity<Void> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token, @Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body);
 
 
     @Operation(summary = "", description = "Notify contact of event", tags={ "account" })

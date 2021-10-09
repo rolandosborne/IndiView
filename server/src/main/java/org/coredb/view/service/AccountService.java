@@ -62,6 +62,7 @@ import org.coredb.view.model.UserEntry;
 import org.coredb.view.model.ServiceAccess;
 import org.coredb.view.model.Contact;
 import org.coredb.view.model.Settings;
+import org.coredb.view.model.Notifications;
 import org.coredb.view.model.Login;
 
 import javax.ws.rs.NotAcceptableException;
@@ -303,6 +304,21 @@ public class AccountService {
     account.setAudioQuality(settings.getAudioQuality());
     account.setVideoMute(settings.isVideoMute());
     account.setAudioMute(settings.isAudioMute());
+    accountRepository.save(account);
+  }
+
+  @Transactional
+  public void setNotifications(String token, Notifications config) throws NotFoundException {
+ 
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // store settings
+    account.setPushToken(config.getToken());
+    account.setPushChannel(config.getChannel().toString());
     accountRepository.save(account);
   }
 

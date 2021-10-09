@@ -65,10 +65,6 @@ paths:
       responses:
         '201':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Notifications'
         '404':
           description: token not found
         '500':
