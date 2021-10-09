@@ -5,6 +5,7 @@ import org.coredb.view.model.GpsLocation;
 import org.coredb.view.model.Login;
 import org.coredb.view.model.AmigoMessage;
 import org.coredb.view.model.Settings;
+import org.coredb.view.model.Notifications;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +34,8 @@ import java.lang.IllegalArgumentException;
 import javax.ws.rs.NotAcceptableException;
 
 import org.coredb.view.service.AccountService;
+import org.coredb.view.service.FCMService;
+import org.coredb.view.service.APNService;
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
@@ -52,6 +55,12 @@ public class AccountApiController implements AccountApi {
 
     @org.springframework.beans.factory.annotation.Autowired
     private AccountService accountService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private FCMService fcmService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private APNService apnService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AccountApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -190,4 +199,34 @@ public class AccountApiController implements AccountApi {
       return new ResponseEntity<String>(s, HttpStatus.OK);
     }
 
+    public ResponseEntity<Void> setNotifications(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody Notifications body) {
+      try {
+        accountService.setNotifications(token, body);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+
+    public ResponseEntity<Void> setEvent(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token,@NotNull @Parameter(in = ParameterIn.QUERY, description = "id of contact" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "amigoId", required = true) String amigoId,@NotNull @Parameter(in = ParameterIn.QUERY, description = "type of event" ,required=true,schema=@Schema(allowableValues={ "dialogue", "blurb" }
+)) @Valid @RequestParam(value = "event", required = true) String event) {
+      try {
+        accountService.notify(token, amigoId, event);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+      }
+      catch(NotFoundException e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+      }
+      catch(Exception e) {
+        log.error(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
 }

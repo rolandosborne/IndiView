@@ -12,6 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		7B512AE86D428FD994E49AAE /* libPods-IndiView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E5AC7371AD7844BC13015311 /* libPods-IndiView.a */; };
+		7BDBD0412703B577009098E2 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDBD0402703B577009098E2 /* File.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		B2FD7DC6F5ECD7A83A9B7D46 /* libPods-IndiView-IndiViewTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D14EFD2131D6FDC6DA88951 /* libPods-IndiView-IndiViewTests.a */; };
 /* End PBXBuildFile section */
@@ -38,6 +39,9 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = IndiView/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = IndiView/main.m; sourceTree = "<group>"; };
 		4D14EFD2131D6FDC6DA88951 /* libPods-IndiView-IndiViewTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IndiView-IndiViewTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BDBD03F2703B576009098E2 /* IndiView-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IndiView-Bridging-Header.h"; sourceTree = "<group>"; };
+		7BDBD0402703B577009098E2 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		7BDBD042270EBA44009098E2 /* IndiView.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = IndiView.entitlements; path = IndiView/IndiView.entitlements; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = IndiView/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		974F9E5C9501EF8460270FCB /* Pods-IndiView.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IndiView.release.xcconfig"; path = "Target Support Files/Pods-IndiView/Pods-IndiView.release.xcconfig"; sourceTree = "<group>"; };
 		E5AC7371AD7844BC13015311 /* libPods-IndiView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IndiView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +90,7 @@
 		13B07FAE1A68108700A75B9A /* IndiView */ = {
 			isa = PBXGroup;
 			children = (
+				7BDBD042270EBA44009098E2 /* IndiView.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -127,12 +132,14 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				7BDBD0402703B577009098E2 /* File.swift */,
 				13B07FAE1A68108700A75B9A /* IndiView */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* IndiViewTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				71432FBBAEA4E67A7E5029FF /* Pods */,
+				7BDBD03F2703B576009098E2 /* IndiView-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -208,7 +215,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1300;
 					};
 				};
 			};
@@ -412,6 +419,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				7BDBD0412703B577009098E2 /* File.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -431,6 +439,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 09051D472804001F2217400D /* Pods-IndiView-IndiViewTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -458,6 +467,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FD52BF9E1D1BA7FA0BB1F114 /* Pods-IndiView-IndiViewTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = IndiViewTests/Info.plist;
@@ -484,7 +494,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 35;
+				CODE_SIGN_ENTITLEMENTS = IndiView/IndiView.entitlements;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = 3P65PQ7SUR;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
@@ -493,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -501,6 +512,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.coredb.indiview;
 				PRODUCT_NAME = IndiView;
+				SWIFT_OBJC_BRIDGING_HEADER = "IndiView-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -513,7 +525,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 35;
+				CODE_SIGN_ENTITLEMENTS = IndiView/IndiView.entitlements;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = 3P65PQ7SUR;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = IndiView/Info.plist;
@@ -521,7 +534,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -529,6 +542,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.coredb.indiview;
 				PRODUCT_NAME = IndiView;
+				SWIFT_OBJC_BRIDGING_HEADER = "IndiView-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

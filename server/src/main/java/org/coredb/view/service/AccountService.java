@@ -62,6 +62,7 @@ import org.coredb.view.model.UserEntry;
 import org.coredb.view.model.ServiceAccess;
 import org.coredb.view.model.Contact;
 import org.coredb.view.model.Settings;
+import org.coredb.view.model.Notifications;
 import org.coredb.view.model.Login;
 
 import javax.ws.rs.NotAcceptableException;
@@ -79,6 +80,12 @@ public class AccountService {
   @Autowired
   private ConfigRepository configRepository;
 
+  @Autowired
+  private FCMService fcmService;
+
+  @Autowired
+  private APNService apnService;
+
   public String getStatus(String token) {
   
     Config appToken = configRepository.findOneByConfigId(APP_TOKEN);
@@ -88,9 +95,6 @@ public class AccountService {
       System.out.println("not configured");
       return "FAIL";
     }
-
-    System.out.println(appNode.getStrValue());
-    System.out.println(appToken.getStrValue());
 
     return "OK";
   }
@@ -249,6 +253,7 @@ public class AccountService {
     account.setLogoSet(amigo.getLogo() != null);
     account.setEnabled(true);
     account.setSearchable(true);
+    account.setNotifications(false);
     account.setAudioMute(false);
     account.setVideoMute(false);
     account.setAudioQuality("sd");
@@ -278,6 +283,7 @@ public class AccountService {
     // extract settings
     Settings settings = new Settings();
     settings.setSearchable(account.getSearchable());
+    settings.setNotifications(account.getNotifications());
     settings.setVideoQuality(account.getVideoQuality());
     settings.setAudioQuality(account.getAudioQuality());
     settings.setVideoMute(account.getVideoMute());
@@ -296,10 +302,50 @@ public class AccountService {
 
     // store settings
     account.setSearchable(settings.isSearchable());
+    account.setNotifications(settings.isNotifications());
     account.setVideoQuality(settings.getVideoQuality());
     account.setAudioQuality(settings.getAudioQuality());
     account.setVideoMute(settings.isVideoMute());
     account.setAudioMute(settings.isAudioMute());
+    accountRepository.save(account);
+  }
+
+  public void notify(String token, String amigoId, String event) throws NotFoundException {
+ 
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // look up contact
+    Account contact = accountRepository.findOneByAmigoId(amigoId);
+    if(contact != null && contact.getNotifications() && contact.getPushChannel() != null && contact.getPushToken() != null) {
+    
+      // if message for ios device
+      if(contact.getPushChannel().equals("apn")) {
+        apnService.notify(contact.getPushToken(), event);
+      }
+
+      // if message for android device
+      if(contact.getPushChannel().equals("fcm")) {
+        fcmService.notify(contact.getPushToken(), event);
+      }  
+    }
+  }
+
+  @Transactional
+  public void setNotifications(String token, Notifications config) throws NotFoundException {
+ 
+    // lookup account token
+    Account account = accountRepository.findOneByToken(token);
+    if(account == null) {
+      throw new NotFoundException(404, "account not found");
+    }
+
+    // store settings
+    account.setPushToken(config.getToken());
+    account.setPushChannel(config.getChannel().toString());
     accountRepository.save(account);
   }
 

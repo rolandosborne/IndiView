@@ -21,6 +21,9 @@ public class Account implements Serializable {
   private String registry;
   private Boolean enabled;
   private Boolean searchable;
+  private Boolean notifications;
+  private String pushToken;
+  private String pushChannel;
   private String token;
   private String videoQuality;
   private String audioQuality;
@@ -142,6 +145,30 @@ public class Account implements Serializable {
   }
   public void setSearchable(Boolean value) {
     this.searchable = value;
+  }
+
+  @JsonIgnore
+  public Boolean getNotifications() {
+    return this.notifications;
+  }
+  public void setNotifications(Boolean value) {
+    this.notifications = value;
+  }
+
+  @JsonIgnore
+  public String getPushChannel() {
+    return this.pushChannel;
+  }
+  public void setPushChannel(String value) {
+    this.pushChannel = value;
+  }
+
+  @JsonIgnore
+  public String getPushToken() {
+    return this.pushToken;
+  }
+  public void setPushToken(String value) {
+    this.pushToken = value;
   }
 
   @JsonIgnore
