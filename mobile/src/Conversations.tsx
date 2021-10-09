@@ -15,6 +15,7 @@ import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry, Conversation } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
+import { AppSupport, AppSupportProvider, useApp } from './AppSupport';
 
 const ConversationDrawer = createDrawerNavigator();
 let labelNav = null;
@@ -159,6 +160,7 @@ function ConversationList({ label }) {
     );
   }
 
+  let app = useApp();
   let nav = useNavigation();
   const onSelect = async (amigo) => {
     setSelector(false);
@@ -171,7 +173,13 @@ function ConversationList({ label }) {
             Alert.alert("failed to link conversation");
             setBusy(false);
             return;
-          } 
+          }
+          try {
+            await IndiViewCom.setEvent(app.getToken(), amigo.amigoId, 'dialogue');
+          }
+          catch(err) {
+            console.log(err);
+          }
           nav.navigate("Topics", { dialogueId: dialogue, amigoId: amigo.amigoId, hosting: true, active: true, handle: amigo.handle, imageUrl: amigo.imageUrl });
           setBusy(false);
         }

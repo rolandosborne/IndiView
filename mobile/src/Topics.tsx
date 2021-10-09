@@ -57,6 +57,7 @@ export function Topics({ route, navigation }) {
     }
   }
 
+  let app = useApp();
   let latch: Latch = useLatch();
   const onLatch = () => { };
   useEffect(() => {
@@ -107,6 +108,12 @@ export function Topics({ route, navigation }) {
       setBusy(true);
       try {
         await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, TagUtil.MESSAGE, JSON.stringify({ message: message }));
+        try {
+          await IndiViewCom.setEvent(app.getToken(), route.params.amigoId, 'blurb');
+        }
+        catch(err) {
+          console.log(err);
+        }
         setMessage(null);
       }
       catch(err) {

@@ -50,6 +50,12 @@ export function setNotifications(data) {
 
 export class IndiViewCom {
 
+    static async setEvent(token: string, amigoId: string, event: string): Promise<void> {
+      let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/notify?token=" + encodeURIComponent(token) + "&amigoId=" + encodeURIComponent(amigoId) + "&event=" + event,
+          { method: 'PUT', headers: { 'Content-Type': 'application/json' } });
+      checkResponse(response);
+    }
+
     static async attach(attachCode: AttachCode): Promise<Login> {
       let response = await fetchWithTimeout(INDIVIEW_SERVER + "account/attach?code=" + attachCode.code, 
           { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(attachCode.message) });
