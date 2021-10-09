@@ -33,6 +33,8 @@ import java.lang.IllegalArgumentException;
 import javax.ws.rs.NotAcceptableException;
 
 import org.coredb.view.service.AccountService;
+import org.coredb.view.service.FCMService;
+import org.coredb.view.service.APNService;
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
@@ -52,6 +54,12 @@ public class AccountApiController implements AccountApi {
 
     @org.springframework.beans.factory.annotation.Autowired
     private AccountService accountService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private FCMService fcmService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private APNService apnService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AccountApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -188,6 +196,17 @@ public class AccountApiController implements AccountApi {
     public ResponseEntity<String> status(@NotNull @Parameter(in = ParameterIn.QUERY, description = "app token" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "token", required = true) String token) {
       String s = accountService.getStatus(token);
       return new ResponseEntity<String>(s, HttpStatus.OK);
+    }
+
+   public ResponseEntity<Void> setNotification(@Parameter(in = ParameterIn.DEFAULT, description = "updated configuration", required=true, schema=@Schema()) @Valid @RequestBody String token) {
+      try {
+        apnService.setToken(token);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+      }
+      catch(Exception e) {
+        System.out.println(e.toString());
+        return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 
 }
