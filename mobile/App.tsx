@@ -210,6 +210,7 @@ function LoginScreen({ navigation }) {
           navigation.reset({ index: 0, routes: [{ name: 'Agree', params: { code: c }}]});
         }).catch(err => {
           onBusy(false);
+          console.log(err);
           Alert.alert("failed to retrieve attachment code");
         });
       }

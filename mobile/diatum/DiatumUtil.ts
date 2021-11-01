@@ -36,6 +36,44 @@ export async function getAttachCode(username: string, password: string, portal?:
     portal = DEFAULT_PORTAL;
   }
 
+  // if local hosting registry and portal
+  let host: string[] = username.split("|");
+  if(host.length > 1) {
+
+    // retrieve identity
+    console.log("https://" + host[1] + "/registry");
+    let messageResponse = await fetch("https://" + host[1] + "/registry/amigo/messages/?handle=" + host[0]);
+    let message: AmigoMessage = await messageResponse.json();
+    let amigo: Amigo = getAmigoObject(message); 
+
+    // retrieve code
+    let codeResponse = await fetch("https://" + host[1] + "/portal/profile/passcode?username=" + encodeURIComponent(host[0]) + "&password=" + encodeURIComponent(password), { method: 'PUT' });
+    let code : string = await codeResponse.json();
+
+    return { amigoId: amigo.amigoId, message: message, code: code };
+  }
+ 
+  // if local hosting registry and portal
+  let alias: string[] = username.split(":");
+  if(alias.length > 1) {
+
+    console.log("ALIAS: " + alias[1]);
+    let aliasResponse = await fetch("https://rdns.diatum.net/route?alias=" + alias[1], { method: 'PUT' });
+    let node = await aliasResponse.json();
+    console.log("NODE: " + node);
+
+    // retrieve identity
+    let messageResponse = await fetch(node + "/registry/amigo/messages/?handle=" + alias[0]);
+    let message: AmigoMessage = await messageResponse.json();
+    let amigo: Amigo = getAmigoObject(message); 
+
+    // retrieve code
+    let codeResponse = await fetch(node + "/portal/profile/passcode?username=" + encodeURIComponent(alias[0]) + "&password=" + encodeURIComponent(password), { method: 'PUT' });
+    let code : string = await codeResponse.json();
+
+    return { amigoId: amigo.amigoId, message: message, code: code };
+  }
+   
   // get registry params
   let u: string[] = username.split("@");
   let reg: string = u.length > 1 ? "https://registry." + u[1] + "/app" : DEFAULT_REGISTRY;
@@ -47,7 +85,6 @@ export async function getAttachCode(username: string, password: string, portal?:
   let amigo: Amigo = getAmigoObject(message);
 
   // retrieve code
-
   let codeResponse = await fetch(portal + "/account/passcode?amigoId=" + amigo.amigoId + "&password=" + encodeURIComponent(password), { method: 'PUT' });
   let code: string = await codeResponse.json();
 

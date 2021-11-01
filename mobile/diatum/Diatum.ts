@@ -1285,8 +1285,11 @@ class _Diatum {
 
   private async updateProfile(message: AmigoMessage): Promise<void> {
     let amigo = getAmigoObject(message);
-    await DiatumApi.setRegistryMessage(amigo.registry, message);
-    await DiatumApi.clearDirtyIdentity(this.session.amigoNode, this.session.amigoToken, amigo.revision);
+    let dirty = await DiatumApi.getDirtyIdentity(this.session.amigoNode, this.session.amigoToken);
+    if(dirty) {
+      await DiatumApi.setRegistryMessage(amigo.registry, message);
+      await DiatumApi.clearDirtyIdentity(this.session.amigoNode, this.session.amigoToken, amigo.revision);
+    }
     await this.syncIdentity();
   }
 
