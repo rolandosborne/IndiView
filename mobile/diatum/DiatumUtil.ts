@@ -54,7 +54,7 @@ export async function getAttachCode(username: string, password: string, portal?:
   }
  
   // if local hosting registry and portal
-  let alias: string[] = username.split(":");
+  let alias: string[] = username.split("::");
   if(alias.length > 1) {
 
     console.log("ALIAS: " + alias[1]);
