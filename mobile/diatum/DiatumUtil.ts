@@ -52,23 +52,19 @@ export async function getAttachCode(username: string, password: string, portal?:
 
     return { amigoId: amigo.amigoId, message: message, code: code };
   }
- 
+
   // if local hosting registry and portal
   let alias: string[] = username.split("::");
   if(alias.length > 1) {
 
-    console.log("ALIAS: " + alias[1]);
-    let aliasResponse = await fetch("https://rdns.diatum.net/route?alias=" + alias[1], { method: 'PUT' });
-    let node = await aliasResponse.json();
-    console.log("NODE: " + node);
-
     // retrieve identity
-    let messageResponse = await fetch(node + "/registry/amigo/messages/?handle=" + alias[0]);
+    console.log("https://diatum." + alias[1] + "/registry/amigo/messages/?handle=" + alias[0]);
+    let messageResponse = await fetch("https://diatum." + alias[1] + "/registry/amigo/messages/?handle=" + alias[0]);
     let message: AmigoMessage = await messageResponse.json();
     let amigo: Amigo = getAmigoObject(message); 
 
     // retrieve code
-    let codeResponse = await fetch(node + "/portal/profile/passcode?username=" + encodeURIComponent(alias[0]) + "&password=" + encodeURIComponent(password), { method: 'PUT' });
+    let codeResponse = await fetch("https://diatum." + alias[1] + "/portal/profile/passcode?username=" + encodeURIComponent(alias[0]) + "&password=" + encodeURIComponent(password), { method: 'PUT' });
     let code : string = await codeResponse.json();
 
     return { amigoId: amigo.amigoId, message: message, code: code };
