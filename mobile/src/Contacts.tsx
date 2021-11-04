@@ -141,7 +141,7 @@ function ContactList(props) {
     diatum.getIdentity().then(i => {
       let entry = [{ type: 'pad', amigoId: 'top' }];
       if(i != null) {
-        entry.push({ type: 'identity', amigoId: "_" + i.amigoId, name: i.name, handle: i.handle, imageUrl: i.imageUrl, errorFlag: i.errorFlag });
+        entry.push({ type: 'identity', amigoId: "_" + i.amigoId, name: i.name, handle: i.handle, registry: i.registry, imageUrl: i.imageUrl, errorFlag: i.errorFlag });
       }
       setIdentity(entry);
     }).catch(err => {
@@ -272,7 +272,6 @@ function ContactControl({attributes}) {
 }
 
 function ContactEntry({item}) {
-
   const navigation = useNavigation();
   const onProfile = () => {
     console.log(item);
@@ -335,6 +334,22 @@ function ContactEntry({item}) {
     return (<></>);
   }
 
+  let Reggy = () => {
+    if(item == null || item.registry == null) {
+      return '';
+    }
+    if(item.registry.startsWith('https://registry.') && item.registry.endsWith('/app')) {
+      return '@' + item.registry.substring(17, item.registry.length - 4);
+    }
+    if(item.registry.startsWith('https://diatum') && item.registry.endsWith('/registry')) {
+      return ' | ' + item.registry.substring(15, item.registry.length - 9);
+    }
+    if(item.registry.startsWith('https://') && item.registry.endsWith('/registry')) {
+      return ' || ' + item.registry.substring(8, item.registry.length - 9);
+    }
+    return ' ?';
+  }
+
   if(item.type == 'contact') {
     return (
       <TouchableOpacity activeOpacity={1} style={{ height: 64, paddingLeft: 16, paddingRight: 16, flexDirection: 'row' }} onPress={onProfile}>
@@ -343,7 +358,7 @@ function ContactEntry({item}) {
         </View>
         <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
           <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
-          <Text>{item.handle}</Text>
+          <Text>{item.handle}{Reggy()}</Text>
         </View>
         <View style={{ flexGrow: 1 }}></View>
         <Control />
@@ -359,7 +374,7 @@ function ContactEntry({item}) {
         </View>
         <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
           <Text style={{ fontSize: 18 }}><Icon name="cog" style={{ fontSize: 16 }}/>&nbsp;{item.name}</Text>
-          <Text>{item.handle}</Text>
+          <Text>{item.handle}{Reggy()}</Text>
         </View>
       </TouchableOpacity>
     )

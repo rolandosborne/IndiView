@@ -152,6 +152,7 @@ function MyProfilePage({ navigation, labelId }) {
         setBusy(true);
         try {
           await diatum.setProfileImage(image.data);
+          await IndiViewCom.setIdentity(app.getToken());
         }
         catch(err) {
           console.log(err);

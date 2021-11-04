@@ -15,6 +15,7 @@ export interface IdentityProfile {
   name?: string;
   imageUrl?: string;
   handle?: string;
+  registry?: string;
   location?: string;
   description?: string;
   errorFlag?: boolean;

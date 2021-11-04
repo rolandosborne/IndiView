@@ -103,6 +103,22 @@ function SearchEntry({item, index}) {
     imgSrc = { uri: diatum.getRegistryImage(item.amigoId, item.registry), cache: 'force-cache' };
   }
 
+  let Reggy = () => {
+    if(item == null || item.registry == null) {
+      return '';
+    }
+    if(item.registry.startsWith('https://registry.') && item.registry.endsWith('/app')) {
+      return '@' + item.registry.substring(17, item.registry.length - 4);
+    }
+    if(item.registry.startsWith('https://diatum') && item.registry.endsWith('/registry')) {
+      return ' | ' + item.registry.substring(15, item.registry.length - 9);
+    }
+    if(item.registry.startsWith('https://') && item.registry.endsWith('/registry')) {
+      return ' || ' + item.registry.substring(8, item.registry.length - 9);
+    }
+    return ' ?';
+  }
+
   let navigation = useNavigation();
   let onProfile = async () => {
     let imgUrl = null;
@@ -120,7 +136,7 @@ function SearchEntry({item, index}) {
       </View>
       <View style={{ paddingLeft: 8, height: 64, justifyContent: 'center' }}>
         <Text style={{ fontSize: 18, color: nameColor }}>{name}</Text>
-        <Text>{item.handle}</Text>
+        <Text>{item.handle}{ Reggy() }</Text>
       </View>
     </TouchableOpacity>
   );

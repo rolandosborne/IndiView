@@ -1300,7 +1300,7 @@ class _Diatum {
     }
     let url = amigo.logo==null ? null : amigo.node + "/identity/image?token=" + this.session.amigoToken + "&revision=" + amigo.revision;
     return { name: amigo.name, handle: amigo.handle, location: amigo.location, description: amigo.description,
-        amigoId: amigo.amigoId, imageUrl: url, errorFlag: this.nodeError };
+        amigoId: amigo.amigoId, imageUrl: url, errorFlag: this.nodeError, registry: amigo.registry };
   }
 
   public async getLabels(): Promise<LabelEntry[]> {

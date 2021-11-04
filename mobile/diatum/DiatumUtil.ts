@@ -37,7 +37,7 @@ export async function getAttachCode(username: string, password: string, portal?:
   }
 
   // if local hosting registry and portal
-  let host: string[] = username.split("|");
+  let host: string[] = username.split("||");
   if(host.length > 1) {
 
     // retrieve identity
@@ -54,7 +54,7 @@ export async function getAttachCode(username: string, password: string, portal?:
   }
 
   // if local hosting registry and portal
-  let alias: string[] = username.split("::");
+  let alias: string[] = username.split("|");
   if(alias.length > 1) {
 
     // retrieve identity
