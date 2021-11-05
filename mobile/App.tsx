@@ -227,7 +227,7 @@ function LoginScreen({ navigation }) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: '#282827', justifyContent: 'center', alignItems: 'center' }}>
       <Image source={require('./logo.png')} style={{ marginBottom: 48 }} />
-      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" autoCorrect="false" spellCheck="false" placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
+      <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: 40, width: '90%', margin: 16 }} autoCapitalize="none" autoCorrect={false} spellCheck={false} placeholder="Diatum Username" placeholderTextColor="#444444" onChangeText={onChangeUsername} value={username} />
       <View style={{ height: 40, width: '90%', margin: 16, justifyContent: 'center' }}>
         <TextInput style={{ backgroundColor: '#fce77d', textAlign: 'center', height: '100%' }} autoCapitalize="none" secureTextEntry={!visible} placeholder="Portal Password" placeholderTextColor="#444444" onChangeText={onChangePassword} value={password} />
         <Icon name={ visible ? 'eye' : 'eye-slash' } style={{ position: 'absolute', right: 0, fontSize: 18, color: '#444444', marginRight: 12 }} onPress={ () => setVisible(!visible) } />
