@@ -758,10 +758,10 @@ export class Storage {
   public async getConversations(id: string, labelId: string): Promise<Conversation[]> {
     let res;
     if(labelId == null) {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, dialogue_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id ORDER BY modified DESC");
     }
     else {
-      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, index_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id LEFT OUTER JOIN indexgroup_" + id + " ON dialogue_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id WHERE label_id=? ORDER BY modified DESC", [labelId]);
+      res = await this.db.executeSql("SELECT DISTINCT name, handle, logo_flag, index_" + id + ".revision, dialogue_" + id + ".amigo_id, status, dialogue_id, dialogue_" + id + ".app_data, blurb_data, linked, synced, active, offsync, insight, modified FROM dialogue_" + id + " LEFT OUTER JOIN index_" + id + " ON dialogue_" + id + ".amigo_id = index_" + id + ".amigo_id LEFT OUTER JOIN share_" + id + " ON dialogue_" + id + ".amigo_id = share_" + id + ".amigo_id LEFT OUTER JOIN indexgroup_" + id + " ON dialogue_" + id + ".amigo_id = indexgroup_" + id + ".amigo_id WHERE label_id=? ORDER BY modified DESC", [labelId]);
     }
     let conversations = [];
     if(hasResult(res)) {
