@@ -318,7 +318,7 @@ function MyEmail({params, navigation}) {
   React.useLayoutEffect(() => {
     let save;
     if(busy) {
-      return (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
     }
     else {
       save = (
@@ -333,7 +333,7 @@ function MyEmail({params, navigation}) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ alignItems: 'center', padding: 16 }}>
       <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Category" placeholderTextColor="#444444" onChangeText={value => {categoryRef.current=value; setCategory(value)}} value={category} />
-      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Email Address" autoCapitalize="none" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
+      <TextInput style={{ backgroundColor: '#ffffff', fontSize: 16, color: '#222222', textAlign: 'left', padding: 8, marginTop: 16, width: '100%', borderRadius: 4 }} placeholder="Email Address" autoCorrect={false} autoCapitalize="none" placeholderTextColor="#444444" onChangeText={value => {emailRef.current=value; setEmail(value)}} value={email} />
     </KeyboardAvoidingView>
   );
 }
@@ -618,7 +618,7 @@ function MyCard({params, navigation}) {
   React.useLayoutEffect(() => {
     const save;
     if(busy) {
-      return (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
+      save = (<ActivityIndicator style={{ alignSelf: 'center', width: 48 }} animating={true} size="small" color="#777777" />)
     }
     else {
       save = (
