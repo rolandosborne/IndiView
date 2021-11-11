@@ -17,7 +17,7 @@ IndiView is a communication hub designed to work with the self-hosted network [D
 
   
 ### Installation
-To use the app, you will need to have an account on a Diatum node. Diatum provides instructions for installing a node on a [Raspberry Pi](https://diatum.org/technology/node-installation/coredb-setup-on-raspberry-pi-4/) or an [AWS EC2 Instance](https://diatum.org/technology/node-installation/coredb-setup-on-aws/) [*Note: Diatum doesn't require you to have a domain*]. With the default installation, you will be able to access your device through the [Diatum Portal](https://portal.diatum.net) and create accounts that will reside on your node. Once you have an account ready, you can download IndiView for either iOS or Android.
+To use the app, you will need to have an account on a Diatum node. The CoreDB project provides a template for setting up a node within a container [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml)
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/indiview/id1569089072">
