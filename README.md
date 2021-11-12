@@ -17,13 +17,7 @@ IndiView is a communication hub designed to work with the self-hosted network [D
 
   
 ### Installation
-To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Here is a tutorial on how to install a node and use IndiView in a basic setup.
-
-<p align="center">
-  <a href="https://s3.us-west-2.amazonaws.com/org.coredb.indiview/IndiView_Tutorial.mp4"><img src="/docs/photos/turtorial.png" width="60%"/></a>
-</p>  
-
-Once you have a node installed, you can use the IndiView app available on both play stores:
+To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Once you have a node installed, you can use the IndiView app available on both play stores:
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/indiview/id1569089072">
@@ -33,6 +27,12 @@ Once you have a node installed, you can use the IndiView app available on both p
     <img src="/docs/photos/gplay.png" width="15%">
   </a>
 </p>
+
+<br>
+<p align="center"><sub>Below is a video tutorial on how to install a node and use IndiView in a basic setup.</sub></p>
+<p align="center">
+  <a href="https://s3.us-west-2.amazonaws.com/org.coredb.indiview/IndiView_Tutorial.mp4"><img src="/docs/photos/turtorial.png" width="60%"/></a>
+</p>  
 
 ### Contribute
 Any feedback on the design, usability, features or bugs is greatly appreciated. For those with coding experience, the server code is written with Java Spring and the mobile code is written with React Native. The code for interacting with the diatum network resides in the folder 'mobile/diatum' which can be taken to create other apps independent of IndiView. 
