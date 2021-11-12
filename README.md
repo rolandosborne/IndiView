@@ -17,7 +17,7 @@ IndiView is a communication hub designed to work with the self-hosted network [D
 
   
 ### Installation
-To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Here is a tutorial on how to install a node in a basic setup.
+To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Here is a tutorial on how to install a node and use IndiView in a basic setup.
 
 <p align="center">
   <a href="https://s3.us-west-2.amazonaws.com/org.coredb.indiview/IndiView_Tutorial.mp4"><img src="/docs/photos/turtorial.png" width="60%"/></a>
