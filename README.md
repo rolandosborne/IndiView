@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/rolandosborne/IndiView/raw/main/docs/videos/IndiView_Tutorial.mp4"><img src="/docs/photos/logo.png" /></a>
+  <a href="#"><img src="/docs/photos/logo.png" /></a>
 </p>
 
 IndiView is a communication hub designed to work with the self-hosted network [Diatum](https://diatum.org). With IndiView, you can maintian a contact list, share pictures and videos, and chat all while having full privacy and control of your data. Your data is transmitted only between self-hosted nodes and  mobile devices. Within the app you seletively share your contact info, photos and videos, so your contacts will not all see your identity in the same way. Family may have access to photos or phone numbers that a coworker may not. Most importantly, since all of the data resides in your node, if you move to another Diatum app, your data goes with you.
@@ -17,7 +17,13 @@ IndiView is a communication hub designed to work with the self-hosted network [D
 
   
 ### Installation
-To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Once you have a node installed, you can use the IndiView app available on both play stores:
+To use the app, you will need to have an account on a Diatum node. The [CoreDB](https://github.com/diatum-org/coredb) project provides a template for setting up a selfhosting solution on [ARM64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_arm64.yaml) and [AMD64](https://github.com/diatum-org/coredb/blob/main/tools/coredb_node_amd64.yaml). Here is a tutorial on how to install a node in basic selfhosting setup.
+
+<p align="center">
+  <a href="https://s3.us-west-2.amazonaws.com/org.coredb.indiview/IndiView_Tutorial.mp4"><img src="/docs/photos/turtorial.png" width="50%"/></a>
+</p>  
+
+Once you have a node installed, you can use the IndiView app available on both play stores:
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/indiview/id1569089072">
