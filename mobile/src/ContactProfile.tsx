@@ -708,12 +708,12 @@ function AttributeEntry({item}) {
 
   const onPhone = (data: string) => {
     if(data != null) {
-      Linking.openURL("tel:" + data.replace(/\D/g,''));
+      Linking.openURL("tel:" + data.replace(/[^0-9]/g,''));
     }
   }
   const onText = (data: string) => {
     if(data != null) {
-      Linking.openURL("sms:" + data.replace(/\D/g,''));
+      Linking.openURL("sms:" + data.replace(/[^0-9]/g,''));
     }
   }
   const onWebsite = (data: string) => {
@@ -1009,7 +1009,7 @@ function AttributeEntry({item}) {
     return (
       <View style={{ flexDirection: 'row', padding: 12 }}>
         <View style={{ flexGrow: 1 }}>
-          <Text>{data.type} Phone</Text>
+          <Text>{data.category} Phone</Text>
           <Text style={{ color: '#444444' }}>{data.phone}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

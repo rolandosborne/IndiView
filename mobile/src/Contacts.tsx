@@ -47,7 +47,7 @@ function ContactDrawerContent(props) {
     return () => {
       diatum.clearListener(DiatumEvent.Labels, update);
     }
-    }, []);
+  }, []);
 
   return (
       <View style={{ flex: 1 }}>
@@ -213,11 +213,12 @@ function ContactControl({attributes}) {
     for(let i = 0; i < attributes.phone.length; i++) {
       let type = attributes.phone[i].type == null ? "" : " - " + attributes.phone[i].type;
       phoneOptions.push( attributes.phone[i].value + type );
-      phoneActions.push( () => { Linking.openURL("tel:" + attributes.phone[i].value.replace(/\D/g,'')) });
+      phoneActions.push( () => { Linking.openURL("tel:" + attributes.phone[i].value.replace(/[^0-9]/g,'')) });
     }
     if(Platform.OS === 'ios') {
       phoneOptions.push("Cancel");
     }
+    phoneActions.push(()=>{});
   }
 
   let hasText: boolean = false;
@@ -228,11 +229,12 @@ function ContactControl({attributes}) {
     for(let i = 0; i < attributes.text.length; i++) {
       let type = attributes.phone[i].type == null ? "" : " - " + attributes.phone[i].type;
       textOptions.push(attributes.text[i].value + type);
-      textActions.push(() => { Linking.openURL("sms:+" + attributes.text[i].value.replace(/\D/g,'')) });
+      textActions.push(() => { Linking.openURL("sms:+" + attributes.text[i].value.replace(/[^0-9]/g,'')) });
     } 
     if(Platform.OS === 'ios') {
       textOptions.push("Cancel");
     }
+    textActions.push(()=>{});
   }
  
   const phone = (<View style={{ width: 40, height: 40, backgroundColor: '#dddddd', justifyContent: 'center', alignItems: 'center', borderRadius: 8 }}><Icon name="phone" style={{ color: '#444444', fontSize: 24 }} /></View>)
