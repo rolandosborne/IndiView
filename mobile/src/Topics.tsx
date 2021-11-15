@@ -208,7 +208,7 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
     return (
       <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-start' }} onLongPress={onRemove}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, left: 0 }} />
-        <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, left: 0 }} />
+        <View style={{ position: 'absolute', margin: 8, width: 18, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, left: -2 }} />
         <Text style={{ position: 'absolute', marginLeft: 40, marginBottom: 2, bottom: 0, left: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
         <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
           <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
@@ -220,7 +220,7 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
     return (
       <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-end' }} onLongPress={onRemove}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, right: 0 }} />
-        <View style={{ position: 'absolute', margin: 8, width: 16, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, right: 0 }} />
+        <View style={{ position: 'absolute', margin: 8, width: 18, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, right: -2 }} />
         <Text style={{ position: 'absolute', marginRight: 40, marginBottom: 2, bottom: 0, right: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
         <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
           <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
