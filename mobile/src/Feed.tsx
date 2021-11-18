@@ -301,6 +301,9 @@ function ContactEntry({entry}) {
     if(entry != null && entry.imageUrl != null) {
       setSource({ uri: entry.imageUrl, cache: 'force-cache' });
     }
+    else {
+      setSource(require('../assets/avatar.png'));
+    }
 
     Dimensions.addEventListener('change', onRefresh);
     return () => {
