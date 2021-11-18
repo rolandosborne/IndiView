@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import OptionsMenu from "react-native-option-menu";
 import { useNavigation } from '@react-navigation/native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import ImagePicker from 'react-native-image-crop-picker';
 
 import { Latch, useLatch } from './LatchContext';
 import { Diatum, DiatumEvent } from '../diatum/Diatum';
@@ -23,6 +24,7 @@ export function Topics({ route, navigation }) {
   const [topics, setTopics] = React.useState([]);  
   const [message, setMessage] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
+  const [images, setImages] = React.useState([]);
 
   let revision = React.useRef(null);
   let diatum = useDiatum();
@@ -124,7 +126,32 @@ export function Topics({ route, navigation }) {
     }
   }
 
-  const Control = () => {
+  const onAttach = async () => {
+    try {
+      let img = await ImagePicker.openPicker({ compressImageMaxWidth: 128, compressImageMaxHeight: 128, cropping: false, includeBase64: true});
+      images.push({ mime: img.mime, data: img.data });
+      setImages([...images]);
+    }
+    catch(err) {
+      console.log(err);
+      Alert.alert("failed select image");
+    }
+  }
+
+  const onDetach = (index) => {
+    images.splice(index, 1);
+    setImages([...images]);
+  }
+
+  const Attach = () => {
+    return (
+      <TouchableOpacity style={{ alignSelf: 'center' }} onPress={onAttach}>
+        <Icon name="paperclip" style={{ color: '#0072CC', fontSize: 24, paddingRight: 16 }} />
+      </TouchableOpacity>
+    );
+  }
+
+  const Send = () => {
     if(busy) {
       return (<ActivityIndicator style={{ alignSelf: 'center' }} animating={true} size="small" color="#777777" />)
     }
@@ -135,11 +162,37 @@ export function Topics({ route, navigation }) {
     )
   }
 
+  const AttachImage = (item) => {
+    return (
+      <View style={{ width: 92, height: 92, margin: 4 }}>
+        <Image style={{ width: 92, height: 92 }} source={{uri: "data:" + item.mime + ";base64," + item.data }} />
+        <View opacity={0.8} style={{ position: 'absolute', top: 4, right: 4, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
+          <Icon name="times" style={{ color: '#222222', fontSize: 18 }} onPress={() => item.detach()} />
+        </View> 
+      </View>
+    );
+  }
+
+  const Images = () => {
+    if(images.length == 0) {
+      return (<></>);
+    }
+    return (
+      <View style={{ height: 92 }}>
+        <FlatList style={{ padding: 2 }} data={images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} index={index} detach={() => { onDetach(index) }} /> } />
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <View style={{ padding: 12, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
-        <TextInput multiline={true} style={{ flex: 1, fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
-        <Control />
+        <Attach />
+        <View style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <Images style={{ display: 'flex' }} />
+          <TextInput multiline={true} style={{ display: 'flex', fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
+        </View>
+        <Send />
       </View>
       <FlatList data={topics} keyExtractor={item => item.topicId} renderItem={({item}) => <TopicEntry amigoId={param.amigoId} dialogueId={param.dialogueId} hosting={param.hosting} topic={item} setRevision={setRevision} />} />
     </View>
