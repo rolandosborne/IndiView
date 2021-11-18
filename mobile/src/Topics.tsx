@@ -16,7 +16,7 @@ import { AttachCode, getAttachCode } from '../diatum/DiatumUtil';
 import { DiatumSession, LabelEntry, TopicView, Blurb } from '../diatum/DiatumTypes';
 import { DiatumProvider, useDiatum } from "../diatum/DiatumContext";
 import { IndiViewCom } from "./IndiViewCom";
-import { TagUtil } from './TagUtil';
+import { DialogueUtil } from './DialogueUtil';
 import { AppSupport, useApp } from './AppSupport';
 
 export function Topics({ route, navigation }) {
@@ -109,7 +109,7 @@ export function Topics({ route, navigation }) {
     if(!busy && message != null && message != '') {
       setBusy(true);
       try {
-        await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, TagUtil.MESSAGE, JSON.stringify({ message: message }));
+        await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, DialogueUtil.BLURB, JSON.stringify({ images: images, message: message }));
         try {
           await IndiViewCom.setEvent(app.getToken(), route.params.amigoId, 'blurb');
         }
@@ -117,6 +117,7 @@ export function Topics({ route, navigation }) {
           console.log(err);
         }
         setMessage(null);
+        setImages([]);
       }
       catch(err) {
         console.log(err);
@@ -164,7 +165,7 @@ export function Topics({ route, navigation }) {
 
   const AttachImage = (item) => {
     return (
-      <View style={{ width: 92, height: 92, margin: 4 }}>
+      <View style={{ width: 92, height: 92, marginRight: 8 }}>
         <Image style={{ width: 92, height: 92 }} source={{uri: "data:" + item.mime + ";base64," + item.data }} />
         <View opacity={0.8} style={{ position: 'absolute', top: 4, right: 4, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
           <Icon name="times" style={{ color: '#222222', fontSize: 18 }} onPress={() => item.detach()} />
@@ -186,7 +187,7 @@ export function Topics({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ padding: 12, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
+      <View style={{ padding: 8, width: '100%', marginBottom: 8, backgroundColor: '#eeeeee', borderBottomWidth: 2, borderColor: '#dddddd', flexDirection: 'row' }}>
         <Attach />
         <View style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <Images style={{ display: 'flex' }} />
