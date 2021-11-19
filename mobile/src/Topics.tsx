@@ -179,7 +179,7 @@ export function Topics({ route, navigation }) {
       return (<></>);
     }
     return (
-      <FlatList style={{ padding: 2 }} data={images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} index={index} detach={() => { onDetach(index) }} /> } />
+      <FlatList style={{ padding: 2 }} data={images} horizontal={true} keyExtractor={(item, index) => index} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} index={index} detach={() => { onDetach(index) }} /> } />
     );
   }
 
@@ -228,6 +228,14 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
 
   const [editable, setEditable] = React.useState(false);
 
+  useEffect(() => {
+    if(data.images != null && data.images.length > 0) {
+      for(let i = 0; i < data.images.length; i++) {
+        data.images[i].key = i;
+      } 
+    }
+  }, [data]);
+
   let diatum = useDiatum();
   const onRemove = () => {
     if(editable) {
@@ -260,7 +268,7 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
       return (<></>);
     }
     return (
-      <FlatList style={{ padding: 2, display: 'flex', flex: 1 }} data={data.images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} /> } />
+      <FlatList style={{ padding: 2, display: 'flex', flex: 1 }} data={data.images} horizontal={true} keyExtractor={(item, index) => index} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} /> } />
     );
   }
 
