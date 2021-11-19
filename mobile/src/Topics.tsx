@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
-import { SafeAreaView, Modal, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
+import { Pressable, SafeAreaView, Modal, Alert, Animated, Dimensions, Platform, Clipboard, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, TextInput, Image, FlatList, Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View, ImageBackground, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
@@ -106,7 +106,7 @@ export function Topics({ route, navigation }) {
   }, [navigation]);
 
   const onSend = async () => {
-    if(!busy && message != null && message != '') {
+    if(!busy && ((message != null && message != '') || images.length > 0)) {
       setBusy(true);
       try {
         await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, DialogueUtil.BLURB, JSON.stringify({ images: images, message: message }));
@@ -129,7 +129,7 @@ export function Topics({ route, navigation }) {
 
   const onAttach = async () => {
     try {
-      let img = await ImagePicker.openPicker({ compressImageMaxWidth: 128, compressImageMaxHeight: 128, cropping: false, includeBase64: true});
+      let img = await ImagePicker.openPicker({ compressImageMaxWidth: 192, compressImageMaxHeight: 192, cropping: false, includeBase64: true});
       images.push({ mime: img.mime, data: img.data });
       setImages([...images]);
     }
@@ -166,8 +166,8 @@ export function Topics({ route, navigation }) {
   const AttachImage = (item) => {
     return (
       <View style={{ width: 92, height: 92, marginRight: 8 }}>
-        <Image style={{ width: 92, height: 92 }} source={{uri: "data:" + item.mime + ";base64," + item.data }} />
-        <View opacity={0.8} style={{ position: 'absolute', top: 4, right: 4, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
+        <Image style={{ width: 92, height: 92, resizeMode: 'contain' }} source={{uri: "data:" + item.mime + ";base64," + item.data }} onLongPress={() => item.detach()} />
+        <View opacity={0.8} style={{ position: 'absolute', left: 36, top: 36, padding: 4, borderRadius: 4, backgroundColor: '#ffffff' }}>
           <Icon name="times" style={{ color: '#222222', fontSize: 18 }} onPress={() => item.detach()} />
         </View> 
       </View>
@@ -179,9 +179,7 @@ export function Topics({ route, navigation }) {
       return (<></>);
     }
     return (
-      <View style={{ height: 92 }}>
-        <FlatList style={{ padding: 2 }} data={images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} index={index} detach={() => { onDetach(index) }} /> } />
-      </View>
+      <FlatList style={{ padding: 2 }} data={images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} index={index} detach={() => { onDetach(index) }} /> } />
     );
   }
 
@@ -251,6 +249,28 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
     }
   }
 
+  const AttachImage = (item) => {
+    return (
+      <Image style={{ width: 192, height: 192, resizeMode: 'contain', marginRight: 4, marginLeft: 4 }} source={{uri: "data:" + item.mime + ";base64," + item.data }} />
+    );
+  }
+
+  const Images = () => {
+    if(data.images == null || data.images.length == 0) {
+      return (<></>);
+    }
+    return (
+      <FlatList style={{ padding: 2, display: 'flex', flex: 1 }} data={data.images} horizontal={true} keyExtractor={(item, index) => index.toString()} renderItem={({item,index}) => <AttachImage mime={item.mime} data={item.data} /> } />
+    );
+  }
+
+  const Message = () => {
+    if(data.message == null || data.message == '') {
+      return (<></>);
+    }
+    return (<Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>);
+  }
+
   let app = useApp();
   useEffect(() => {
     if(app.getAmigoId() == blurb.amigoId || hosting) {
@@ -260,26 +280,32 @@ function BlurbEntry({ blurb, data, amigoId, dialogueId, hosting }) {
 
   if(blurb.amigoId == app.getAmigoId()) {
     return (
-      <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-start' }} onLongPress={onRemove}>
+      <View activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, left: 0 }} />
         <View style={{ position: 'absolute', margin: 8, width: 18, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, left: -2 }} />
-        <Text style={{ position: 'absolute', marginLeft: 40, marginBottom: 2, bottom: 0, left: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
+        <Pressable onLongPress={onRemove}>
+          <Text style={{ position: 'absolute', marginLeft: 40, marginBottom: 2, bottom: 0, left: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
+        </Pressable>
         <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
-          <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
+          <Images style={{ flex: 1 }} />
+          <Message />
         </View>
-      </TouchableOpacity>
+      </View>
     );
   }
   else {
     return (
-      <TouchableOpacity activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-end' }} onLongPress={onRemove}>
+      <View activeOpacity={editable ? 0.5 : 1} style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
         <View style={{ position: 'absolute', margin: 8, width: 24, height: 32, borderRadius: 8, backgroundColor: '#444444', bottom: 0, right: 0 }} />
         <View style={{ position: 'absolute', margin: 8, width: 18, height: 32, borderRadius: 16, backgroundColor: '#eeeeee', bottom: 0, right: -2 }} />
-        <Text style={{ position: 'absolute', marginRight: 40, marginBottom: 2, bottom: 0, right: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
-        <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }}>
-          <Text style={{ color: '#ffffff', fontSize: 16 }}>{ data.message }</Text>
+        <Pressable onLongPress={onRemove}>
+          <Text style={{ position: 'absolute', marginRight: 40, marginBottom: 2, bottom: 0, right: 0, color: '#888888', fontSize: 12 }}>{ getTime(blurb.updated) }</Text>
+        </Pressable>
+        <View style={{ backgroundColor: '#444444', margin: 16, borderRadius: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, display: 'flex' }}>
+          <Images />
+          <Message />
         </View>
-      </TouchableOpacity>
+      </View>
     );
   }
 }
