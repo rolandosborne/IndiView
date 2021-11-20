@@ -22,10 +22,11 @@ import { AppSupport, useApp } from './AppSupport';
 export function Topics({ route, navigation }) {
   const [param, setParam] = React.useState(route.params);
   const [topics, setTopics] = React.useState([]);  
-  const [message, setMessage] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
   const [images, setImages] = React.useState([]);
 
+  let text = React.useRef(null);
+  let message = React.useRef(null);
   let revision = React.useRef(null);
   let diatum = useDiatum();
 
@@ -106,17 +107,18 @@ export function Topics({ route, navigation }) {
   }, [navigation]);
 
   const onSend = async () => {
-    if(!busy && ((message != null && message != '') || images.length > 0)) {
+    if(!busy && ((message.current != null && message.current != '') || images.length > 0)) {
       setBusy(true);
       try {
-        await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, DialogueUtil.BLURB, JSON.stringify({ images: images, message: message }));
+        await diatum.addConversationBlurb(route.params.amigoId, route.params.dialogueId, route.params.hosting, DialogueUtil.BLURB, JSON.stringify({ images: images, message: message.current }));
         try {
           await IndiViewCom.setEvent(app.getToken(), route.params.amigoId, 'blurb');
         }
         catch(err) {
           console.log(err);
         }
-        setMessage(null);
+        message.current = null;
+        text.current.clear();
         setImages([]);
       }
       catch(err) {
@@ -189,7 +191,7 @@ export function Topics({ route, navigation }) {
         <Attach />
         <View style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <Images style={{ display: 'flex' }} />
-          <TextInput multiline={true} style={{ display: 'flex', fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} value={message} onChangeText={setMessage} placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
+          <TextInput multiline={true} style={{ display: 'flex', fontSize: 16, textAlignVertical: 'top', color: busy ? '#dddddd' : '#444444' }} autoCapitalize={'sentences'} onChangeText={val => { message.current=val; }} ref={input => text.current=input } placeholder={'Message'} placeholderTextColor={'#888888'} editable={!busy} />
         </View>
         <Send />
       </View>
