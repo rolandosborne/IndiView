@@ -38,4 +38,4 @@ To use the app, you will need to have an account on a CoreDB node. The [CoreDB](
 If you encounter any problems installing the selfhosted node or using the mobile app, please let me know by posting in the discussions tab in the 'Help' category.
 
 ### Contribute
-Any feedback on the design, usability, features or bugs is greatly appreciated. For those with coding experience, the server code is written with Java Spring and the mobile code is written with React Native. The code for interacting with the diatum network resides in the folder 'mobile/diatum' which can be taken to create other apps independent of IndiView. 
+Any feedback on the design, usability, features or bugs is greatly appreciated. For those with coding experience, the server code is written with Java Spring and the mobile code is written with React Native. The code for interacting with the CoreDB node resides in the folder 'mobile/diatum' which can be taken to create other apps independent of IndiView. 
