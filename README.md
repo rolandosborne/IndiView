@@ -28,8 +28,8 @@ To use the app, you will need to have an account on a CoreDB node. The [CoreDB](
   </a>
 </p>
 
-<br>
-<p align="center"><sub>Below is a video tutorial on how to install a node and use IndiView in a basic selfhosting setup.</sub></p>
+### Tutorial
+<p align="center"><sub>Below is a video walkthrough on how to install a node and use IndiView in a basic selfhosting setup.</sub></p>
 <p align="center">
   <a href="https://s3.us-west-2.amazonaws.com/org.coredb.indiview/IndiView_Tutorial.mp4"><img src="/docs/photos/turtorial.png" width="70%"/></a>
 </p>  
