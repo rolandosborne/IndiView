@@ -2,7 +2,7 @@
   <a href="#"><img src="/docs/photos/logo.png" /></a>
 </p>
 
-IndiView is a communication hub designed to work with a self-hosted network composed of [CoreDB](https://github.com/rolandosborne/CoreDB) nodes. With IndiView, you can maintian a contact list, share pictures and videos, and chat all while having full privacy and control of your data. Your data is transmitted only between self-hosted nodes and mobile devices. IndiView provides access control, allowing you to control who can see your data. Family may have access to photos or phone numbers that a coworker may not. Most importantly, since all of the data resides in your node, if you move to another app supporting the CoreDB API, your data goes with you.
+IndiView is a communication hub designed to work with a self-hosted network composed of [CoreDB](https://github.com/rolandosborne/CoreDB) nodes. With IndiView, you can maintian a contact list, share pictures and videos, and chat all while having full privacy and control of your data. Your data is transmitted only between self-hosted nodes and mobile devices. With IndiView's access control, family can have access to photos or phone numbers that a coworker may not. Most importantly, since all of the data resides in your node, if you move to another app supporting the CoreDB API, your data goes with you.
 
 <p align="center">
   <a href="#"><img src="/docs/photos/login.png" width="15%"/></a>
