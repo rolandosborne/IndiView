@@ -17,7 +17,7 @@ IndiView is a communication hub designed to work with a self-hosted network comp
 
   
 ### Installation
-To use the app, you will need to have an account on a CoreDB node. The [CoreDB](https://github.com/rolandosborne/CoreDB) project provides a [Portainer template](https://github.com/rolandosborne/CoreDB/blob/main/tools/template.json) and a [Docker Compose Stack](https://github.com/rolandosborne/CoreDB/blob/main/tools/docker-stack.yaml) for ARM64 & AMD64. It's assumed you have a reverse proxy like nginx-proxy-manager to provide HTTPS. Let me know if there is a specific archtecture or orchestration tool you would like support and I will add it. Once you have a node installed, you can use the IndiView app available on both play stores:
+To use the app, you will need to have an account on a CoreDB node. The [CoreDB](https://github.com/rolandosborne/CoreDB) project provides a [Portainer template](https://github.com/rolandosborne/CoreDB/blob/main/tools/template.json) and a [Docker Compose stack](https://github.com/rolandosborne/CoreDB/blob/main/tools/docker-stack.yaml) for ARM64 & AMD64. It's assumed you have a reverse proxy like nginx-proxy-manager to provide HTTPS. Let me know if there is a specific archtecture or orchestration tool you would like support and I will add it. Once you have a node installed, you can use the IndiView app available on both play stores:
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/indiview/id1569089072">
